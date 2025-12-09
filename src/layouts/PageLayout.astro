@@ -13,12 +13,17 @@ export interface Props {
 }
 
 const { metadata } = Astro.props;
+
+import { UI } from 'astrowind:config';
+const showAnnouncement = UI?.showAnnouncement ?? true;
 ---
 
 <Layout metadata={metadata}>
-  <slot name="announcement">
-    <Announcement />
-  </slot>
+  { showAnnouncement &&
+    <slot name="announcement">
+      <Announcement />
+    </slot> 
+  }
   <slot name="header">
     <Header {...headerData} isSticky showRssFeed showToggleTheme />
   </slot>
