@@ -17,13 +17,30 @@ import '@fontsource-variable/inter';
 // Oswald
 // 'Space Grotesk'
 // Urbanist
+
 ---
 
 <style is:inline>
+  @font-face {
+    font-family: 'GretaArabic';
+    font-display: block;
+    font-style: normal;
+    font-weight: 200;
+    src: url('/fonts/GretaArabic-LightMin.woff2') format('woff2');
+  }
+
+  @font-face {
+    font-family: 'GretaArabic';
+    font-display: block;
+    font-style: normal;
+    font-weight: 500;
+    src: url('/fonts/GretaArabic-MediumMin.woff2') format('woff2');
+  }
+
   :root {
-    --aw-font-sans: 'Inter Variable';
-    --aw-font-serif: 'Inter Variable';
-    --aw-font-heading: 'Inter Variable';
+    --aw-font-sans: 'GretaArabic';
+    --aw-font-serif: 'GretaArabic';
+    --aw-font-heading: 'GretaArabic';
 
     --aw-color-primary: rgb(1 97 239);
     --aw-color-secondary: rgb(1 84 207);
@@ -42,9 +59,9 @@ import '@fontsource-variable/inter';
   }
 
   .dark {
-    --aw-font-sans: 'Inter Variable';
-    --aw-font-serif: 'Inter Variable';
-    --aw-font-heading: 'Inter Variable';
+    --aw-font-sans: 'GretaArabic';
+    --aw-font-serif: 'GretaArabic';
+    --aw-font-heading: 'GretaArabic';
 
     --aw-color-primary: rgb(1 97 239);
     --aw-color-secondary: rgb(1 84 207);

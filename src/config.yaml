@@ -1,6 +1,6 @@
 site:
-  name: AstroWind
-  site: 'https://astrowind.vercel.app'
+  name: عيادة د. مؤمن ديرانية
+  site: 'https://abuobaydatajjarrah.pages.dev'
   base: '/'
   trailingSlash: false
 
@@ -28,8 +28,8 @@ metadata:
     cardType: summary_large_image
 
 i18n:
-  language: en
-  textDirection: ltr
+  language: ar
+  textDirection: rtl
 
 apps:
   blog:
