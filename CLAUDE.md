@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an Astro 5.0 + Tailwind CSS website based on the AstroWind template. It uses static site generation with MDX support for blog content.
+Medical clinic website for Dr. Mu'men Diraneyya (د. مؤمن ديرانية). Built with Astro 5.0 + Tailwind CSS based on the AstroWind template. Uses static site generation with RTL (Arabic) support.
 
 ## Commands
 
@@ -55,9 +55,19 @@ Blog posts are defined in `src/content/config.ts` using Astro's content collecti
 
 Uses `astro-icon` with Tabler icons (`tabler:*`) and Flat Color Icons. Icon sets configured in `astro.config.ts`.
 
-### Styling
+### Styling & Theming
 
 - Tailwind CSS with typography plugin
 - Dark mode support (system/light/dark)
-- RTL support
-- Custom styles in `src/components/CustomStyles.astro` and `src/assets/styles/tailwind.css`
+- RTL support (configured in `src/config.yaml`)
+- Theme colors defined in `src/components/CustomStyles.astro` using CSS custom properties:
+  - `--aw-color-primary`: Primary brand color (buttons, links)
+  - `--aw-color-secondary`: Hover states
+  - `--aw-color-accent`: Highlighted text
+- Custom fonts in `public/fonts/`
+
+### Brand Colors
+
+- Primary: `hsl(191 49% 40%)` - Teal/green (#348799)
+- Secondary: `hsl(191 49% 32%)` - Darker teal
+- Accent: `hsl(191 49% 50%)` - Lighter teal

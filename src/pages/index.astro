@@ -13,7 +13,7 @@ import Stats from '~/components/widgets/Stats.astro';
 import CallToAction from '~/components/widgets/CallToAction.astro';
 
 const metadata = {
-  title: 'AstroWind — Free template for creating websites with Astro + Tailwind CSS',
+  title: 'أبو عبيدة الجرّاح - عيادة د. مؤمن ديرانية',
   ignoreTitleTemplate: true,
 };
 ---
@@ -25,28 +25,39 @@ const metadata = {
     actions={[
       {
         variant: 'primary',
-        text: 'Get template',
+        text: 'احجز موعدًا',
         href: 'https://github.com/arthelokyo/astrowind',
         target: '_blank',
-        icon: 'tabler:download',
+        icon: 'tabler:calendar-plus',
       },
-      { text: 'Learn more', href: '#features' },
+      {
+        text: 'هل لديك تساؤل؟ تواصل معنا',
+        href: 'https://wa.me/962799133299',
+        target: '_blank',
+        //icon: 'tabler:brand-whatsapp',
+      },
     ]}
-    image={{ src: '~/assets/images/hero-image.png', alt: 'AstroWind Hero Image' }}
+    image1={{ src: '~/assets/images/hero-photo.webp', alt: 'صورة الطبيب' }}
+    image2={{ src: '~/assets/images/hero-artwork.svg', alt: 'شعار العيادة' }}
   >
+    <Fragment slot="bg">
+      <div class="absolute inset-0 bg-[linear-gradient(to_bottom,hsl(220_9%_65%/0.2)_0%,hsl(220_9%_65%/0.4)_40%,transparent_93%)]"></div>
+    </Fragment>
     <Fragment slot="title">
-      Free template for <span class="hidden xl:inline">creating websites with</span>
-      <span class="text-accent dark:text-white"> Astro 5.0</span> + Tailwind CSS
+      أبو عبيدة الجرّاح
+      <span class="hidden xl:inline">-</span>
+      <span class="hidden xl:inline">عيادة</span>
+      <span class="text-accent dark:text-white whitespace-nowrap">د. مؤمن ديرانية</span>
+      <span class="hidden xl:inline">Mu'men Diraneyya</span>
     </Fragment>
 
     <Fragment slot="subtitle">
       <span class="hidden sm:inline">
-        <span class="font-semibold">AstroWind</span> is a free, customizable and production-ready template for Astro 5.0
-        + Tailwind CSS.</span
+        <span class="font-semibold">زميل الكلية الملكية للجراحين في إدنبرة (بريطانيا)</span>
+        استشاري الجراحة العامة والتنظيرية</span
       >
-      <span class="block mb-1 sm:hidden font-bold text-blue-600">AstroWind: Production-ready.</span>
-      Suitable for Startups, Small Business, SaaS websites, Professional Portfolios, Marketing websites, Landing Pages &
-      Blogs.
+      <span class="mb-1 sm:hidden font-bold">استشاري الجراحة العامة والتنظيرية</span>
+      ومحاضر غير متفرغ في كلية طب جامعة البلقاء التطبيقية
     </Fragment>
   </Hero>
 

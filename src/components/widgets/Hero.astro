@@ -11,7 +11,8 @@ const {
 
   content = await Astro.slots.render('content'),
   actions = await Astro.slots.render('actions'),
-  image = await Astro.slots.render('image'),
+  image1 = await Astro.slots.render('image1'),
+  image2 = await Astro.slots.render('image2'),
 
   id,
   bg = await Astro.slots.render('bg'),
@@ -75,20 +76,37 @@ const {
         class="intersect-once intersect-no-queue intersect-quarter motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade"
       >
         {
-          image && (
-            <div class="relative m-auto max-w-5xl">
-              {typeof image === 'string' ? (
-                <Fragment set:html={image} />
-              ) : (
-                <Image
-                  class="mx-auto rounded-md w-full"
-                  widths={[400, 768, 1024, 2040]}
-                  sizes="(max-width: 767px) 400px, (max-width: 1023px) 768px, (max-width: 2039px) 1024px, 2040px"
-                  loading="eager"
-                  width={1024}
-                  height={576}
-                  {...image}
-                />
+          (image1 || image2) && (
+            <div class="relative grid m-auto max-w-5xl [&>*]:col-start-1 [&>*]:row-start-1">
+              {image2 && (
+                typeof image2 === 'string' ? (
+                  <Fragment set:html={image2} />
+                ) : (
+                  <Image
+                    class="w-full h-full object-cover rounded-md"
+                    widths={[400, 768, 1024, 2040]}
+                    sizes="(max-width: 767px) 400px, (max-width: 1023px) 768px, (max-width: 2039px) 1024px, 2040px"
+                    loading="eager"
+                    width={1024}
+                    height={576}
+                    {...image2}
+                  />
+                )
+              )}
+              {image1 && (
+                typeof image1 === 'string' ? (
+                  <Fragment set:html={image1} />
+                ) : (
+                  <Image
+                    class="w-full h-full object-cover rounded-md"
+                    widths={[400, 768, 1024, 2040]}
+                    sizes="(max-width: 767px) 400px, (max-width: 1023px) 768px, (max-width: 2039px) 1024px, 2040px"
+                    loading="eager"
+                    width={1024}
+                    height={576}
+                    {...image1}
+                  />
+                )
               )}
             </div>
           )
