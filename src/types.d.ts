@@ -281,3 +281,20 @@ export interface Content extends Omit<Headline, 'classes'>, Widget {
 }
 
 export interface Contact extends Omit<Headline, 'classes'>, Form, Widget {}
+
+export interface Location extends Omit<Headline, 'classes'>, Widget {
+  /** Address of the location */
+  address?: string;
+  /** Phone number */
+  phone?: string;
+  /** Email address */
+  email?: string;
+  /** Working hours */
+  hours?: string;
+  /** Verbal directions to reach the location */
+  directions?: string;
+  /** Google Maps embed URL (src for iframe) */
+  mapEmbedUrl?: string;
+  /** Link to open in Google Maps */
+  mapLink?: string;
+}

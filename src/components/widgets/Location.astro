@@ -1,0 +1,165 @@
+---
+import { Icon } from 'astro-icon/components';
+import Headline from '~/components/ui/Headline.astro';
+import WidgetWrapper from '~/components/ui/WidgetWrapper.astro';
+import type { Location as Props } from '~/types';
+
+const {
+  title = await Astro.slots.render('title'),
+  subtitle = await Astro.slots.render('subtitle'),
+  tagline = await Astro.slots.render('tagline'),
+
+  address,
+  phone,
+  email,
+  hours,
+  directions,
+  mapEmbedUrl,
+  mapLink,
+
+  id,
+  isDark = false,
+  classes = {},
+  bg = await Astro.slots.render('bg'),
+} = Astro.props;
+---
+
+<WidgetWrapper id={id} isDark={isDark} containerClass={`max-w-7xl mx-auto ${classes?.container ?? ''}`} bg={bg}>
+  <!-- Custom headline with subtitle in parentheses -->
+  <div class="mb-8 md:mb-12 text-center">
+    {tagline && <p class="text-base text-secondary dark:text-blue-200 font-bold tracking-wide uppercase" set:html={tagline} />}
+    {title && (
+      <h2 class="text-4xl md:text-5xl font-bold leading-tighter tracking-tighter font-heading text-heading">
+        <span set:html={title} />
+        {subtitle && <span class="text-xl md:text-2xl font-normal text-muted ms-2">({subtitle})</span>}
+      </h2>
+    )}
+  </div>
+
+  <div class="flex flex-col md:flex-row gap-8 md:gap-12">
+    <!-- Map Section -->
+    {
+      mapEmbedUrl && (
+        <div class="md:basis-1/2">
+          <div class="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700">
+            <iframe
+              src={mapEmbedUrl}
+              width="100%"
+              height="100%"
+              style="border:0;"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              title="خريطة موقع العيادة"
+              class="absolute inset-0"
+            />
+          </div>
+          {mapLink && (
+            <a
+              href={mapLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 mt-4 text-primary hover:text-secondary transition-colors"
+            >
+              <Icon name="tabler:map-pin" class="w-5 h-5" />
+              <span>افتح في خرائط جوجل</span>
+              <Icon name="tabler:external-link" class="w-4 h-4" />
+            </a>
+          )}
+        </div>
+      )
+    }
+
+    <!-- Contact Info & Directions Section -->
+    <div class={`${mapEmbedUrl ? 'md:basis-1/2' : 'w-full'}`}>
+      <div class="space-y-6">
+        <!-- Address -->
+        {
+          address && (
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Icon name="tabler:map-pin" class="w-6 h-6" />
+              </div>
+              <div>
+                <h3 class="font-semibold text-lg text-gray-900 dark:text-white">العنوان</h3>
+                <p class="text-gray-600 dark:text-gray-400 mt-1" set:html={address} />
+              </div>
+            </div>
+          )
+        }
+
+        <!-- Phone -->
+        {
+          phone && (
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Icon name="tabler:phone" class="w-6 h-6" />
+              </div>
+              <div>
+                <h3 class="font-semibold text-lg text-gray-900 dark:text-white">الهاتف</h3>
+                <a
+                  href={`tel:${phone.replace(/\s/g, '')}`}
+                  class="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors mt-1 block"
+                  dir="ltr"
+                >
+                  {phone}
+                </a>
+              </div>
+            </div>
+          )
+        }
+
+        <!-- Email -->
+        {
+          email && (
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Icon name="tabler:mail" class="w-6 h-6" />
+              </div>
+              <div>
+                <h3 class="font-semibold text-lg text-gray-900 dark:text-white">البريد الإلكتروني</h3>
+                <a
+                  href={`mailto:${email}`}
+                  class="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors mt-1 block"
+                  dir="ltr"
+                >
+                  {email}
+                </a>
+              </div>
+            </div>
+          )
+        }
+
+        <!-- Working Hours -->
+        {
+          hours && (
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Icon name="tabler:clock" class="w-6 h-6" />
+              </div>
+              <div>
+                <h3 class="font-semibold text-lg text-gray-900 dark:text-white">ساعات العمل</h3>
+                <p class="text-gray-600 dark:text-gray-400 mt-1" set:html={hours} />
+              </div>
+            </div>
+          )
+        }
+
+        <!-- Directions -->
+        {
+          directions && (
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Icon name="tabler:route" class="w-6 h-6" />
+              </div>
+              <div>
+                <h3 class="font-semibold text-lg text-gray-900 dark:text-white">كيفية الوصول</h3>
+                <p class="text-gray-600 dark:text-gray-400 mt-1" set:html={directions} />
+              </div>
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</WidgetWrapper>
