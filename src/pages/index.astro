@@ -70,10 +70,10 @@ const metadata = {
       <div class="absolute inset-0 bg-gray-200 dark:bg-gray-800"></div>
     </Fragment>
     <Fragment slot="title">
-      أبو عبيدة الجرّاح
-      <span class="hidden xl:inline">-</span>
       <span class="hidden xl:inline">عيادة</span>
       <span class="text-accent dark:text-white whitespace-nowrap">د. مؤمن ديرانية</span>
+      <span class="hidden xl:inline">-</span>
+      أبو عبيدة الجرّاح
       <span class="hidden xl:inline">Mu'men Diraneyya</span>
     </Fragment>
 
@@ -83,64 +83,105 @@ const metadata = {
         استشاري الجراحة العامة والتنظيرية</span
       >
       <span class="mb-1 sm:hidden font-bold">استشاري الجراحة العامة والتنظيرية</span>
-      ومحاضر غير متفرغ في كلية طب جامعة البلقاء التطبيقية
+      <br>محاضر غير متفرغ في كلية طب جامعة البلقاء التطبيقية وناشط في العمل الطبي الإغاثي
     </Fragment>
   </Hero>
 
   <!-- Note Widget ******************* -->
 
-  <Note title="Philosophy:" description="Simplicity, Best Practices and High Performance" />
+  <!-- <Note title="Philosophy:" description="Simplicity, Best Practices and High Performance" /> -->
+
+  <!-- Stats Widget ****************** -->
+
+  <Stats
+    stats={[
+      { title: 'خبرة في جراحة عامة', amount: '٣٠ سنة' },
+      { title: 'في العمل الطبي الإغاثي', amount: '١٤ سنة' },
+      { title: 'في مستشفيات وزارة الصحة والمستشفيات العسكرية', amount: '٢٥ سنة' },
+      { title: 'محاضرًا غير متفرغ في كلية الطب في جامعة البلقاء', amount: '٤ سنوات' },
+    ]}
+  />
 
   <!-- Features Widget *************** -->
 
   <Features
     id="features"
-    tagline="Features"
-    title="What you get with AstroWind"
-    subtitle="One of the most professional and comprehensive templates currently on the market. Most starred & forked Astro theme in 2022, 2023 and 2024."
+    tagline="من نحن وكيف نستطيع مساعدتك"
+    title="عيادة جراحة عامة وتنظيرية"
+    subtitle="في هذه القائمة تجدون بعضًا مما يختص به الطبيب مؤمن ديرانية (أبو عبيدة الجراح) وما يستطيع علاجكم به بصدق وأمانة ستقدرونها وتلفت نظركم:"
     items={[
       {
-        title: 'Astro + Tailwind CSS Integration',
+        title: 'جراحة الارتداد المَعِدي المَريئي والفتق الحجابي',
         description:
-          'A seamless integration between two great frameworks that offer high productivity, performance and versatility.',
-        icon: 'tabler:brand-tailwind',
+          '',
+        icon: 'tabler:slice',
       },
       {
-        title: 'Ready-to-use Components',
+        title: 'جراحة المعدة وجراحة السمنة',
         description:
-          'Widgets made with Tailwind CSS ready to be used in Marketing Websites, SaaS, Blogs, Personal Profiles, Small Business...',
-        icon: 'tabler:components',
+          '',
+        icon: 'tabler:hanger',
       },
       {
-        title: 'Best Practices',
+        title: 'جراحة الأمعاء والقولون والمستقيم والزائدة الدودية التنظيرية والمفتوحة',
         description:
-          'Creating secure, efficient, and user-friendly websites that deliver exceptional experiences and lasting value.',
-        icon: 'tabler:list-check',
+          '',
+        icon: 'tabler:stethoscope',
       },
       {
-        title: 'Excellent Page Speed',
+        title: 'الجراحات الشرجية',
         description:
-          'Having a good page speed impacts organic search ranking, improves user experience (UI/UX) and increase conversion rates.',
-        icon: 'tabler:rocket',
+          'الخرّاج والشرخ الشرجي. البواسير: العلاج بالربط والحقن والأشعة تحت الحمراء. وعمليات البواسير بربط الشريان الباسوري والكي الكهربائي والليزر والدباسة الجراحية. أيضاً: عمليات الناسور الشرجي البسيط وعمليات الناسور المعقد بالليزر وعملية ربط قناة الناسور بين المَصَرَّتين',
+        icon: 'tabler:poo',
       },
       {
-        title: 'Search Engine Optimization (SEO)',
+        title: 'جراحة الجيب الشعري بالجراحة والليزر',
         description:
-          "SEO lies in its ability to enhance a website's visibility, driving organic traffic and enabling it to reach a wider audience.",
-        icon: 'tabler:arrows-right-left',
+          "",
+        icon: 'tabler:poker-chip',
       },
       {
-        title: 'Open to new ideas and contributions',
+        title: 'جراحة المرارة التنظيرية والقنوات الصفراوية',
         description:
-          'Embracing a culture that is open to new ideas and contributions is integral fostering innovation, collaboration, and a dynamic user experience.',
-        icon: 'tabler:bulb',
+          '',
+        icon: 'tabler:route-alt-right',
+      },
+      {
+        title: 'جراحة الطحال',
+        description:
+          '',
+        icon: 'tabler:drop-circle',
+      },
+      {
+        title: 'جراحة فتوق جدار البطن التنظيرية والمفتوحة، ورأب البطن (شدّ البطن)',
+        description:
+          '',
+        icon: 'tabler:barbell',
+      },
+      {
+        title: 'جراحة الغدة الدرقية',
+        description:
+          '',
+        icon: 'tabler:user-check',
+      },
+      {
+        title: 'جراحة الثدي',
+        description:
+          '',
+        icon: 'tabler:baby-bottle',
+      },
+      {
+        title: 'الجراحات المتفرقة',
+        description:
+          'الخراجات والظُفُرٌ الناشِب والكيسَات الدهنية والخزعات والختان والأقدام السكرية',
+        icon: 'tabler:mist',
       },
     ]}
   />
 
   <!-- Content Widget **************** -->
 
-  <Content
+  <!-- <Content
     isReversed
     tagline="Inside template"
     title="AstroWind's Blueprint: Fun Meets Functionality!"
@@ -174,11 +215,11 @@ const metadata = {
     <Fragment slot="bg">
       <div class="absolute inset-0 bg-tertiary/20 dark:bg-transparent"></div>
     </Fragment>
-  </Content>
+  </Content> -->
 
   <!-- Content Widget **************** -->
 
-  <Content
+  <!-- <Content
     isAfterContent
     items={[
       {
@@ -211,11 +252,11 @@ const metadata = {
     <Fragment slot="bg">
       <div class="absolute inset-0 bg-tertiary/20 dark:bg-transparent"></div>
     </Fragment>
-  </Content>
+  </Content> -->
 
   <!-- Content Widget **************** -->
 
-  <Content
+  <!-- <Content
     isReversed
     isAfterContent
     items={[
@@ -249,11 +290,11 @@ const metadata = {
     <Fragment slot="bg">
       <div class="absolute inset-0 bg-tertiary/20 dark:bg-transparent"></div>
     </Fragment>
-  </Content>
+  </Content> -->
 
   <!-- Steps Widget ****************** -->
 
-  <Steps
+  <!-- <Steps
     title="Get your dream website up and running in no time with AstroWind."
     items={[
       {
@@ -283,11 +324,11 @@ const metadata = {
       src: 'https://images.unsplash.com/photo-1616198814651-e71f960c3180?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80',
       alt: 'Steps image',
     }}
-  />
+  /> -->
 
   <!-- Features2 Widget ************** -->
 
-  <Features2
+  <!-- <Features2
     title="Most used widgets"
     subtitle="Provides frequently used components for building websites using Tailwind CSS"
     tagline="Components"
@@ -347,12 +388,12 @@ const metadata = {
     <Fragment slot="bg">
       <div class="absolute inset-0 bg-tertiary/20 dark:bg-transparent"></div>
     </Fragment>
-  </Features2>
+  </Features2> -->
 
   <!-- HighlightedPosts Widget ******* -->
 
   <BlogLatestPosts
-    title="Find out more content in our Blog"
+    title="هنا تجدون بعض كتابات كتبها أبو عبيدة الجراح"
     information={`The blog is used to display AstroWind documentation.
                         Each new article will be an important step that you will need to know to be an expert in creating a website using Astro + Tailwind CSS.
                         Astro is a very interesting technology. Thanks.
@@ -361,7 +402,7 @@ const metadata = {
 
   <!-- FAQs Widget ******************* -->
 
-  <FAQs
+  <!-- <FAQs
     title="Frequently Asked Questions"
     subtitle="Dive into the following questions to gain insights into the powerful features that AstroWind offers and how it can elevate your web development journey."
     tagline="FAQs"
@@ -398,18 +439,7 @@ const metadata = {
           "This is not about revenge. This is about justice. A lot of things can change in twelve years, Admiral. Well, that's certainly good to know. About four years. I got tired of hearing how young I looked.",
       },
     ]}
-  />
-
-  <!-- Stats Widget ****************** -->
-
-  <Stats
-    stats={[
-      { title: 'Downloads', amount: '132K' },
-      { title: 'Stars', amount: '24.8K' },
-      { title: 'Forks', amount: '10.3K' },
-      { title: 'Users', amount: '48.4K' },
-    ]}
-  />
+  /> -->
 
   <!-- CallToAction Widget *********** -->
 
