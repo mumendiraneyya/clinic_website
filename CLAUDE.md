@@ -34,8 +34,10 @@ The site uses a custom Astro integration (`vendor/integration/`) that:
 
 Blog posts are defined in `src/content/config.ts` using Astro's content collections:
 - Posts located in `src/data/post/` (not `src/content/post/`)
+- Post images stored in `src/assets/images/posts/`
 - Supports `.md` and `.mdx` files
 - Schema includes: title, publishDate, excerpt, image, category, tags, author, metadata
+- Image paths use the `~` alias: `image: ~/assets/images/posts/filename.jpg`
 
 ### Component Structure
 
@@ -78,6 +80,10 @@ Based on color theory with teal (hue 191°) as the primary:
 
 The tertiary color is defined directly as RGB in `tailwind.config.js` (not as a CSS variable) to support Tailwind's opacity modifiers like `bg-tertiary/20`.
 
+### Logo
+
+The site logo (`src/components/Logo.astro`) displays a stethoscope emoji (🩺) followed by the site name.
+
 ### Hero Component
 
 The Hero widget (`src/components/widgets/Hero.astro`) has a custom `fullHeight` mode used on the landing page:
@@ -93,7 +99,25 @@ The Hero widget (`src/components/widgets/Hero.astro`) has a custom `fullHeight` 
 
 **Key CSS classes:**
 - `.is-fixed` - Applied to action containers when pinned to bottom
+- `.is-hidden` - Hides pinned buttons when user scrolls near the footer (reveals social links)
 - Styles handle backdrop blur, safe area insets, and margin removal
+- Dark mode uses `html.dark` selector for styling pinned action bar
+
+### Stats Widget
+
+The Stats widget (`src/components/widgets/Stats.astro`) displays statistics with separator borders:
+- Uses RTL-aware Tailwind classes: `border-e` (not `border-r`) for proper RTL support
+- `md:last:border-e-0` removes border from last item
+
+### Social Media Links
+
+Social links are configured in `src/navigation.ts` under `footerData.socialLinks`:
+- Facebook: Clinic's Facebook page
+- Instagram: Dr.'s Instagram profile
+- YouTube: Clinic's YouTube channel
+- Google Business: Google Business profile
+
+Icons use Tabler icon set (e.g., `tabler:brand-facebook`, `tabler:brand-youtube`)
 
 ## Development Tools
 

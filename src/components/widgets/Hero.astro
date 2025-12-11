@@ -263,6 +263,20 @@ const {
       border-top-color: rgba(255, 255, 255, 0.08);
       box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.3);
     }
+
+    /* Hide when near footer */
+    #hero-actions-container.is-hidden,
+    #hero-mobile-actions.is-hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(100%);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    #hero-actions-container.is-fixed,
+    #hero-mobile-actions.is-fixed {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
   </style>
 
   <script>
@@ -294,6 +308,14 @@ const {
       function updateOnScroll() {
         const scrollY = window.scrollY;
 
+        // Check if near bottom of page (hide pinned buttons to reveal footer)
+        const footer = document.querySelector('footer');
+        const footerHeight = footer ? footer.offsetHeight : 200;
+        const documentHeight = document.documentElement.scrollHeight;
+        const windowHeight = window.innerHeight;
+        const distanceFromBottom = documentHeight - (scrollY + windowHeight);
+        const nearBottom = distanceFromBottom < footerHeight;
+
         // Desktop behavior
         if (heroOverlay && imageContainer && actionsContainer) {
           // Fade entire hero overlay quickly (0-120px scroll)
@@ -313,8 +335,14 @@ const {
             heroOverlay.style.visibility = 'visible';
           }
 
-          // Fix actions to bottom when image is mostly faded
+          // Fix actions to bottom when image is mostly faded (but hide near footer)
           const fixThreshold = fadeDistance * 0.8;
+
+          if (nearBottom) {
+            actionsContainer.classList.add('is-hidden');
+          } else {
+            actionsContainer.classList.remove('is-hidden');
+          }
 
           if (scrollY > fixThreshold && !isFixed) {
             actionsContainer.classList.add('is-fixed');
@@ -329,6 +357,13 @@ const {
         if (mobileActionsContainer && mobileActionsOriginalTop !== null) {
           const isMobile = !window.matchMedia('(min-width: 768px)').matches;
           if (isMobile) {
+            // Hide near footer
+            if (nearBottom) {
+              mobileActionsContainer.classList.add('is-hidden');
+            } else {
+              mobileActionsContainer.classList.remove('is-hidden');
+            }
+
             const buttonHeight = mobileActionsContainer.offsetHeight;
             // Calculate where the buttons originally would be relative to viewport
             const originalTopInViewport = mobileActionsOriginalTop - scrollY;
