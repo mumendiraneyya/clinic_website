@@ -1,5 +1,5 @@
 site:
-  name: عيادة د. مؤمن ديرانية
+  name: 'عيادة د. مؤمن ديرانية'
   site: 'https://abuobaydatajjarrah.pages.dev'
   base: '/'
   trailingSlash: false
@@ -9,23 +9,19 @@ site:
 # Default SEO metadata
 metadata:
   title:
-    default: AstroWind
-    template: '%s — AstroWind'
-  description: "\U0001F680 Suitable for Startups, Small Business, Sass Websites, Professional Portfolios, Marketing Websites, Landing Pages & Blogs."
+    default: 'عيادة د. مؤمن ديرانية'
+    template: '%s — عيادة د. مؤمن ديرانية'
+  description: '🩺 عيادة د. مؤمن ديرانية (أبو عبيدة الجراح) - عيادة متخصصة في جراحات البطن التنظيرية والمفتوحة، جراحات الشرج، جراحة الثدي والغدة الدرقية، الأقدام السكرية، والختان.'
   robots:
     index: true
     follow: true
   openGraph:
-    site_name: AstroWind
+    site_name: 'عيادة د. مؤمن ديرانية'
     images:
       - url: '~/assets/images/default.png'
         width: 1200
         height: 628
     type: website
-  twitter:
-    handle: '@arthelokyo'
-    site: '@arthelokyo'
-    cardType: summary_large_image
 
 i18n:
   language: ar
