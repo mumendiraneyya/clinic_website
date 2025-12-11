@@ -5,6 +5,8 @@ import Footer from '~/components/widgets/Footer.astro';
 import Announcement from '~/components/widgets/Announcement.astro';
 
 import { headerData, footerData } from '~/navigation';
+import { fetchPosts } from '~/utils/blog';
+import { getBlogPermalink } from '~/utils/permalinks';
 
 import type { MetaData } from '~/types';
 
@@ -16,6 +18,23 @@ const { metadata } = Astro.props;
 
 import { UI } from 'astrowind:config';
 const showAnnouncement = UI?.showAnnouncement ?? true;
+
+// Build dynamic header with blog posts
+const posts = await fetchPosts();
+const blogLinks = [
+  { text: 'جميع المقالات', href: getBlogPermalink() },
+  ...posts.slice(0, 5).map((post) => ({
+    text: post.title,
+    href: `/${post.permalink}`,
+  })),
+];
+
+const dynamicHeaderData = {
+  ...headerData,
+  links: headerData.links.map((link) =>
+    link.text === 'المدونة' ? { ...link, links: blogLinks } : link
+  ),
+};
 ---
 
 <Layout metadata={metadata}>
@@ -25,7 +44,7 @@ const showAnnouncement = UI?.showAnnouncement ?? true;
     </slot> 
   }
   <slot name="header">
-    <Header {...headerData} isSticky showRssFeed showToggleTheme />
+    <Header {...dynamicHeaderData} isSticky showToggleTheme />
   </slot>
   <main>
     <slot />

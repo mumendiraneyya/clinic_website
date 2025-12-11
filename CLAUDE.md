@@ -89,13 +89,34 @@ The site logo (`src/components/Logo.astro`) displays a stethoscope emoji (🩺) 
 The Hero widget (`src/components/widgets/Hero.astro`) has a custom `fullHeight` mode used on the landing page:
 
 **Desktop behavior:**
-- Hero image displays in a fixed overlay that fades on scroll (0-120px)
+- Hero image displays in a fixed overlay (`#hero-fixed-overlay`) that fades on scroll
 - Action buttons pin to bottom when scrolled past threshold
 - Snap scrolling prevents partial fade states
 
 **Mobile behavior:**
 - Compact layout with image, title, subtitle, and buttons all visible
 - Buttons pin to bottom when scrolled past
+
+**Key scroll values (defined in Hero.astro script):**
+- `fadeDistance = 120` - Hero image fully fades within 120px of scroll
+- Snap scrolling triggers when scroll stops between 0-120px, snapping to nearest boundary
+- Action buttons fix to bottom at ~80% of fadeDistance (96px)
+- Title/subtitle content (`#hero-below-content`) appears below the fading overlay
+
+**DOM structure for fullHeight mode:**
+- `#hero-fixed-overlay` - Fixed overlay containing hero image (fades 0→120px)
+- `#hero-bg-container` - Background within the overlay
+- `#hero-image-container` - Hero image container (fades and scales down)
+- `#hero-actions-container` - Action buttons (desktop, becomes fixed)
+- `#hero-below-content` - Title/subtitle that appears after scrolling past hero
+- `#hero-mobile-actions` - Action buttons (mobile only)
+
+**Anchor links and scroll behavior:**
+When creating anchor links that should scroll past the hero image to show content:
+- The heading content appears at approximately 150px scroll position
+- Use JavaScript `window.scrollTo({ top: 150, behavior: 'smooth' })` rather than hash anchors
+- Hash anchors won't work well with the snap scrolling implementation
+- See `src/pages/index.astro` for example: "من نحن" link uses custom scroll handler
 
 **Key CSS classes:**
 - `.is-fixed` - Applied to action containers when pinned to bottom

@@ -95,6 +95,7 @@ const metadata = {
   <!-- Stats Widget ****************** -->
 
   <Stats
+    id="about"
     stats={[
       { title: 'خبرة في جراحة عامة', amount: '٣٠ سنة' },
       { title: 'في العمل الطبي الإغاثي', amount: '١٤ سنة' },
@@ -547,6 +548,23 @@ const metadata = {
           label.textContent = this.checked ? 'موعد في العيادة' : 'موعد عن بعد (الدفع مسبقًا)';
         });
       }
+    });
+
+    // Scroll past hero for "من نحن" link
+    document.addEventListener('astro:page-load', function() {
+      document.querySelectorAll('a[href="/#hero-section"], a[href="#hero-section"]').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const heroSection = document.getElementById('hero-section');
+          if (heroSection) {
+            // Scroll to just past the hero image (window height)
+            window.scrollTo({
+              top: 150,
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
     });
   </script>
 </Layout>
