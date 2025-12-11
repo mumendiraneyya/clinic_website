@@ -71,3 +71,4 @@ analytics:
 ui:
   theme: 'system' # Values: "system" | "light" | "dark" | "light:only" | "dark:only"
   showAnnouncement: false
+  showFooterLinks: false # Hide the footer navigation columns (Product, Platform, etc.)
