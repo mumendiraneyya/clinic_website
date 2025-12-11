@@ -23,11 +23,13 @@ const metadata = {
   <!-- Hero Widget ******************* -->
 
   <Hero
+    id="hero-section"
     image1={{ src: '~/assets/images/hero-photo.webp', alt: 'صورة الطبيب' }}
     image2={{ src: '~/assets/images/hero-artwork.svg', alt: 'شعار العيادة' }}
+    fullHeight={true}
   >
     <Fragment slot="content">
-      <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-4">
+      <div class="flex flex-row justify-center items-center gap-4 mb-4">
         <div class="flex items-center gap-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm ps-4 pe-1 py-1 rounded-full shadow-sm">
           <label class="flex items-center gap-3 cursor-pointer text-sm whitespace-nowrap">
             <span id="booking-label" class="text-muted dark:text-slate-300">موعد في العيادة</span>
@@ -59,23 +61,13 @@ const metadata = {
           rel="noopener noreferrer"
           class="btn-secondary"
         >
-          هل لديك تساؤل؟ تواصل معنا
+          <span class="hidden sm:inline">هل لديك تساؤل؟ تواصل معنا</span>
+          <span class="sm:hidden">استفسر</span>
         </a>
       </div>
-      <script is:inline>
-        document.addEventListener('astro:page-load', function() {
-          const checkbox = document.getElementById('booking-in-clinic');
-          const label = document.getElementById('booking-label');
-          if (checkbox && label) {
-            checkbox.addEventListener('change', function() {
-              label.textContent = this.checked ? 'موعد في العيادة' : 'موعد عن بعد (الدفع مسبقًا)';
-            });
-          }
-        });
-      </script>
     </Fragment>
     <Fragment slot="bg">
-      <div class="absolute inset-0 bg-[linear-gradient(to_bottom,hsl(220_9%_65%/0.2)_0%,hsl(220_9%_65%/0.4)_40%,transparent_93%)]"></div>
+      <div class="absolute inset-0 bg-gray-200 dark:bg-gray-800"></div>
     </Fragment>
     <Fragment slot="title">
       أبو عبيدة الجرّاح
@@ -180,7 +172,7 @@ const metadata = {
     </Fragment>
 
     <Fragment slot="bg">
-      <div class="absolute inset-0 bg-blue-50 dark:bg-transparent"></div>
+      <div class="absolute inset-0 bg-tertiary/20 dark:bg-transparent"></div>
     </Fragment>
   </Content>
 
@@ -217,7 +209,7 @@ const metadata = {
     <Fragment slot="content">Ensure your online presence truly represents you.</Fragment>
 
     <Fragment slot="bg">
-      <div class="absolute inset-0 bg-blue-50 dark:bg-transparent"></div>
+      <div class="absolute inset-0 bg-tertiary/20 dark:bg-transparent"></div>
     </Fragment>
   </Content>
 
@@ -255,7 +247,7 @@ const metadata = {
     <Fragment slot="content">Designed to foster growth and success.</Fragment>
 
     <Fragment slot="bg">
-      <div class="absolute inset-0 bg-blue-50 dark:bg-transparent"></div>
+      <div class="absolute inset-0 bg-tertiary/20 dark:bg-transparent"></div>
     </Fragment>
   </Content>
 
@@ -353,7 +345,7 @@ const metadata = {
     ]}
   >
     <Fragment slot="bg">
-      <div class="absolute inset-0 bg-blue-50 dark:bg-transparent"></div>
+      <div class="absolute inset-0 bg-tertiary/20 dark:bg-transparent"></div>
     </Fragment>
   </Features2>
 
@@ -498,5 +490,16 @@ const metadata = {
 
     // Use astro:page-load which fires on initial load and after View Transitions
     document.addEventListener('astro:page-load', setupCalButton);
+
+    // Checkbox label update
+    document.addEventListener('astro:page-load', function() {
+      const checkbox = document.getElementById('booking-in-clinic');
+      const label = document.getElementById('booking-label');
+      if (checkbox && label) {
+        checkbox.addEventListener('change', function() {
+          label.textContent = this.checked ? 'موعد في العيادة' : 'موعد عن بعد (الدفع مسبقًا)';
+        });
+      }
+    });
   </script>
 </Layout>

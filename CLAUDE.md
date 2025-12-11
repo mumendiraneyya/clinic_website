@@ -64,13 +64,48 @@ Uses `astro-icon` with Tabler icons (`tabler:*`) and Flat Color Icons. Icon sets
   - `--aw-color-primary`: Primary brand color (buttons, links)
   - `--aw-color-secondary`: Hover states
   - `--aw-color-accent`: Highlighted text
+  - `--aw-color-tertiary`: Warm accent color (amber/gold)
 - Custom fonts in `public/fonts/`
 
 ### Brand Colors
 
-- Primary: `hsl(191 49% 40%)` - Teal/green (#348799)
-- Secondary: `hsl(191 49% 32%)` - Darker teal
-- Accent: `hsl(191 49% 50%)` - Lighter teal
+Based on color theory with teal (hue 191°) as the primary:
+
+- **Primary**: `hsl(191 49% 40%)` - Teal (#348799)
+- **Secondary**: `hsl(191 49% 32%)` - Darker teal
+- **Accent**: `hsl(191 49% 50%)` - Lighter teal
+- **Tertiary**: `rgb(219 165 67)` - Amber/gold (hue ~38°, split-complementary to teal)
+
+The tertiary color is defined directly as RGB in `tailwind.config.js` (not as a CSS variable) to support Tailwind's opacity modifiers like `bg-tertiary/20`.
+
+### Hero Component
+
+The Hero widget (`src/components/widgets/Hero.astro`) has a custom `fullHeight` mode used on the landing page:
+
+**Desktop behavior:**
+- Hero image displays in a fixed overlay that fades on scroll (0-120px)
+- Action buttons pin to bottom when scrolled past threshold
+- Snap scrolling prevents partial fade states
+
+**Mobile behavior:**
+- Compact layout with image, title, subtitle, and buttons all visible
+- Buttons pin to bottom when scrolled past
+
+**Key CSS classes:**
+- `.is-fixed` - Applied to action containers when pinned to bottom
+- Styles handle backdrop blur, safe area insets, and margin removal
+
+## Development Tools
+
+### Chrome DevTools MCP
+
+A Chrome DevTools MCP server is available for browser automation and testing:
+- Navigate pages, take screenshots, interact with elements
+- Inspect console messages and network requests
+- Test scroll behaviors and responsive layouts
+- Use `mcp__chrome-devtools__*` tools (e.g., `navigate_page`, `take_screenshot`, `evaluate_script`)
+
+The dev server runs at `localhost:4321` - navigate there to test changes visually.
 
 ## Integrations
 

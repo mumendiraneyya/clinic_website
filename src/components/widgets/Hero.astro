@@ -16,23 +16,71 @@ const {
 
   id,
   bg = await Astro.slots.render('bg'),
+  fullHeight = false,
 } = Astro.props;
 ---
 
-<section class="relative md:-mt-[76px] not-prose" {...id ? { id } : {}}>
-  <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
-    <slot name="bg">
-      {bg ? <Fragment set:html={bg} /> : null}
-    </slot>
-  </div>
-  <div class="relative max-w-7xl mx-auto px-4 sm:px-6">
-    <div class="pt-0 md:pt-[76px] pointer-events-none"></div>
-    <div class="py-12 md:py-20">
-      <div class="text-center pb-10 md:pb-16 max-w-5xl mx-auto">
+{fullHeight ? (
+  <!-- MOBILE: Compact hero with everything visible -->
+  <section class="md:hidden not-prose">
+    <!-- Image section with background -->
+    <div class="relative">
+      <!-- Background - only behind image -->
+      <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <slot name="bg">
+          {bg ? <Fragment set:html={bg} /> : null}
+        </slot>
+      </div>
+
+      <!-- Hero image - full width on mobile -->
+      <div class="relative w-full">
+        {
+          (image1 || image2) && (
+            <div class="relative grid [&>*]:col-start-1 [&>*]:row-start-1">
+              {image2 && (
+                typeof image2 === 'string' ? (
+                  <Fragment set:html={image2} />
+                ) : (
+                  <Image
+                    class="w-full h-full object-cover"
+                    widths={[400, 768]}
+                    sizes="100vw"
+                    loading="eager"
+                    width={768}
+                    height={432}
+                    {...image2}
+                  />
+                )
+              )}
+              {image1 && (
+                typeof image1 === 'string' ? (
+                  <Fragment set:html={image1} />
+                ) : (
+                  <Image
+                    class="w-full h-full object-cover"
+                    widths={[400, 768]}
+                    sizes="100vw"
+                    loading="eager"
+                    width={768}
+                    height={432}
+                    {...image1}
+                  />
+                )
+              )}
+            </div>
+          )
+        }
+      </div>
+    </div>
+
+    <!-- Title, subtitle and buttons - outside background -->
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <!-- Title and subtitle -->
+      <div class="text-center mb-6">
         {
           tagline && (
             <p
-              class="text-base text-secondary dark:text-blue-200 font-bold tracking-wide uppercase intersect-once intersect-quarter motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade"
+              class="text-base text-secondary dark:text-tertiary font-bold tracking-wide uppercase"
               set:html={tagline}
             />
           )
@@ -40,44 +88,46 @@ const {
         {
           title && (
             <h1
-              class="text-5xl md:text-6xl font-bold leading-tighter tracking-tighter mb-4 font-heading dark:text-gray-200 intersect-once intersect-quarter motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade"
+              class="text-3xl font-bold leading-tighter tracking-tighter mb-3 font-heading dark:text-gray-200"
               set:html={title}
             />
           )
         }
-        <div class="max-w-3xl mx-auto">
-          {
-            subtitle && (
-              <p
-                class="text-xl text-muted mb-6 dark:text-slate-300 intersect-once intersect-quarter motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade"
-                set:html={subtitle}
-              />
-            )
-          }
-          {
-            actions && (
-              <div class="max-w-xs sm:max-w-md m-auto flex flex-nowrap flex-col sm:flex-row sm:justify-center gap-4 intersect-once intersect-quarter motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade">
-                {Array.isArray(actions) ? (
-                  actions.map((action) => (
-                    <div class="flex w-full sm:w-auto">
-                      <Button {...(action || {})} class="w-full sm:mb-0" />
-                    </div>
-                  ))
-                ) : (
-                  <Fragment set:html={actions} />
-                )}
-              </div>
-            )
-          }
-        </div>
+        {
+          subtitle && (
+            <p
+              class="text-lg text-muted dark:text-slate-300"
+              set:html={subtitle}
+            />
+          )
+        }
+      </div>
+
+      <!-- Action buttons -->
+      <div id="hero-mobile-actions" class="text-center">
         {content && <Fragment set:html={content} />}
       </div>
-      <div
-        class="intersect-once intersect-no-queue intersect-quarter motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade"
-      >
+    </div>
+  </section>
+
+  <!-- DESKTOP: Fixed hero overlay that fades on scroll -->
+  <div id="hero-fixed-overlay" class="hidden md:block fixed inset-0 z-30 pointer-events-none bg-page">
+    <!-- Background -->
+    <div id="hero-bg-container" class="absolute inset-0 will-change-transform" aria-hidden="true">
+      <slot name="bg">
+        {bg ? <Fragment set:html={bg} /> : null}
+      </slot>
+    </div>
+
+    <!-- Hero image -->
+    <div
+      id="hero-image-container"
+      class="absolute inset-0 flex items-center justify-center pt-[76px] px-4 sm:px-6 will-change-transform"
+    >
+      <div id="hero-image-inner" class="relative max-w-5xl w-full">
         {
           (image1 || image2) && (
-            <div class="relative grid m-auto max-w-5xl [&>*]:col-start-1 [&>*]:row-start-1">
+            <div class="relative grid [&>*]:col-start-1 [&>*]:row-start-1">
               {image2 && (
                 typeof image2 === 'string' ? (
                   <Fragment set:html={image2} />
@@ -114,4 +164,330 @@ const {
       </div>
     </div>
   </div>
-</section>
+
+  <!-- Action buttons - only for desktop, separate from overlay -->
+  <div
+    id="hero-actions-container"
+    class="hidden md:block fixed left-0 right-0 z-40 transition-none"
+    style="bottom: 15%; transform: translateY(50%);"
+  >
+    <div class="text-center px-4">
+      {content && <Fragment set:html={content} />}
+      {
+        actions && (
+          <div class="max-w-xs sm:max-w-md m-auto flex flex-nowrap flex-col sm:flex-row sm:justify-center gap-4">
+            {Array.isArray(actions) ? (
+              actions.map((action) => (
+                <div class="flex w-full sm:w-auto">
+                  <Button {...(action || {})} class="w-full sm:mb-0" />
+                </div>
+              ))
+            ) : (
+              <Fragment set:html={actions} />
+            )}
+          </div>
+        )
+      }
+    </div>
+  </div>
+
+  <!-- Spacer - only for desktop -->
+  <section id={id} class="hidden md:block relative h-[200px] not-prose"></section>
+
+  <!-- Content that appears after scrolling (title, subtitle, etc.) - only for desktop -->
+  <div id="hero-below-content" class="hidden md:block relative z-20 bg-page">
+    {(tagline || title || subtitle) && (
+      <div class="text-center py-12 md:py-20 max-w-5xl mx-auto px-4 sm:px-6">
+        {
+          tagline && (
+            <p
+              class="text-base text-secondary dark:text-tertiary font-bold tracking-wide uppercase"
+              set:html={tagline}
+            />
+          )
+        }
+        {
+          title && (
+            <h1
+              class="text-5xl md:text-6xl font-bold leading-tighter tracking-tighter mb-4 font-heading dark:text-gray-200"
+              set:html={title}
+            />
+          )
+        }
+        {
+          subtitle && (
+            <p
+              class="text-xl text-muted mb-6 dark:text-slate-300 max-w-3xl mx-auto"
+              set:html={subtitle}
+            />
+          )
+        }
+      </div>
+    )}
+  </div>
+
+  <style>
+    /* Shared fixed action bar styles */
+    #hero-actions-container.is-fixed,
+    #hero-mobile-actions.is-fixed {
+      position: fixed;
+      bottom: 0 !important;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.08);
+      z-index: 40;
+      padding: 0.75rem 1rem;
+      padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Desktop-specific overrides */
+    #hero-actions-container.is-fixed {
+      top: auto !important;
+      transform: none !important;
+    }
+
+    /* Remove margins from all nested content when fixed */
+    #hero-actions-container.is-fixed *,
+    #hero-mobile-actions.is-fixed * {
+      margin-bottom: 0 !important;
+    }
+
+    /* Dark mode */
+    :global(.dark) #hero-actions-container.is-fixed,
+    :global(.dark) #hero-mobile-actions.is-fixed {
+      background: rgba(17, 24, 39, 0.95);
+      border-top-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+
+  <script>
+    function initHeroScroll() {
+      // Desktop elements
+      const heroOverlay = document.getElementById('hero-fixed-overlay');
+      const bgContainer = document.getElementById('hero-bg-container');
+      const imageContainer = document.getElementById('hero-image-container');
+      const actionsContainer = document.getElementById('hero-actions-container');
+
+      // Mobile elements
+      const mobileActionsContainer = document.getElementById('hero-mobile-actions');
+
+      let ticking = false;
+      let isFixed = false;
+      let isMobileFixed = false;
+      const fadeDistance = 120; // Hero fully fades within 120px of scroll
+
+      // Snap scrolling variables (desktop only)
+      let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+      let isSnapping = false;
+
+      // Store original position of mobile actions for pinning calculation
+      let mobileActionsOriginalTop: number | null = null;
+      if (mobileActionsContainer) {
+        mobileActionsOriginalTop = mobileActionsContainer.getBoundingClientRect().top + window.scrollY;
+      }
+
+      function updateOnScroll() {
+        const scrollY = window.scrollY;
+
+        // Desktop behavior
+        if (heroOverlay && imageContainer && actionsContainer) {
+          // Fade entire hero overlay quickly (0-120px scroll)
+          const fadeProgress = Math.min(1, scrollY / fadeDistance);
+          const opacity = String(1 - fadeProgress);
+
+          imageContainer.style.opacity = opacity;
+          imageContainer.style.transform = `scale(${1 - fadeProgress * 0.08})`;
+          if (bgContainer) {
+            bgContainer.style.opacity = opacity;
+          }
+
+          // Hide overlay completely after fade to allow interaction with content
+          if (fadeProgress >= 1) {
+            heroOverlay.style.visibility = 'hidden';
+          } else {
+            heroOverlay.style.visibility = 'visible';
+          }
+
+          // Fix actions to bottom when image is mostly faded
+          const fixThreshold = fadeDistance * 0.8;
+
+          if (scrollY > fixThreshold && !isFixed) {
+            actionsContainer.classList.add('is-fixed');
+            isFixed = true;
+          } else if (scrollY <= fixThreshold && isFixed) {
+            actionsContainer.classList.remove('is-fixed');
+            isFixed = false;
+          }
+        }
+
+        // Mobile button pinning - only on mobile screens
+        if (mobileActionsContainer && mobileActionsOriginalTop !== null) {
+          const isMobile = !window.matchMedia('(min-width: 768px)').matches;
+          if (isMobile) {
+            const buttonHeight = mobileActionsContainer.offsetHeight;
+            // Calculate where the buttons originally would be relative to viewport
+            const originalTopInViewport = mobileActionsOriginalTop - scrollY;
+
+            // Pin when buttons would scroll off the top of the screen
+            if (originalTopInViewport < buttonHeight && !isMobileFixed) {
+              mobileActionsContainer.classList.add('is-fixed');
+              isMobileFixed = true;
+            } else if (originalTopInViewport >= buttonHeight && isMobileFixed) {
+              mobileActionsContainer.classList.remove('is-fixed');
+              isMobileFixed = false;
+            }
+          }
+        }
+
+        ticking = false;
+      }
+
+      // Snap scroll handler for desktop
+      function handleSnapScroll() {
+        if (isSnapping) return;
+
+        const scrollY = window.scrollY;
+        const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+
+        // Only snap on desktop and when in the transition zone
+        if (!isDesktop || scrollY <= 0 || scrollY >= fadeDistance) return;
+
+        isSnapping = true;
+
+        // Snap to nearest boundary (0 or fadeDistance)
+        const targetScroll = scrollY < fadeDistance / 2 ? 0 : fadeDistance;
+
+        window.scrollTo({
+          top: targetScroll,
+          behavior: 'smooth'
+        });
+
+        // Reset snapping flag after animation
+        setTimeout(() => {
+          isSnapping = false;
+        }, 300);
+      }
+
+      function onScroll() {
+        if (!ticking) {
+          requestAnimationFrame(updateOnScroll);
+          ticking = true;
+        }
+
+        // Clear existing snap timeout
+        if (scrollTimeout) {
+          clearTimeout(scrollTimeout);
+        }
+
+        // Set new snap timeout (triggers when scrolling stops)
+        scrollTimeout = setTimeout(handleSnapScroll, 150);
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      updateOnScroll();
+    }
+
+    document.addEventListener('astro:page-load', initHeroScroll);
+  </script>
+) : (
+  <!-- Standard hero (non-fullHeight) -->
+  <section class="relative md:-mt-[76px] not-prose" {...id ? { id } : {}}>
+    <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
+      <slot name="bg">
+        {bg ? <Fragment set:html={bg} /> : null}
+      </slot>
+    </div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="pt-0 md:pt-[76px] pointer-events-none"></div>
+      <div class="py-12 md:py-20">
+        <div class="text-center pb-10 md:pb-16 max-w-5xl mx-auto">
+          {
+            tagline && (
+              <p
+                class="text-base text-secondary dark:text-blue-200 font-bold tracking-wide uppercase intersect-once intersect-quarter motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade"
+                set:html={tagline}
+              />
+            )
+          }
+          {
+            title && (
+              <h1
+                class="text-5xl md:text-6xl font-bold leading-tighter tracking-tighter mb-4 font-heading dark:text-gray-200 intersect-once intersect-quarter motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade"
+                set:html={title}
+              />
+            )
+          }
+          <div class="max-w-3xl mx-auto">
+            {
+              subtitle && (
+                <p
+                  class="text-xl text-muted mb-6 dark:text-slate-300 intersect-once intersect-quarter motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade"
+                  set:html={subtitle}
+                />
+              )
+            }
+            {
+              actions && (
+                <div class="max-w-xs sm:max-w-md m-auto flex flex-nowrap flex-col sm:flex-row sm:justify-center gap-4 intersect-once intersect-quarter motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade">
+                  {Array.isArray(actions) ? (
+                    actions.map((action) => (
+                      <div class="flex w-full sm:w-auto">
+                        <Button {...(action || {})} class="w-full sm:mb-0" />
+                      </div>
+                    ))
+                  ) : (
+                    <Fragment set:html={actions} />
+                  )}
+                </div>
+              )
+            }
+          </div>
+          {content && <Fragment set:html={content} />}
+        </div>
+        <div class="intersect-once intersect-no-queue intersect-quarter motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade">
+          {
+            (image1 || image2) && (
+              <div class="relative grid m-auto max-w-5xl [&>*]:col-start-1 [&>*]:row-start-1">
+                {image2 && (
+                  typeof image2 === 'string' ? (
+                    <Fragment set:html={image2} />
+                  ) : (
+                    <Image
+                      class="w-full h-full object-cover rounded-md"
+                      widths={[400, 768, 1024, 2040]}
+                      sizes="(max-width: 767px) 400px, (max-width: 1023px) 768px, (max-width: 2039px) 1024px, 2040px"
+                      loading="eager"
+                      width={1024}
+                      height={576}
+                      {...image2}
+                    />
+                  )
+                )}
+                {image1 && (
+                  typeof image1 === 'string' ? (
+                    <Fragment set:html={image1} />
+                  ) : (
+                    <Image
+                      class="w-full h-full object-cover rounded-md"
+                      widths={[400, 768, 1024, 2040]}
+                      sizes="(max-width: 767px) 400px, (max-width: 1023px) 768px, (max-width: 2039px) 1024px, 2040px"
+                      loading="eager"
+                      width={1024}
+                      height={576}
+                      {...image1}
+                    />
+                  )
+                )}
+              </div>
+            )
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+)}
