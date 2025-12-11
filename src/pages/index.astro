@@ -11,6 +11,7 @@ import BlogLatestPosts from '~/components/widgets/BlogLatestPosts.astro';
 import FAQs from '~/components/widgets/FAQs.astro';
 import Stats from '~/components/widgets/Stats.astro';
 import CallToAction from '~/components/widgets/CallToAction.astro';
+import { Icon } from 'astro-icon/components';
 
 const metadata = {
   title: 'أبو عبيدة الجرّاح - عيادة د. مؤمن ديرانية',
@@ -22,24 +23,57 @@ const metadata = {
   <!-- Hero Widget ******************* -->
 
   <Hero
-    actions={[
-      {
-        variant: 'primary',
-        text: 'احجز موعدًا',
-        href: 'https://github.com/arthelokyo/astrowind',
-        target: '_blank',
-        icon: 'tabler:calendar-plus',
-      },
-      {
-        text: 'هل لديك تساؤل؟ تواصل معنا',
-        href: 'https://wa.me/962799133299',
-        target: '_blank',
-        //icon: 'tabler:brand-whatsapp',
-      },
-    ]}
     image1={{ src: '~/assets/images/hero-photo.webp', alt: 'صورة الطبيب' }}
     image2={{ src: '~/assets/images/hero-artwork.svg', alt: 'شعار العيادة' }}
   >
+    <Fragment slot="content">
+      <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-4">
+        <div class="flex items-center gap-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm ps-4 pe-1 py-1 rounded-full shadow-sm">
+          <label class="flex items-center gap-3 cursor-pointer text-sm whitespace-nowrap">
+            <span id="booking-label" class="text-muted dark:text-slate-300">موعد في العيادة</span>
+            <div class="relative">
+              <input
+                type="checkbox"
+                id="booking-in-clinic"
+                checked
+                class="sr-only peer"
+              />
+              <div class="w-11 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:bg-primary transition-colors"></div>
+              <div class="absolute top-0.5 start-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-full rtl:peer-checked:-translate-x-full transition-transform"></div>
+            </div>
+          </label>
+          <a
+            href="#"
+            class="btn-primary flex items-center gap-1"
+            data-booking-link="د.-مو-من-ديرانية-z6vyi6"
+            data-booking-namespace="landing"
+            data-booking-config={JSON.stringify({ layout: 'month_view' })}
+          >
+            <span>احجز موعدًا</span>
+            <Icon name="tabler:calendar-plus" class="w-5 h-5" />
+          </a>
+        </div>
+        <a
+          href="https://wa.me/962799133299"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-secondary"
+        >
+          هل لديك تساؤل؟ تواصل معنا
+        </a>
+      </div>
+      <script is:inline>
+        document.addEventListener('astro:page-load', function() {
+          const checkbox = document.getElementById('booking-in-clinic');
+          const label = document.getElementById('booking-label');
+          if (checkbox && label) {
+            checkbox.addEventListener('change', function() {
+              label.textContent = this.checked ? 'موعد في العيادة' : 'موعد عن بعد (الدفع مسبقًا)';
+            });
+          }
+        });
+      </script>
+    </Fragment>
     <Fragment slot="bg">
       <div class="absolute inset-0 bg-[linear-gradient(to_bottom,hsl(220_9%_65%/0.2)_0%,hsl(220_9%_65%/0.4)_40%,transparent_93%)]"></div>
     </Fragment>
@@ -407,4 +441,62 @@ const metadata = {
       waste more time! :P
     </Fragment>
   </CallToAction>
+
+  <!-- Cal.com Embed Script -->
+  <script is:inline>
+    (function (C, A, L) {
+      let p = function (a, ar) { a.q.push(ar); };
+      let d = C.document;
+      C.Cal = C.Cal || function () {
+        let cal = C.Cal;
+        let ar = arguments;
+        if (!cal.loaded) {
+          cal.ns = {};
+          cal.q = cal.q || [];
+          d.head.appendChild(d.createElement("script")).src = A;
+          cal.loaded = true;
+        }
+        if (ar[0] === L) {
+          const api = function () { p(api, arguments); };
+          const namespace = ar[1];
+          api.q = api.q || [];
+          if (typeof namespace === "string") {
+            cal.ns[namespace] = cal.ns[namespace] || api;
+            p(cal.ns[namespace], ar);
+            p(cal, ["initNamespace", namespace]);
+          } else p(cal, ar);
+          return;
+        }
+        p(cal, ar);
+      };
+    })(window, "https://app.cal.com/embed/embed.js", "init");
+
+    Cal("init", "landing", { origin: "https://app.cal.com" });
+    // Cal.ns.clinic("ui", { theme: 'dark', "hideEventTypeDetails": false, "layout": "month_view" });
+
+    // Manual click handler using data-booking-* attributes
+    // (data-cal-* triggers Cal.com's auto-binding which conflicts with Astro View Transitions)
+    function setupCalButton() {
+      document.querySelectorAll('[data-booking-link]').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          const baseLink = el.getAttribute('data-booking-link');
+          const namespace = el.getAttribute('data-booking-namespace') || 'clinic';
+          const config = JSON.parse(el.getAttribute('data-booking-config') || '{}');
+
+          // Determine booking type from checkbox (default: clinic)
+          const inClinicCheckbox = document.getElementById('booking-in-clinic');
+          const suffix = (inClinicCheckbox && inClinicCheckbox.checked) ? '/clinic' : '/remote';
+          const calLink = baseLink + suffix;
+
+          // Sync theme with AstroWind's current theme state
+          config.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+          Cal.ns[namespace]("modal", { calLink: calLink, config: config });
+        });
+      });
+    }
+
+    // Use astro:page-load which fires on initial load and after View Transitions
+    document.addEventListener('astro:page-load', setupCalButton);
+  </script>
 </Layout>

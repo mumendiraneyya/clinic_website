@@ -71,3 +71,15 @@ Uses `astro-icon` with Tabler icons (`tabler:*`) and Flat Color Icons. Icon sets
 - Primary: `hsl(191 49% 40%)` - Teal/green (#348799)
 - Secondary: `hsl(191 49% 32%)` - Darker teal
 - Accent: `hsl(191 49% 50%)` - Lighter teal
+
+## Integrations
+
+### Cal.com Booking
+
+Appointment booking is integrated via Cal.com cloud embed. See [context/cal-com-embed.md](context/cal-com-embed.md) for detailed documentation.
+
+**Quick reference:**
+- Implementation: `src/pages/index.astro` (Hero content slot + inline script)
+- Event types: `/clinic` (in-person) and `/remote` (telemedicine)
+- Uses custom `data-booking-*` attributes (NOT `data-cal-*`) to avoid Astro View Transitions conflicts
+- Theme syncs automatically with AstroWind dark/light mode
