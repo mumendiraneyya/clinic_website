@@ -77,6 +77,7 @@ export const footerData = {
     { text: 'الشروط', href: getPermalink('/terms') },
   ],
   socialLinks: [
+    { ariaLabel: 'Tebcan', icon: 'brand-tebcan-alt', href: 'https://tebcan.com/ar/Jordan/dr/%D8%AF%D9%83%D8%AA%D9%88%D8%B1-%D9%85%D8%A4%D9%85%D9%86-%D9%85%D8%A3%D9%85%D9%88%D9%86-%D8%AF%D9%8A%D8%B1%D8%A7%D9%86%D9%8A%D8%A9-%D8%AC%D8%B1%D8%A7%D8%AD%D8%A9-%D8%B9%D8%A7%D9%85%D8%A9_2822' },
     { ariaLabel: 'Facebook', icon: 'tabler:brand-facebook', href: 'https://www.facebook.com/Abuobaydatajjarrah/' },
     { ariaLabel: 'Instagram', icon: 'tabler:brand-instagram', href: 'https://www.instagram.com/dr.mumen.diraneyya/' },
     { ariaLabel: 'YouTube', icon: 'tabler:brand-youtube', href: 'https://www.youtube.com/channel/UCe9xMNuVzNgEWvoui3nolRw' },

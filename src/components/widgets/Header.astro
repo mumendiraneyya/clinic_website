@@ -23,6 +23,7 @@ interface MenuLink extends Link {
 export interface Props {
   id?: string;
   links?: Array<MenuLink>;
+  socialLinks?: Array<Link>;
   actions?: Array<CallToAction>;
   isSticky?: boolean;
   isDark?: boolean;
@@ -35,6 +36,7 @@ export interface Props {
 const {
   id = 'header',
   links = [],
+  socialLinks = [],
   actions = [],
   isSticky = false,
   isDark = false,
@@ -137,6 +139,24 @@ const currentPath = `/${trimSlash(new URL(Astro.url).pathname)}`;
             <Icon name="tabler:phone" class="w-5 h-5 ms-2 pr-1" />
           </a>
         </li>
+        {/* Mobile-only social links */}
+        {socialLinks?.length > 0 && (
+          <li class="md:hidden px-4 py-3 mt-2 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-center gap-3 flex-wrap">
+              {socialLinks.map(({ ariaLabel, href, icon }) => (
+                <a
+                  class="text-muted dark:text-gray-400 hover:text-link dark:hover:text-white p-2 inline-flex items-center"
+                  aria-label={ariaLabel}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {icon && <Icon name={icon} class="w-6 h-6" />}
+                </a>
+              ))}
+            </div>
+          </li>
+        )}
       </ul>
     </nav>
     <div

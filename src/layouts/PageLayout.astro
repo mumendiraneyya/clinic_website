@@ -44,7 +44,7 @@ const dynamicHeaderData = {
     </slot> 
   }
   <slot name="header">
-    <Header {...dynamicHeaderData} isSticky showToggleTheme />
+    <Header {...dynamicHeaderData} socialLinks={footerData.socialLinks} isSticky showToggleTheme />
   </slot>
   <main>
     <slot />
