@@ -23,3 +23,6 @@ pnpm-lock.yaml
 
 .astro
 .wrangler
+
+**/*.xcf
+screenshot_fullheight_*.png
