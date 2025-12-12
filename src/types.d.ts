@@ -161,6 +161,7 @@ export interface Testimonial {
   name?: string;
   job?: string;
   image?: string | unknown;
+  colSpan?: number;
 }
 
 export interface Input {
