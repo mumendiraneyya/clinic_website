@@ -31,7 +31,7 @@ const {
     {title && (
       <h2 class="text-4xl md:text-5xl font-bold leading-tighter tracking-tighter font-heading text-heading">
         <span set:html={title} />
-        {subtitle && <span class="text-xl md:text-2xl font-normal text-muted ms-2">({subtitle})</span>}
+        {subtitle && <span class="block md:inline text-[0.9rem] min-[400px]:text-base md:text-2xl font-normal text-muted md:ms-2 mt-1 md:mt-0 whitespace-nowrap">({subtitle})</span>}
       </h2>
     )}
   </div>

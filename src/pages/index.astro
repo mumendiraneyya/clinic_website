@@ -30,7 +30,49 @@ const metadata = {
     fullHeight={true}
   >
     <Fragment slot="content">
-      <div class="flex flex-row justify-center items-center gap-4 mb-4">
+      <!-- Mobile: Same as desktop but with vertical toggle layout -->
+      <div class="flex md:hidden flex-row justify-center items-center gap-2 mb-4">
+        <div class="flex items-start gap-2 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm p-2 rounded-2xl shadow-sm">
+          <!-- Toggle group: vertical layout (label on top, toggle below) -->
+          <label class="flex flex-col items-center gap-1 cursor-pointer text-xs">
+            <span id="booking-label-mobile" class="text-muted dark:text-slate-300 whitespace-nowrap">في العيادة</span>
+            <div class="relative">
+              <input
+                type="checkbox"
+                id="booking-in-clinic-mobile"
+                checked
+                class="sr-only peer"
+              />
+              <div class="w-11 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:bg-primary transition-colors"></div>
+              <div class="absolute top-0.5 start-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-full rtl:peer-checked:-translate-x-full transition-transform"></div>
+            </div>
+          </label>
+          <a
+            href="#"
+            class="btn-primary flex items-center gap-1 text-[0.9rem] min-[360px]:text-base"
+            data-booking-link="د.-مو-من-ديرانية-z6vyi6"
+            data-booking-namespace="landing"
+            data-booking-config={JSON.stringify({ layout: 'month_view' })}
+          >
+            <span>احجز موعدًا</span>
+            <Icon name="tabler:calendar-plus" class="w-5 h-5" />
+          </a>
+        </div>
+        <a
+          href="https://wa.me/962799133299"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-secondary"
+          aria-label="تواصل معنا عبر واتساب"
+        >
+          <span class="hidden min-[400px]:inline min-[500px]:hidden">استفسر</span>
+          <span class="hidden min-[500px]:inline">تواصل معنا</span>
+          <Icon name="tabler:brand-whatsapp" class="w-5 h-5 pr-1" />
+        </a>
+      </div>
+
+      <!-- Desktop: Horizontal toggle layout -->
+      <div class="hidden md:flex flex-row justify-center items-center gap-4 mb-4">
         <div class="flex items-center gap-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm ps-4 pe-1 py-1 rounded-full shadow-sm">
           <label class="flex items-center gap-3 cursor-pointer text-sm whitespace-nowrap">
             <span id="booking-label" class="text-muted dark:text-slate-300">موعد في العيادة</span>
@@ -62,8 +104,8 @@ const metadata = {
           rel="noopener noreferrer"
           class="btn-secondary"
         >
-          <span class="hidden sm:inline">هل لديك تساؤل؟ تواصل معنا</span>
-          <span class="sm:hidden">استفسر</span>
+          <span>هل لديك تساؤل؟ تواصل معنا</span>
+          <Icon name="tabler:brand-whatsapp" class="w-5 h-5 pr-1" />
         </a>
       </div>
     </Fragment>
@@ -74,7 +116,7 @@ const metadata = {
       <span class="hidden xl:inline">عيادة</span>
       <span class="text-accent dark:text-white whitespace-nowrap">د. مؤمن ديرانية</span>
       <span class="hidden xl:inline">-</span>
-      أبو عبيدة الجرّاح
+      <span class="whitespace-nowrap">أبو عبيدة الجرّاح</span>
       <span class="hidden xl:inline">Mu'men Diraneyya</span>
     </Fragment>
 
@@ -102,6 +144,7 @@ const metadata = {
       { title: 'في مستشفيات وزارة الصحة والمستشفيات العسكرية', amount: '٢٥ سنة' },
       { title: 'محاضرًا غير متفرغ في كلية الطب في جامعة البلقاء', amount: '٤ سنوات' },
     ]}
+    classes={{ container: 'pt-4 md:pt-16 lg:pt-20' }}
   />
 
   <!-- Features Widget *************** -->
@@ -524,9 +567,19 @@ const metadata = {
           const namespace = el.getAttribute('data-booking-namespace') || 'clinic';
           const config = JSON.parse(el.getAttribute('data-booking-config') || '{}');
 
-          // Determine booking type from checkbox (default: clinic)
-          const inClinicCheckbox = document.getElementById('booking-in-clinic');
-          const suffix = (inClinicCheckbox && inClinicCheckbox.checked) ? '/clinic' : '/remote';
+          // Determine booking type - check mobile checkbox first, then desktop checkbox
+          const isMobile = window.innerWidth < 768;
+          let isClinic = true;
+
+          if (isMobile) {
+            const mobileCheckbox = document.getElementById('booking-in-clinic-mobile');
+            isClinic = mobileCheckbox ? mobileCheckbox.checked : true;
+          } else {
+            const inClinicCheckbox = document.getElementById('booking-in-clinic');
+            isClinic = inClinicCheckbox ? inClinicCheckbox.checked : true;
+          }
+
+          const suffix = isClinic ? '/clinic' : '/remote';
           const calLink = baseLink + suffix;
 
           // Sync theme with AstroWind's current theme state
@@ -539,13 +592,24 @@ const metadata = {
     // Use astro:page-load which fires on initial load and after View Transitions
     document.addEventListener('astro:page-load', setupCalButton);
 
-    // Checkbox label update
+    // Desktop: Checkbox label update
     document.addEventListener('astro:page-load', function() {
       const checkbox = document.getElementById('booking-in-clinic');
       const label = document.getElementById('booking-label');
       if (checkbox && label) {
         checkbox.addEventListener('change', function() {
           label.textContent = this.checked ? 'موعد في العيادة' : 'موعد عن بعد (الدفع مسبقًا)';
+        });
+      }
+    });
+
+    // Mobile: Checkbox label update
+    document.addEventListener('astro:page-load', function() {
+      const checkbox = document.getElementById('booking-in-clinic-mobile');
+      const label = document.getElementById('booking-label-mobile');
+      if (checkbox && label) {
+        checkbox.addEventListener('change', function() {
+          label.textContent = this.checked ? 'في العيادة' : 'عن بعد';
         });
       }
     });
