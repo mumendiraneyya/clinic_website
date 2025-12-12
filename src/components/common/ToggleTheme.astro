@@ -8,6 +8,7 @@ export interface Props {
   class?: string;
   iconClass?: string;
   iconName?: string;
+  showLabel?: boolean;
 }
 
 const {
@@ -16,6 +17,7 @@ const {
     className = 'text-muted dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5 inline-flex items-center',
   iconClass = 'w-6 h-6',
   iconName = 'tabler:sun',
+  showLabel = false,
 } = Astro.props;
 ---
 
@@ -23,6 +25,28 @@ const {
   !(UI.theme && UI.theme.endsWith(':only')) && (
     <button type="button" class={className} aria-label={label} data-aw-toggle-color-scheme>
       <Icon name={iconName} class={iconClass} />
+      {showLabel && <span class="theme-label ms-3 md:hidden"></span>}
     </button>
   )
 }
+
+{showLabel && (
+  <script is:inline>
+    (function() {
+      function updateThemeLabel() {
+        const labels = document.querySelectorAll('.theme-label');
+        const isDark = document.documentElement.classList.contains('dark');
+        labels.forEach(label => {
+          label.textContent = isDark ? 'تشريق' : 'تظليم';
+        });
+      }
+
+      // Update on load
+      updateThemeLabel();
+
+      // Update when theme changes (observe class changes on html element)
+      const observer = new MutationObserver(updateThemeLabel);
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    })();
+  </script>
+)}
