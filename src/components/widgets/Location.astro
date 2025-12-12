@@ -112,13 +112,11 @@ const {
               </div>
               <div>
                 <h3 class="font-semibold text-lg text-gray-900 dark:text-white">الهاتف</h3>
-                <a
-                  href={`tel:${phone.replace(/\s/g, '')}`}
-                  class="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors mt-1 block"
+                <p
+                  class="text-gray-600 dark:text-gray-400 mt-1"
                   dir="ltr"
-                >
-                  {phone}
-                </a>
+                  set:html={phone}
+                />
               </div>
             </div>
           )
