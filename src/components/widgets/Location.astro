@@ -88,6 +88,21 @@ const {
           )
         }
 
+        <!-- Directions -->
+        {
+          directions && (
+            <div class="flex items-start gap-4">
+              <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Icon name="tabler:route" class="w-6 h-6" />
+              </div>
+              <div>
+                <h3 class="font-semibold text-lg text-gray-900 dark:text-white">كيفية الوصول</h3>
+                <p class="text-gray-600 dark:text-gray-400 mt-1" set:html={directions} />
+              </div>
+            </div>
+          )
+        }
+
         <!-- Phone -->
         {
           phone && (
@@ -140,21 +155,6 @@ const {
               <div>
                 <h3 class="font-semibold text-lg text-gray-900 dark:text-white">ساعات العمل</h3>
                 <p class="text-gray-600 dark:text-gray-400 mt-1" set:html={hours} />
-              </div>
-            </div>
-          )
-        }
-
-        <!-- Directions -->
-        {
-          directions && (
-            <div class="flex items-start gap-4">
-              <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-primary/10 text-primary">
-                <Icon name="tabler:route" class="w-6 h-6" />
-              </div>
-              <div>
-                <h3 class="font-semibold text-lg text-gray-900 dark:text-white">كيفية الوصول</h3>
-                <p class="text-gray-600 dark:text-gray-400 mt-1" set:html={directions} />
               </div>
             </div>
           )

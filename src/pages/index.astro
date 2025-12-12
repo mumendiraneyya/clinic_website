@@ -12,6 +12,7 @@ import FAQs from '~/components/widgets/FAQs.astro';
 import Stats from '~/components/widgets/Stats.astro';
 import CallToAction from '~/components/widgets/CallToAction.astro';
 import Location from '~/components/widgets/Location.astro';
+import Testimonials from '~/components/widgets/Testimonials.astro';
 import { Icon } from 'astro-icon/components';
 
 const metadata = {
@@ -435,6 +436,14 @@ const metadata = {
     </Fragment>
   </Features2> -->
 
+  <!-- HighlightedPosts Widget ******* -->
+
+  <BlogLatestPosts
+    title="المدونة"
+    information={`هنا تجدون بعض كتابات كتبها أبو عبيدة الجراح
+                `}
+  />
+
   <!-- FAQs Widget ******************* -->
 
   <FAQs
@@ -465,13 +474,39 @@ const metadata = {
     </Fragment>
   </FAQs>
 
-  <!-- HighlightedPosts Widget ******* -->
+  <!-- Testimonials Widget **************** -->
 
-  <BlogLatestPosts
-    title="المدونة"
-    information={`هنا تجدون بعض كتابات كتبها أبو عبيدة الجراح
-                `}
+  <Testimonials
+    id="testimonials"
+    title="قالوا عنا"
+    testimonials={[
+      {
+        testimonial: 'يا رب يسر لأخينا عمله وارزقه رزقا واسعا ووفقه لما تحب وترضى',
+        name: 'تهنئة الأخ منذر الزميلي رحمه الله بمناسبة الافتتاح',
+        job: '١٦ تشرين الثاني ٢٠٢٠',
+      },
+      {
+        title: 'الطبيب الطيب',
+        testimonial: 'طبيب طيب بالأفعال ❖ يعامل مراجعيه بحنية<br> دخلت عليه فأحسن الاستقبال ❖ وسألني عن أوضاعي الصحية<br> فارتاحت نفسي بالحال ❖ فشكرته على هذه الهدية<br> حفظك المولى من ذل السؤال ❖ يا أخي في الله الدكتور مؤمن ديرانية<br>اللهم احفظه وعائلته من كل مكروه، آمين<br>والحمد لله رب العالمين',
+        name: 'أبو أسامة (من حلب)',
+        job: '١٠ كانون الثاني ٢٠١٧',
+        colSpan: 2,
+      },
+      {
+        testimonial: 'الله  يجزيك الخير ويبارك فيك ويطول بعمرك ويتقبل منك أخي الكريم ابو عبيدة على جهدك الطيب والكريم مع زوجتي أم خليل، داعيًا ربي ومولاي أن يرضى عنك رضا ليس بعده إلا الجنة، ويجمعك مع سيدي صلوات ربي عليه وسلامه عليه محمد رسول الله صل الله عليه وسلم، ويكفيكم أنت وجميع الأهل والأصدقاء يا الله يا كريم الأمراض وشر العباد ويجعلكم الله في حفظ الله ورعايته وعنايته يا أكرم الأكرمين ويا أجود الأجودين، والحمد لله رب العالمين والصلاة والسلام على رسول الله صلى الله عليه وسلم',
+        name: 'أبو خليل',
+        job: '١٣ آذار ٢٠٢٢',
+      },
+      {
+        testimonial: 'الأخ الدكتور مؤمن ديرانية (أبو عبيدة)، السلام عليكم، بعد أن من الله عليّ بالشفاء من عملية جراحة القولون والحمد لله، أتقدم وأسرتي بخالص الشكر والتقدير لما أسرتنا به من إنسانيتك وحرفيّتك المهنية العالية والراقية (ذلك  فضل الله يؤتيه من يشاء والله ذو  الفضل العظيم). حفظكم الله سندا للإنسانية وجزاكم الله عنا ألف خير',
+        name: 'أبو رامي',
+        job: '١ كانون الأول ٢٠٢١',
+      },
+    ]}
   />
+
+  <!-- Spacer between Testimonials and Location -->
+  <div class="h-8 md:h-12"></div>
 
   <!-- Location Widget **************** -->
 
