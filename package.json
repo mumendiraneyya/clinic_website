@@ -20,6 +20,7 @@
     "fix": "npm run fix:eslint && npm run fix:prettier",
     "fix:eslint": "eslint --fix .",
     "fix:prettier": "prettier -w .",
+    "icon": "node scripts/generate-favicons.mjs",
     "claude": "claude mcp add --transport stdio chrome-devtools -- npx -y chrome-devtools-mcp@latest 2>/dev/null; claude --continue",
     "deploy": "npm run build && wrangler pages deploy --project-name abuobaydatajjarrah --commit-dirty=true ./dist"
   },
@@ -59,6 +60,7 @@
     "globals": "^16.3.0",
     "js-yaml": "^4.1.0",
     "mdast-util-to-string": "^4.0.0",
+    "png-to-ico": "^3.0.1",
     "prettier": "^3.6.2",
     "prettier-plugin-astro": "^0.14.1",
     "reading-time": "^1.5.0",
