@@ -667,14 +667,17 @@ const metadata = {
           const config = JSON.parse(el.getAttribute('data-booking-config') || '{}');
 
           // Determine booking type - check mobile checkbox first, then desktop checkbox
+          // Scope to correct container to avoid duplicate ID issues
           const isMobile = window.innerWidth < 768;
           let isClinic = true;
 
           if (isMobile) {
-            const mobileCheckbox = document.getElementById('booking-in-clinic-mobile');
+            const mobileContainer = document.getElementById('hero-mobile-actions');
+            const mobileCheckbox = mobileContainer ? mobileContainer.querySelector('#booking-in-clinic-mobile') : null;
             isClinic = mobileCheckbox ? mobileCheckbox.checked : true;
           } else {
-            const inClinicCheckbox = document.getElementById('booking-in-clinic');
+            const actionsContainer = document.getElementById('hero-actions-container');
+            const inClinicCheckbox = actionsContainer ? actionsContainer.querySelector('#booking-in-clinic') : null;
             isClinic = inClinicCheckbox ? inClinicCheckbox.checked : true;
           }
 
@@ -691,25 +694,31 @@ const metadata = {
     // Use astro:page-load which fires on initial load and after View Transitions
     document.addEventListener('astro:page-load', setupCalButton);
 
-    // Desktop: Checkbox label update
+    // Desktop: Checkbox label update (scoped to hero-actions-container to avoid duplicate ID issues)
     document.addEventListener('astro:page-load', function() {
-      const checkbox = document.getElementById('booking-in-clinic');
-      const label = document.getElementById('booking-label');
-      if (checkbox && label) {
-        checkbox.addEventListener('change', function() {
-          label.textContent = this.checked ? 'موعد في العيادة' : 'موعد عن بعد (الدفع مسبقًا)';
-        });
+      const actionsContainer = document.getElementById('hero-actions-container');
+      if (actionsContainer) {
+        const checkbox = actionsContainer.querySelector('#booking-in-clinic');
+        const label = actionsContainer.querySelector('#booking-label');
+        if (checkbox && label) {
+          checkbox.addEventListener('change', function() {
+            label.textContent = this.checked ? 'موعد في العيادة' : 'استشارة عن بعد';
+          });
+        }
       }
     });
 
-    // Mobile: Checkbox label update
+    // Mobile: Checkbox label update (scoped to hero-mobile-actions to avoid duplicate ID issues)
     document.addEventListener('astro:page-load', function() {
-      const checkbox = document.getElementById('booking-in-clinic-mobile');
-      const label = document.getElementById('booking-label-mobile');
-      if (checkbox && label) {
-        checkbox.addEventListener('change', function() {
-          label.textContent = this.checked ? 'في العيادة' : 'عن بعد';
-        });
+      const mobileContainer = document.getElementById('hero-mobile-actions');
+      if (mobileContainer) {
+        const checkbox = mobileContainer.querySelector('#booking-in-clinic-mobile');
+        const label = mobileContainer.querySelector('#booking-label-mobile');
+        if (checkbox && label) {
+          checkbox.addEventListener('change', function() {
+            label.textContent = this.checked ? 'في العيادة' : 'عن بعد';
+          });
+        }
       }
     });
 
