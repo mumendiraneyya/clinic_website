@@ -86,6 +86,7 @@ export const footerData = {
     { ariaLabel: 'Instagram', icon: 'tabler:brand-instagram', href: 'https://www.instagram.com/dr.mumen.diraneyya/' },
     { ariaLabel: 'YouTube', icon: 'tabler:brand-youtube', href: 'https://www.youtube.com/channel/UCe9xMNuVzNgEWvoui3nolRw' },
     { ariaLabel: 'Google Business', icon: 'tabler:brand-google', href: 'https://share.google/Mxc9g3fsBrmQv7qHW' },
+    { ariaLabel: 'X', icon: 'tabler:brand-x', href: 'https://x.com/DrMumenDiraneya' },
     { ariaLabel: 'RSS', icon: 'tabler:rss', href: getAsset('/rss.xml') },
   ],
   footNote: `
