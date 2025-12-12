@@ -30,6 +30,39 @@ The site uses a custom Astro integration (`vendor/integration/`) that:
 - `src/navigation.ts` - Header and footer navigation structure
 - `astro.config.ts` - Astro integrations, Vite aliases (`~` maps to `./src`)
 
+### Sitemap Configuration
+
+The sitemap is filtered to only include active pages. Many template pages from AstroWind exist in `src/pages/` but are excluded from the sitemap:
+
+**Currently included in sitemap:**
+- `/` (homepage)
+- `/blog/*` (all blog pages)
+- `/privacy`
+- `/terms`
+
+**Excluded template pages** (still exist but not in sitemap):
+- `/about`, `/contact`, `/pricing`, `/services`
+- `/homes/*` (saas, startup, personal, mobile-app)
+- `/landing/*` (click-through, lead-generation, pre-launch, product, sales, subscription)
+
+To add a page to the sitemap when bringing it back into use, update the `filter` function in `astro.config.ts`:
+
+```typescript
+sitemap({
+  filter: (page) => {
+    const url = new URL(page);
+    const path = url.pathname;
+    return (
+      path === '/' ||
+      path.startsWith('/blog') ||
+      path.startsWith('/privacy') ||
+      path.startsWith('/terms') ||
+      path.startsWith('/your-new-page')  // Add new pages here
+    );
+  },
+}),
+```
+
 ### Content Collections
 
 Blog posts are defined in `src/content/config.ts` using Astro's content collections:

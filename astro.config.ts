@@ -28,7 +28,19 @@ export default defineConfig({
     tailwind({
       applyBaseStyles: false,
     }),
-    sitemap(),
+    sitemap({
+      filter: (page) => {
+        // Only include homepage and blog pages in sitemap
+        const url = new URL(page);
+        const path = url.pathname;
+        return (
+          path === '/' ||
+          path.startsWith('/blog') ||
+          path.startsWith('/privacy') ||
+          path.startsWith('/terms')
+        );
+      },
+    }),
     mdx(),
     icon({
       include: {
