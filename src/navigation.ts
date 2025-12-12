@@ -90,5 +90,5 @@ export const footerData = {
     { ariaLabel: 'RSS', icon: 'tabler:rss', href: getAsset('/rss.xml') },
   ],
   footNote: `
-    قالب رياح أسترو والذي بني عليه هذا الموقع هو من صنع <a class="text-tertiary underline dark:text-muted" href="https://github.com/arthelokyo"> Arthelokyo</a>`,
+    قالب رياح أسترو والذي بني عليه هذا الموقع هو من صنع <a class="text-tertiary underline dark:text-muted" href="https://github.com/arthelokyo"> Arthelokyo</a>. أما الجهة المصممة لهذا الموقع فهي <a class="text-tertiary underline dark:text-muted" href='https://orwa.tech'>وكالة عروة التقنية</a>.`,
 };
