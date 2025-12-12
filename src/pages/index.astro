@@ -14,6 +14,7 @@ import CallToAction from '~/components/widgets/CallToAction.astro';
 import Location from '~/components/widgets/Location.astro';
 import Testimonials from '~/components/widgets/Testimonials.astro';
 import { Icon } from 'astro-icon/components';
+import { footerData } from '~/navigation';
 
 const metadata = {
   title: 'أبو عبيدة الجرّاح - عيادة د. مؤمن ديرانية',
@@ -133,6 +134,24 @@ const metadata = {
   <!-- Note Widget ******************* -->
 
   <!-- <Note title="Philosophy:" description="Simplicity, Best Practices and High Performance" /> -->
+
+  <!-- Social Links ****************** -->
+
+  <section class="py-8 md:py-12">
+    <div class="flex items-center justify-center gap-4 md:gap-6 flex-wrap">
+      {footerData.socialLinks?.filter(link => link.icon !== 'tabler:rss').map(({ ariaLabel, href, icon }) => (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={ariaLabel}
+          class="text-muted hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors p-2"
+        >
+          <Icon name={icon} class="w-8 h-8 md:w-10 md:h-10" />
+        </a>
+      ))}
+    </div>
+  </section>
 
   <!-- Stats Widget ****************** -->
 
