@@ -11,7 +11,7 @@ export const headerData = {
       href: getPermalink('/#features'),
     },
     {
-      text: 'المدونة',
+      text: 'المنشورات',
       href: getBlogPermalink(),
     },
     {

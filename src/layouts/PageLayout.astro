@@ -32,7 +32,7 @@ const blogLinks = [
 const dynamicHeaderData = {
   ...headerData,
   links: headerData.links.map((link) =>
-    link.text === 'المدونة' ? { ...link, links: blogLinks } : link
+    link.text === 'المنشورات' ? { ...link, links: blogLinks } : link
   ),
 };
 ---
