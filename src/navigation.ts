@@ -11,6 +11,10 @@ export const headerData = {
       href: getPermalink('/#features'),
     },
     {
+      text: 'أسئلة شائعة',
+      href: getPermalink('/#faq'),
+    },
+    {
       text: 'المدونة',
       href: getBlogPermalink(),
     },

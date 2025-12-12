@@ -435,6 +435,36 @@ const metadata = {
     </Fragment>
   </Features2> -->
 
+  <!-- FAQs Widget ******************* -->
+
+  <FAQs
+    id="faq"
+    title="أسئلة شائعة"
+    tagline="الأسئلة المتكررة"
+    classes={{ container: 'max-w-6xl' }}
+    items={[
+      {
+        title: 'ما هي أوقات العمل؟',
+        description:
+          'السبت إلى الأربعاء: ١٠ صباحًا – ٤ مساءً.<br>الخميس: ١٠ صباحًا – ١ مساءً<br>يوم الجمعة: عطلة.',
+      },
+      {
+        title: 'ما ثمن الكشفية؟',
+        description:
+          '٢٥ دينارًا أردنيًا',
+      },
+      {
+        title: 'هل يقبل الطبيب الاستشارات عن بعد؟',
+        description:
+          'نعم! بإمكانكم الحجز للاستشارة عن طريق الفيديو من هذه الصفحة وهو ما يتطلب الدفع مقدمًا عن طريق خدمة بي بال. أما لو كنتم ترغبون بالحجز والدفع عن طريق كليك فيتوجب عليكم التواصل معنا عن طريق الواتس أو الاتصال هاتفيًا من القائمة في أعلى هذه الصفحة.',
+      },
+    ]}
+  >
+    <Fragment slot="bg">
+      <div class="absolute inset-0 bg-tertiary/20 dark:bg-transparent"></div>
+    </Fragment>
+  </FAQs>
+
   <!-- HighlightedPosts Widget ******* -->
 
   <BlogLatestPosts
