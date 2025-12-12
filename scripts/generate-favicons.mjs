@@ -1,9 +1,8 @@
 import pngToIco from 'png-to-ico';
 import sharp from 'sharp';
-import { writeFileSync, copyFileSync, mkdirSync } from 'fs';
-import { dirname } from 'path';
+import { writeFileSync, mkdirSync } from 'fs';
 
-const INPUT = 'src/assets/favicons/source.svg';
+const INPUT = 'src/assets/favicons/source.png';
 const OUTPUT_DIR = 'src/assets/favicons';
 
 // ICO sizes (standard favicon sizes)
@@ -40,10 +39,6 @@ async function generateFavicons() {
   );
   const icoBuffer = await pngToIco(pngBuffers);
   writeFileSync(`${OUTPUT_DIR}/favicon.ico`, icoBuffer);
-
-  // 4. Copy SVG as favicon.svg (or optimize if needed)
-  console.log('Copying favicon.svg...');
-  copyFileSync(INPUT, `${OUTPUT_DIR}/favicon.svg`);
 
   console.log('\nAll favicons generated successfully!');
   console.log(`Output directory: ${OUTPUT_DIR}/`);
