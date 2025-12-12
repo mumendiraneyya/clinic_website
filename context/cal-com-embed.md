@@ -24,7 +24,7 @@ The user selects between these using a toggle switch on the landing page.
 
 1. **Toggle Switch**: A checkbox styled as a toggle that switches between clinic and remote booking
    - Default (checked): "موعد في العيادة" (Clinic appointment)
-   - Unchecked: "موعد عن بعد (الدفع مسبقًا)" (Remote appointment - prepaid)
+   - Unchecked: "موعد عن بعد" (Remote appointment)
 
 2. **Booking Button**: Primary action button that triggers the Cal.com modal
 
