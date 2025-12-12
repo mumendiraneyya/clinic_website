@@ -16,6 +16,7 @@
 ```bash
 npm install    # تثبيت المتطلبات
 npm run dev    # تشغيل خادم التطوير على localhost:4321
+npm run claude # يشغل كلاود أن كنت ترغب بالتطوير باستخدام الذكاء الاصطناعي
 npm run deploy # بناء ونشر الموقع على abuobaydatajjarrah.pages.dev
 ```
 

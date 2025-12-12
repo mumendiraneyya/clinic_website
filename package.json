@@ -20,6 +20,7 @@
     "fix": "npm run fix:eslint && npm run fix:prettier",
     "fix:eslint": "eslint --fix .",
     "fix:prettier": "prettier -w .",
+    "claude": "claude mcp add --transport stdio chrome-devtools -- npx -y chrome-devtools-mcp@latest 2>/dev/null; claude --continue",
     "deploy": "npm run build && wrangler pages deploy --project-name abuobaydatajjarrah --commit-dirty=true ./dist"
   },
   "dependencies": {
