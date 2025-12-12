@@ -15,7 +15,7 @@ export const headerData = {
       href: getBlogPermalink(),
     },
     {
-      text: 'أين تجدوننا',
+      text: 'أين تجدنا',
       href: getPermalink('/#location'),
     },
   ],
