@@ -51,13 +51,20 @@
   @apply py-3;
 } */
 
-#header.expanded nav {
+#header.expanded .nav-mobile {
+  display: flex !important;
   position: fixed;
   top: 70px;
   left: 0;
   right: 0;
-  bottom: 70px !important;
+  bottom: 0 !important;
   padding: 0 5px;
+  background: white;
+  z-index: 50;
+}
+
+html.dark #header.expanded .nav-mobile {
+  background: rgb(15, 23, 42);
 }
 
 .dropdown:focus .dropdown-menu,

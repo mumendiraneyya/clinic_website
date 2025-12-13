@@ -115,7 +115,17 @@ The tertiary color is defined directly as RGB in `tailwind.config.js` (not as a 
 
 ### Logo
 
-The site logo (`src/components/Logo.astro`) displays a stethoscope emoji (🩺) followed by the site name.
+The site logo (`src/components/Logo.astro`) displays a stethoscope emoji (🩺) followed by the site name. Uses consistent `text-xl` sizing across all breakpoints.
+
+### Header Menu
+
+The header (`src/components/widgets/Header.astro`) uses a two-phase responsive design. See [context/header-menu.md](context/header-menu.md) for detailed documentation.
+
+**Quick reference:**
+- **Mobile (< 768px)**: Hamburger menu with full-screen navigation
+- **Desktop (≥ 768px)**: Horizontal menu with responsive font sizing
+- Menu font scales from 0.75rem at 768px to 1.25rem at 1024px+ (matching logo)
+- Uses `clamp(0.75rem, calc(-0.75rem + 3.125vw), 1.25rem)` for smooth scaling
 
 ### Hero Component
 
