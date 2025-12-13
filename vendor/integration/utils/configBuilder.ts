@@ -81,6 +81,7 @@ export interface AnalyticsConfig {
 export interface UIConfig {
   theme: string;
   showFooterLinks: boolean;
+  bookingDisabled: boolean;
 }
 
 const DEFAULT_SITE_NAME = 'Website';
@@ -177,6 +178,7 @@ const getUI = (config: Config) => {
   const _default = {
     theme: 'system',
     showFooterLinks: true,
+    bookingDisabled: false,
   };
 
   return merge({}, _default, config?.ui ?? {}) as UIConfig;

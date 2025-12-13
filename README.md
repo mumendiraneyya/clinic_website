@@ -14,11 +14,31 @@
 ## التشغيل
 
 ```bash
-npm install    # تثبيت المتطلبات
-npm run dev    # تشغيل خادم التطوير على localhost:4321
-npm run claude # يشغل كلاود أن كنت ترغب بالتطوير باستخدام الذكاء الاصطناعي
-npm run deploy # بناء ونشر الموقع على abuobaydatajjarrah.pages.dev
+npm install              # تثبيت المتطلبات
+npm run dev              # تشغيل خادم التطوير على localhost:4321
+npm run claude           # يشغل كلاود أن كنت ترغب بالتطوير باستخدام الذكاء الاصطناعي
+npm run deploy           # بناء ونشر الموقع على abuobaydatajjarrah.pages.dev
+npm run deploy:maintenance  # نشر الموقع مع تعطيل الحجز مؤقتًا
 ```
+
+## وضع الصيانة
+
+لتعطيل زر الحجز مؤقتًا (مثلاً أثناء السفر أو الصيانة):
+
+**الطريقة الأولى:** استخدم أمر النشر المخصص:
+```bash
+npm run deploy:maintenance
+```
+
+**الطريقة الثانية:** عدّل ملف `src/config.yaml`:
+```yaml
+ui:
+  bookingDisabled: true
+```
+
+عند تفعيل وضع الصيانة، يظهر زر الحجز بشكل معطّل مع رسالة "الحجز متوقف مؤقتًا للصيانة".
+
+لإعادة تفعيل الحجز، انشر الموقع بالأمر العادي `npm run deploy` أو اضبط `bookingDisabled: false`.
 
 ## تعديل المحتوى
 

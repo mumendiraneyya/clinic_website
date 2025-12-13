@@ -15,11 +15,16 @@ import Location from '~/components/widgets/Location.astro';
 import Testimonials from '~/components/widgets/Testimonials.astro';
 import { Icon } from 'astro-icon/components';
 import { footerData } from '~/navigation';
+import { UI } from 'astrowind:config';
 
 const metadata = {
   title: 'أبو عبيدة الجرّاح - عيادة د. مؤمن ديرانية',
   ignoreTitleTemplate: true,
 };
+
+// Check if booking is disabled (via config or env variable)
+const bookingDisabled = UI.bookingDisabled || import.meta.env.PUBLIC_BOOKING_DISABLED === 'true';
+const bookingDisabledTitle = 'الحجز متوقف مؤقتًا للصيانة';
 ---
 
 <Layout metadata={metadata}>
@@ -51,13 +56,14 @@ const metadata = {
           </label>
           <a
             href="#"
-            class="btn-primary flex items-center gap-1 text-[0.9rem] min-[360px]:text-base"
-            data-booking-link="د.-مو-من-ديرانية-z6vyi6"
-            data-booking-namespace="landing"
-            data-booking-config={JSON.stringify({ layout: 'month_view' })}
+            class={`btn-primary flex items-center gap-1 text-[0.9rem] min-[360px]:text-base ${bookingDisabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+            data-booking-link={bookingDisabled ? undefined : "د.-مو-من-ديرانية-z6vyi6"}
+            data-booking-namespace={bookingDisabled ? undefined : "landing"}
+            data-booking-config={bookingDisabled ? undefined : JSON.stringify({ layout: 'month_view' })}
+            aria-disabled={bookingDisabled ? 'true' : undefined}
           >
-            <span>احجز موعدًا</span>
-            <Icon name="tabler:calendar-plus" class="w-5 h-5" />
+            <span>{bookingDisabled ? bookingDisabledTitle : 'احجز موعدًا'}</span>
+            <Icon name={bookingDisabled ? 'tabler:calendar-off' : 'tabler:calendar-plus'} class="w-5 h-5" />
           </a>
         </div>
         <a
@@ -91,13 +97,14 @@ const metadata = {
           </label>
           <a
             href="#"
-            class="btn-primary flex items-center gap-1"
-            data-booking-link="د.-مو-من-ديرانية-z6vyi6"
-            data-booking-namespace="landing"
-            data-booking-config={JSON.stringify({ layout: 'month_view' })}
+            class={`btn-primary flex items-center gap-1 ${bookingDisabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+            data-booking-link={bookingDisabled ? undefined : "د.-مو-من-ديرانية-z6vyi6"}
+            data-booking-namespace={bookingDisabled ? undefined : "landing"}
+            data-booking-config={bookingDisabled ? undefined : JSON.stringify({ layout: 'month_view' })}
+            aria-disabled={bookingDisabled ? 'true' : undefined}
           >
-            <span>احجز موعدًا</span>
-            <Icon name="tabler:calendar-plus" class="w-5 h-5" />
+            <span>{bookingDisabled ? bookingDisabledTitle : 'احجز موعدًا'}</span>
+            <Icon name={bookingDisabled ? 'tabler:calendar-off' : 'tabler:calendar-plus'} class="w-5 h-5" />
           </a>
         </div>
         <a
