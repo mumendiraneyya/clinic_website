@@ -24,7 +24,7 @@ const metadata = {
 
 // Check if booking is disabled (via config or env variable)
 const bookingDisabled = UI.bookingDisabled || import.meta.env.PUBLIC_BOOKING_DISABLED === 'true';
-const bookingDisabledTitle = 'الحجز متوقف مؤقتًا للصيانة';
+const bookingDisabledTitle = 'الحجز موقف للصيانة';
 ---
 
 <Layout metadata={metadata}>
@@ -39,9 +39,9 @@ const bookingDisabledTitle = 'الحجز متوقف مؤقتًا للصيانة'
     <Fragment slot="content">
       <!-- Mobile: Same as desktop but with vertical toggle layout -->
       <div class="flex md:hidden flex-row justify-center items-center gap-2 mb-4">
-        <div class="flex items-start gap-2 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm p-2 rounded-2xl shadow-sm">
-          <!-- Toggle group: vertical layout (label on top, toggle below) -->
-          <label class="flex flex-col items-center gap-1 cursor-pointer text-xs">
+        <div class={`flex items-start gap-2 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-sm ${bookingDisabled ? 'p-1' : 'p-2'}`}>
+          {/* Toggle group - hidden when booking disabled */}
+          {!bookingDisabled && <label class="flex flex-col items-center gap-1 cursor-pointer text-xs">
             <span id="booking-label-mobile" class="text-muted dark:text-slate-300 whitespace-nowrap">في العيادة</span>
             <div class="relative">
               <input
@@ -53,7 +53,7 @@ const bookingDisabledTitle = 'الحجز متوقف مؤقتًا للصيانة'
               <div class="w-11 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:bg-primary transition-colors"></div>
               <div class="absolute top-0.5 start-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-full rtl:peer-checked:-translate-x-full transition-transform"></div>
             </div>
-          </label>
+          </label>}
           <a
             href="#"
             class={`btn-primary flex items-center gap-1 text-[0.9rem] min-[360px]:text-base ${bookingDisabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
@@ -81,8 +81,8 @@ const bookingDisabledTitle = 'الحجز متوقف مؤقتًا للصيانة'
 
       <!-- Desktop: Horizontal toggle layout -->
       <div class="hidden md:flex flex-row justify-center items-center gap-4 mb-4">
-        <div class="flex items-center gap-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm ps-4 pe-1 py-1 rounded-full shadow-sm">
-          <label class="flex items-center gap-3 cursor-pointer text-sm whitespace-nowrap">
+        <div class={`flex items-center gap-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm pe-1 py-1 rounded-full shadow-sm ${bookingDisabled ? 'ps-1' : 'ps-4'}`}>
+          {!bookingDisabled && <label class="flex items-center gap-3 cursor-pointer text-sm whitespace-nowrap">
             <span id="booking-label" class="text-muted dark:text-slate-300">موعد في العيادة</span>
             <div class="relative">
               <input
@@ -94,7 +94,7 @@ const bookingDisabledTitle = 'الحجز متوقف مؤقتًا للصيانة'
               <div class="w-11 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:bg-primary transition-colors"></div>
               <div class="absolute top-0.5 start-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-full rtl:peer-checked:-translate-x-full transition-transform"></div>
             </div>
-          </label>
+          </label>}
           <a
             href="#"
             class={`btn-primary flex items-center gap-1 ${bookingDisabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
