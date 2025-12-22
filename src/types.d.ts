@@ -288,8 +288,8 @@ export interface Contact extends Omit<Headline, 'classes'>, Form, Widget {}
 export interface Location extends Omit<Headline, 'classes'>, Widget {
   /** Address of the location */
   address?: string;
-  /** Phone number */
-  phone?: string;
+  /** Phone numbers with labels */
+  phones?: Array<{ label: string; number: string }>;
   /** Email address */
   email?: string;
   /** Working hours */

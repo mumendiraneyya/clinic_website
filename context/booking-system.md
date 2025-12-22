@@ -164,10 +164,17 @@ Custom events (bubble up through DOM):
 
 ## Initialization Patterns
 
-Both pages and components use dual initialization for compatibility:
+Both pages and components use dual initialization for compatibility, with a guard to prevent double-firing (which causes issues like Cal.com modal opening twice):
+
 ```javascript
-// For pages with View Transitions
-document.addEventListener('astro:page-load', init);
+var initialized = false;
+function init() {
+  // Prevent double initialization (DOMContentLoaded + astro:page-load can both fire)
+  if (initialized) return;
+  initialized = true;
+
+  // ... initialization code
+}
 
 // Fallback for direct navigation / iframes
 if (document.readyState === 'loading') {
@@ -175,7 +182,12 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
+
+// For pages with View Transitions
+document.addEventListener('astro:page-load', init);
 ```
+
+**Why the guard?** Both `DOMContentLoaded` and `astro:page-load` can fire on page load, causing initialization code to run twice. The `initialized` flag ensures it only runs once.
 
 ## Future Enhancements
 

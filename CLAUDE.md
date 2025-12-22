@@ -205,6 +205,37 @@ The dev server runs at `localhost:4321` - navigate there to test changes visuall
 
 ## Integrations
 
+### Phone Verification & Booking System
+
+The booking system requires phone verification before scheduling. See [context/booking-system.md](context/booking-system.md) for complete documentation.
+
+**Quick reference:**
+- Phone verification components: `src/components/booking/PhoneVerification.astro`, `PhoneSelector.astro`
+- Booking pages: `/book` (full flow), `/popup/book` (iframe popup)
+- JWT token stored in localStorage (`phone_verification_token`)
+- Phone normalization: strips `+`, `00`, replaces leading `0` with `962` (Jordan)
+
+**Query parameters for `/book`:**
+- `type=clinic|remote` - Booking type
+- `change=true` - Show verification form (ignore stored token)
+- `change=false` - Auto-open Cal.com after showing selector
+
+**Initialization pattern (prevents double-firing):**
+```javascript
+var initialized = false;
+function init() {
+  if (initialized) return;
+  initialized = true;
+  // ... init code
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+document.addEventListener('astro:page-load', init);
+```
+
 ### Cal.com Booking
 
 Appointment booking is integrated via Cal.com cloud embed. See [context/cal-com-embed.md](context/cal-com-embed.md) for detailed documentation.
@@ -214,5 +245,25 @@ Appointment booking is integrated via Cal.com cloud embed. See [context/cal-com-
 - Event types: `/clinic` (in-person) and `/remote` (telemedicine)
 - Uses custom `data-booking-*` attributes (NOT `data-cal-*`) to avoid Astro View Transitions conflicts
 - Theme syncs automatically with AstroWind dark/light mode
-- Supports prefilling fields via config: `attendeePhoneNumber`, `name`, `email`, custom fields by identifier
+- Supports prefilling fields via config: `attendeePhoneNumber`, `verificationToken`
 - Supports rescheduling via `config.rescheduleUid`
+
+### Location Widget
+
+The Location widget (`src/components/widgets/Location.astro`) displays clinic contact info:
+- `phones` prop accepts array of `{ label, number }` objects
+- Phone numbers render as clickable `tel:` links for mobile
+- Example: `phones={[{ label: 'العيادة', number: '079 887 2899' }]}`
+
+### Navigation & Anchor Links
+
+Header navigation is configured in `src/navigation.ts`.
+
+**Important:** For anchor links to homepage sections, use hardcoded strings (NOT `getPermalink`):
+```typescript
+// CORRECT - won't get trailing slash
+href: '/#location'
+
+// WRONG - getPermalink adds trailing slash: /#location/
+href: getPermalink('/#location')
+```
