@@ -48,6 +48,9 @@ import PhoneSelector from '~/components/booking/PhoneSelector.astro';
     </div>
   </div>
 
+  <!-- Phone utilities (shared) -->
+  <script src="/scripts/phone-utils.js" is:inline></script>
+
   <script is:inline>
     var STORAGE_KEY = 'phone_verification_token';
     var VALIDATE_ENDPOINT = 'https://n8n.orwa.tech/webhook/b1ac96a5-c166-4ec0-9a3a-37198d210e46';
@@ -56,15 +59,6 @@ import PhoneSelector from '~/components/booking/PhoneSelector.astro';
     function getBookingType() {
       var params = new URLSearchParams(window.location.search);
       return params.get('type') === 'remote' ? 'remote' : 'clinic';
-    }
-
-    // Format phone for display
-    function formatPhoneDisplay(phone) {
-      var digits = phone.replace(/^\+/, '');
-      if (digits.length >= 12) {
-        return '+' + digits.slice(0, 3) + ' ' + digits.slice(3, 5) + ' ' + digits.slice(5, 8) + ' ' + digits.slice(8);
-      }
-      return phone.startsWith('+') ? phone : '+' + phone;
     }
 
     // Validate token with server
