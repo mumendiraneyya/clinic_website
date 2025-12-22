@@ -1,4 +1,5 @@
 ---
+import { Icon } from 'astro-icon/components';
 import { APP_BLOG } from 'astrowind:config';
 import type { Post } from '~/types';
 
@@ -6,13 +7,18 @@ import Image from '~/components/common/Image.astro';
 
 import { findImage } from '~/utils/images';
 import { getPermalink } from '~/utils/permalinks';
+import { getYouTubeVideoId, getYouTubeThumbnail } from '~/utils/utils';
 
 export interface Props {
   post: Post;
 }
 
 const { post } = Astro.props;
-const image = await findImage(post.image);
+const videoId = post.videoUrl ? getYouTubeVideoId(post.videoUrl) : null;
+// For video posts, use YouTube thumbnail directly (not through Astro's Image optimizer)
+// For regular posts, use Astro's image optimization
+const image = videoId ? null : await findImage(post.image);
+const videoThumbnail = videoId ? getYouTubeThumbnail(videoId, 'hqdefault') : null;
 
 const link = APP_BLOG?.post?.isEnabled ? getPermalink(post.permalink, 'post') : '';
 ---
@@ -22,35 +28,73 @@ const link = APP_BLOG?.post?.isEnabled ? getPermalink(post.permalink, 'post') : 
 >
   <div class="relative md:h-64 bg-gray-400 dark:bg-slate-700 rounded shadow-lg mb-6">
     {
-      image &&
+      (image || videoThumbnail) &&
         (link ? (
-          <a href={link}>
-            <Image
-              src={image}
-              class="w-full md:h-full rounded shadow-lg bg-gray-400 dark:bg-slate-700"
-              widths={[400, 900]}
-              width={400}
-              sizes="(max-width: 900px) 400px, 900px"
-              alt={post.title}
-              aspectRatio="16:9"
-              layout="cover"
-              loading="lazy"
-              decoding="async"
-            />
+          <a href={link} class="block relative group">
+            {image && (
+              <Image
+                src={image}
+                class="w-full md:h-full rounded shadow-lg bg-gray-400 dark:bg-slate-700"
+                widths={[400, 900]}
+                width={400}
+                sizes="(max-width: 900px) 400px, 900px"
+                alt={post.title}
+                aspectRatio="16:9"
+                layout="cover"
+                loading="lazy"
+                decoding="async"
+              />
+            )}
+            {videoThumbnail && (
+              <img
+                src={videoThumbnail}
+                class="w-full md:h-full rounded shadow-lg bg-gray-400 dark:bg-slate-700 object-cover"
+                alt={post.title}
+                loading="lazy"
+                decoding="async"
+              />
+            )}
+            {videoId && (
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg group-hover:bg-red-700 transition-colors">
+                  <Icon name="tabler:player-play-filled" class="w-8 h-8 text-white ms-1" />
+                </div>
+              </div>
+            )}
           </a>
         ) : (
-          <Image
-            src={image}
-            class="w-full md:h-full rounded shadow-lg bg-gray-400 dark:bg-slate-700"
-            widths={[400, 900]}
-            width={400}
-            sizes="(max-width: 900px) 400px, 900px"
-            alt={post.title}
-            aspectRatio="16:9"
-            layout="cover"
-            loading="lazy"
-            decoding="async"
-          />
+          <div class="relative">
+            {image && (
+              <Image
+                src={image}
+                class="w-full md:h-full rounded shadow-lg bg-gray-400 dark:bg-slate-700"
+                widths={[400, 900]}
+                width={400}
+                sizes="(max-width: 900px) 400px, 900px"
+                alt={post.title}
+                aspectRatio="16:9"
+                layout="cover"
+                loading="lazy"
+                decoding="async"
+              />
+            )}
+            {videoThumbnail && (
+              <img
+                src={videoThumbnail}
+                class="w-full md:h-full rounded shadow-lg bg-gray-400 dark:bg-slate-700 object-cover"
+                alt={post.title}
+                loading="lazy"
+                decoding="async"
+              />
+            )}
+            {videoId && (
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg">
+                  <Icon name="tabler:player-play-filled" class="w-8 h-8 text-white ms-1" />
+                </div>
+              </div>
+            )}
+          </div>
         ))
     }
   </div>

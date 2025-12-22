@@ -50,3 +50,33 @@ export const toUiAmount = (amount: number) => {
 
   return value;
 };
+
+/**
+ * Extracts YouTube video ID from various YouTube URL formats
+ * Supports: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID, youtube.com/shorts/ID
+ */
+export const getYouTubeVideoId = (url: string): string | null => {
+  if (!url) return null;
+
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  return null;
+};
+
+/**
+ * Generates YouTube thumbnail URL from video ID
+ * Quality options: default, mqdefault, hqdefault, sddefault, maxresdefault
+ */
+export const getYouTubeThumbnail = (videoId: string, quality: string = 'maxresdefault'): string => {
+  return `https://img.youtube.com/vi/${videoId}/${quality}.jpg`;
+};

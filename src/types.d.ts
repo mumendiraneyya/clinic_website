@@ -25,6 +25,9 @@ export interface Post {
   /** Optional caption for the post image */
   imageCaption?: string;
 
+  /** YouTube video URL for video posts */
+  videoUrl?: string;
+
   /**  */
   category?: Taxonomy;
   /**  */

@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Use Chrome DevTools MCP (`mcp__chrome-devtools__*` tools) to navigate, screenshot, and debug
 - Production site (`abuobaydatajjarrah.com`) may have outdated code - never use it for testing
 - **NEVER reload or navigate when asked to take a screenshot** - just take the screenshot of the current state. Reloading disrupts what the user is trying to show you.
+- **NEVER start the dev server yourself** - always ask the user to start it. The user manages the dev server lifecycle.
 
 ## Project Overview
 

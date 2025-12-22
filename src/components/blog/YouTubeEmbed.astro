@@ -1,0 +1,22 @@
+---
+export interface Props {
+  videoId: string;
+  title?: string;
+  class?: string;
+}
+
+const { videoId, title = '', class: className = '' } = Astro.props;
+---
+
+<div class:list={['relative w-full aspect-video rounded-md overflow-hidden shadow-lg bg-gray-400 dark:bg-slate-700', className]}>
+  <iframe
+    src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1`}
+    title={title}
+    class="absolute inset-0 w-full h-full"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    referrerpolicy="strict-origin-when-cross-origin"
+    allowfullscreen
+    loading="lazy"
+  ></iframe>
+</div>

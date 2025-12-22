@@ -6,7 +6,7 @@ import Announcement from '~/components/widgets/Announcement.astro';
 
 import { headerData, footerData } from '~/navigation';
 import { fetchPosts } from '~/utils/blog';
-import { getBlogPermalink } from '~/utils/permalinks';
+import { getBlogPermalink, getPermalink } from '~/utils/permalinks';
 
 import type { MetaData } from '~/types';
 
@@ -25,7 +25,7 @@ const blogLinks = [
   { text: 'جميع المنشورات', href: getBlogPermalink() },
   ...posts.slice(0, 5).map((post) => ({
     text: post.title,
-    href: `/${post.permalink}`,
+    href: getPermalink(post.permalink, 'post'),
   })),
 ];
 

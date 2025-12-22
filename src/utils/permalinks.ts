@@ -52,6 +52,15 @@ export const getPermalink = (slug = '', type = 'page'): string => {
     return slug;
   }
 
+  // Handle anchor links like /#section or /page#section
+  if (slug.includes('#')) {
+    const [path, hash] = slug.split('#');
+    const basePath = path === '/' || path === '' ? '' : getPermalink(path, type);
+    const homeWithSlash = SITE.trailingSlash ? '/' : '';
+    const finalPath = path === '/' || path === '' ? homeWithSlash : basePath;
+    return `${finalPath}#${hash}`;
+  }
+
   switch (type) {
     case 'home':
       permalink = getHomePermalink();

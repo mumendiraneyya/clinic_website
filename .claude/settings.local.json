@@ -11,7 +11,12 @@
       "WebFetch(domain:cal.com)",
       "WebFetch(domain:github.com)",
       "mcp__chrome-devtools__list_console_messages",
-      "mcp__chrome-devtools__click"
+      "mcp__chrome-devtools__click",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:codepen.io)",
+      "WebFetch(domain:gist.github.com)",
+      "WebFetch(domain:developers.google.com)",
+      "WebFetch(domain:nutbread.github.io)"
     ],
     "deny": [],
     "ask": []

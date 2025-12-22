@@ -1,11 +1,15 @@
 ---
 import type { InferGetStaticPropsType, GetStaticPaths } from 'astro';
+import { Icon } from 'astro-icon/components';
 import { blogTagRobots, getStaticPathsBlogTag } from '~/utils/blog';
 
 import Layout from '~/layouts/PageLayout.astro';
 import BlogList from '~/components/blog/List.astro';
 import Headline from '~/components/blog/Headline.astro';
 import Pagination from '~/components/blog/Pagination.astro';
+import Button from '~/components/ui/Button.astro';
+
+import { getBlogPermalink, getHomePermalink } from '~/utils/permalinks';
 
 export const prerender = true;
 
@@ -33,5 +37,13 @@ const metadata = {
     <Headline>الوسم: {tag.title}</Headline>
     <BlogList posts={page.data} />
     <Pagination prevUrl={page.url.prev} nextUrl={page.url.next} />
+    <div class="pt-8 md:pt-4 flex flex-wrap gap-4">
+      <Button variant="tertiary" class="px-3 md:px-3" href={getBlogPermalink()}>
+        <Icon name="tabler:chevron-left" class="w-5 h-5 me-1 rtl:rotate-180" /> الرجوع إلى المنشورات
+      </Button>
+      <Button variant="tertiary" class="px-3 md:px-3" href={getHomePermalink()}>
+        <Icon name="tabler:home" class="w-5 h-5 me-1" /> الصفحة الرئيسية
+      </Button>
+    </div>
   </section>
 </Layout>

@@ -4,11 +4,11 @@ export const headerData = {
   links: [
     {
       text: 'من نحن',
-      href: '/#hero-section',
+      href: getPermalink('/#hero-section'),
     },
     {
       text: 'ماذا نعالج',
-      href: '/#features',
+      href: getPermalink('/#features'),
     },
     {
       text: 'المنشورات',
@@ -16,15 +16,15 @@ export const headerData = {
     },
     {
       text: 'أسئلة شائعة',
-      href: '/#faq',
+      href: getPermalink('/#faq'),
     },
     {
       text: 'قالوا عنا',
-      href: '/#testimonials',
+      href: getPermalink('/#testimonials'),
     },
     {
       text: 'أين تجدنا',
-      href: '/#location',
+      href: getPermalink('/#location'),
     },
   ],
 };

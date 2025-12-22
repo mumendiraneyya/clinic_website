@@ -4,9 +4,10 @@ import { Icon } from 'astro-icon/components';
 import Image from '~/components/common/Image.astro';
 import PostTags from '~/components/blog/Tags.astro';
 import SocialShare from '~/components/common/SocialShare.astro';
+import YouTubeEmbed from '~/components/blog/YouTubeEmbed.astro';
 
 import { getPermalink } from '~/utils/permalinks';
-import { getFormattedDate } from '~/utils/utils';
+import { getFormattedDate, getYouTubeVideoId } from '~/utils/utils';
 
 import type { Post } from '~/types';
 
@@ -16,6 +17,7 @@ export interface Props {
 }
 
 const { post, url } = Astro.props;
+const videoId = post.videoUrl ? getYouTubeVideoId(post.videoUrl) : null;
 ---
 
 <section class="py-8 sm:py-16 lg:py-20 mx-auto">
@@ -50,7 +52,7 @@ const { post, url } = Astro.props;
             )
           }
           {
-            post.readingTime && (
+            post.readingTime > 0 && !videoId && (
               <>
                 &nbsp;· <span>{post.readingTime}</span> دقائق قراءة
               </>
@@ -71,7 +73,11 @@ const { post, url } = Astro.props;
       </p>
 
       {
-        post.image ? (
+        videoId ? (
+          <figure id="video-container" class="max-w-full lg:max-w-[900px] mx-auto mb-6 px-4 sm:px-0">
+            <YouTubeEmbed videoId={videoId} title={post.title} />
+          </figure>
+        ) : post.image ? (
           <figure class="max-w-full lg:max-w-[900px] mx-auto mb-6">
             <Image
               src={post.image}
@@ -108,3 +114,4 @@ const { post, url } = Astro.props;
     </div>
   </article>
 </section>
+

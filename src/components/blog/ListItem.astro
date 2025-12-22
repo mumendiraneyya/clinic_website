@@ -9,23 +9,29 @@ import type { Post } from '~/types';
 
 import { getPermalink } from '~/utils/permalinks';
 import { findImage } from '~/utils/images';
-import { getFormattedDate } from '~/utils/utils';
+import { getFormattedDate, getYouTubeVideoId, getYouTubeThumbnail } from '~/utils/utils';
 
 export interface Props {
   post: Post;
 }
 
 const { post } = Astro.props;
-const image = (await findImage(post.image)) as ImageMetadata | undefined;
+const videoId = post.videoUrl ? getYouTubeVideoId(post.videoUrl) : null;
+// For video posts, use YouTube thumbnail directly (not through Astro's Image optimizer)
+// For regular posts, use Astro's image optimization
+const image = videoId
+  ? null
+  : ((await findImage(post.image)) as ImageMetadata | string | undefined);
+const videoThumbnail = videoId ? getYouTubeThumbnail(videoId, 'hqdefault') : null;
 
 const link = APP_BLOG?.post?.isEnabled ? getPermalink(post.permalink, 'post') : '';
 ---
 
 <article
-  class={`max-w-md mx-auto md:max-w-none grid gap-6 md:gap-8 intersect-once intersect-quarter motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade ${image ? 'md:grid-cols-2' : ''}`}
+  class={`max-w-md mx-auto md:max-w-none grid gap-6 md:gap-8 intersect-once intersect-quarter motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade ${image || videoThumbnail ? 'md:grid-cols-2' : ''}`}
 >
   {
-    image &&
+    (image || videoThumbnail) &&
       (link ? (
         <a class="relative block group" href={link ?? 'javascript:void(0)'}>
           <div class="relative h-0 pb-[56.25%] md:pb-[75%] md:h-72 lg:pb-[56.25%] overflow-hidden bg-gray-400 dark:bg-slate-700 rounded shadow-lg">
@@ -41,6 +47,22 @@ const link = APP_BLOG?.post?.isEnabled ? getPermalink(post.permalink, 'post') : 
                 loading="lazy"
                 decoding="async"
               />
+            )}
+            {videoThumbnail && (
+              <img
+                src={videoThumbnail}
+                class="absolute inset-0 object-cover w-full h-full mb-6 rounded shadow-lg bg-gray-400 dark:bg-slate-700"
+                alt={post.title}
+                loading="lazy"
+                decoding="async"
+              />
+            )}
+            {videoId && (
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg group-hover:bg-red-700 transition-colors">
+                  <Icon name="tabler:player-play-filled" class="w-8 h-8 text-white ms-1" />
+                </div>
+              </div>
             )}
           </div>
         </a>
@@ -58,6 +80,22 @@ const link = APP_BLOG?.post?.isEnabled ? getPermalink(post.permalink, 'post') : 
               loading="lazy"
               decoding="async"
             />
+          )}
+          {videoThumbnail && (
+            <img
+              src={videoThumbnail}
+              class="absolute inset-0 object-cover w-full h-full mb-6 rounded shadow-lg bg-gray-400 dark:bg-slate-700"
+              alt={post.title}
+              loading="lazy"
+              decoding="async"
+            />
+          )}
+          {videoId && (
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg">
+                <Icon name="tabler:player-play-filled" class="w-8 h-8 text-white ms-1" />
+              </div>
+            </div>
           )}
         </div>
       ))

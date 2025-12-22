@@ -58,6 +58,9 @@ const postCollection = defineCollection({
     image: z.string().optional(),
     imageCaption: z.string().optional(),
 
+    /** YouTube video URL for video posts */
+    videoUrl: z.string().url().optional(),
+
     category: z.string().optional(),
     tags: z.array(z.string()).optional(),
     author: z.string().optional(),
