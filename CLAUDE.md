@@ -13,7 +13,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Medical clinic website for Dr. Mu'men Diraneyya (د. مؤمن ديرانية). Built with Astro 5.0 + Tailwind CSS based on the AstroWind template. Uses static site generation with RTL (Arabic) support.
+Medical clinic website for Dr. Mu'men Diraneyya (د. مؤمن ديرانية). Built with Astro 5.0 + Tailwind CSS based on the AstroWind template. **This is a static site generator project** - Astro builds static HTML/CSS/JS files that are deployed to Cloudflare Pages. There is no server-side runtime.
+
+### Static Site Architecture
+
+**Critical understanding:** Astro is used here purely as a **static site generator (SSG)**. The output is plain HTML files served by Cloudflare Pages.
+
+- `npm run build` generates static files in `./dist/`
+- These files are uploaded to Cloudflare Pages
+- Cloudflare Pages handles all URL routing, caching, and trailing slash behavior
+- Astro's config settings (like `trailingSlash`) only affect **build-time file generation**, not runtime routing
+- Production URL routing (e.g., whether `/page` and `/page/` both work) is determined by Cloudflare Pages, not Astro
+
+**Do not confuse dev server behavior with production behavior.** The Astro dev server has quirks that don't exist in production because production serves pre-built static files.
+
+### Known Dev Server Issue: trailingSlash breaks images
+
+**IMPORTANT:** In `src/config.yaml`, `trailingSlash` must be set to `false` for local development.
+
+```yaml
+site:
+  trailingSlash: false  # MUST be false - other values break dev server images
+```
+
+Setting `trailingSlash` to `true` or `ignore` breaks the Astro dev server's `/_image` endpoint, causing all images to 404. This is a **dev server bug only** - it does not affect production builds because:
+1. Production images are pre-optimized at build time (no `/_image` endpoint)
+2. Cloudflare Pages handles URL routing regardless of this setting
+
+If images suddenly break during development with 404 errors on `/_image`, check this setting first.
 
 ## Commands
 
