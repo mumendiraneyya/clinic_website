@@ -186,9 +186,11 @@ const CAL_NAMESPACE = 'booking';
         typeLabel.textContent = bookingType === 'clinic' ? 'موعد في العيادة' : 'استشارة عن بعد';
       }
 
-      // Check if user wants to change phone (skip token check)
       var params = new URLSearchParams(window.location.search);
-      if (params.get('change') === 'true') {
+      var changeParam = params.get('change');
+
+      // change=true: skip token check, show verification form
+      if (changeParam === 'true') {
         showVerification();
         return;
       }
@@ -206,6 +208,11 @@ const CAL_NAMESPACE = 'booking';
           // Token is valid, show selector with phone
           var phone = '+' + result.payload.phone;
           showSelector(phone);
+
+          // change=false: auto-open Cal.com (just verified, token confirmed valid)
+          if (changeParam === 'false') {
+            openCalModal(phone, token);
+          }
           return;
         } else {
           // Token invalid, clear it
@@ -222,13 +229,14 @@ const CAL_NAMESPACE = 'booking';
       // Phone verified event (from PhoneVerification component)
       document.addEventListener('phone-verified', function(e) {
         var token = e.detail.token;
-        var phone = e.detail.phone;
 
         // Save token to localStorage
         localStorage.setItem(STORAGE_KEY, token);
 
-        // Open Cal.com modal
-        openCalModal(phone, token);
+        // Reload page with change=false to sync UI state and auto-open Cal.com
+        // This ensures if user cancels Cal.com, they see PhoneSelector not verification form
+        var bookingType = getBookingType();
+        window.location.href = '/book/?type=' + bookingType + '&change=false';
       });
 
       // Phone selected event (from PhoneSelector component)
@@ -247,10 +255,15 @@ const CAL_NAMESPACE = 'booking';
       });
     }
 
-    // Initialize on page load
+    // Initialize on page load (with guard against double initialization)
+    var initialized = false;
     function init() {
       // Only run on this page
       if (!window.location.pathname.startsWith('/book')) return;
+
+      // Prevent double initialization (DOMContentLoaded + astro:page-load can both fire)
+      if (initialized) return;
+      initialized = true;
 
       initBookingPage();
       setupEventHandlers();

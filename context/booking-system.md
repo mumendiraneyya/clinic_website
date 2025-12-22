@@ -55,7 +55,9 @@ Homepage → Click "احجز موعدًا" → Popup shows PhoneSelector
 ```
 Popup → Click "ليس رقمك؟" → Redirect to /book?type=clinic&change=true
 → Shows verification form directly (skips phone selector)
-→ Enter new phone → Verify → New token saved
+→ Enter new phone → Verify → Token saved → Redirect to /book?type=clinic&change=false
+→ Page loads with PhoneSelector showing new number → Cal.com auto-opens
+→ If user cancels Cal.com, they see PhoneSelector (not verification form)
 ```
 
 ## Key Files
@@ -93,6 +95,7 @@ PostMessage actions sent to parent:
 Query parameters:
 - `type=clinic|remote` - Booking type
 - `change=true` - Skip to verification form (ignore stored token)
+- `change=false` - After successful verification, show selector and auto-open Cal.com
 
 ### `/src/components/booking/PhoneVerification.astro`
 - Phone input with SMS/WhatsApp method selector
