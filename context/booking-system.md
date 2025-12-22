@@ -31,8 +31,15 @@ src/pages/
 
 ```
 public/scripts/
-└── phone-utils.js           # Phone formatting (formatPhoneDisplay, PHONE_COUNTRY_CODES)
+└── phone-utils.js           # Phone formatting and country detection utilities
 ```
+
+**phone-utils.js exports (via window):**
+- `PHONE_COUNTRY_CODES` - Array of valid country calling codes (1-3 digits)
+- `PHONE_COUNTRY_FLAGS` - Object mapping country codes to flag emojis
+- `formatPhoneDisplay(phone)` - Formats phone for display: `962782760965` → `+962 782 760 965`
+- `getFlagForCountryCode(code)` - Returns flag emoji for a country code
+- `getFlagFromPhone(phone)` - Extracts country code from phone and returns flag emoji
 
 ### Layouts
 
@@ -106,9 +113,15 @@ Query parameters:
 
 ### `/src/components/booking/PhoneVerification.astro`
 - Phone input with SMS/WhatsApp method selector
+- Country flag indicator (appears when valid country code detected)
 - Sends OTP via webhook
 - Verifies OTP and receives JWT token
 - Dispatches `phone-verified` event with `{ token, phone }`
+
+Country flag behavior:
+- Hidden when input is empty or no valid country code detected
+- Uses `window.getFlagFromPhone()` from phone-utils.js
+- Updates in real-time as user types
 
 Phone normalization:
 - `0782760965` → `962782760965` (replaces leading 0 with Jordan code)
