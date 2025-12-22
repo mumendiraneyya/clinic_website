@@ -212,7 +212,8 @@ The booking system requires phone verification before scheduling. See [context/b
 
 **Quick reference:**
 - Phone verification components: `src/components/booking/PhoneVerification.astro`, `PhoneSelector.astro`
-- Booking pages: `/book` (full flow), `/popup/book` (iframe popup)
+- Booking pages: `/book` (full flow), `/popup/book` (iframe popup), `/landing/booking-complete` (confirmation)
+- Shared utilities: `public/scripts/phone-utils.js` (formatPhoneDisplay)
 - JWT token stored in localStorage (`phone_verification_token`)
 - Phone normalization: strips `+`, `00`, replaces leading `0` with `962` (Jordan)
 

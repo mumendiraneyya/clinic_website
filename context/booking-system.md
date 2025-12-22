@@ -27,6 +27,13 @@ src/pages/
     └── booking-complete.astro  # Post-booking confirmation page
 ```
 
+### Shared Utilities
+
+```
+public/scripts/
+└── phone-utils.js           # Phone formatting (formatPhoneDisplay, PHONE_COUNTRY_CODES)
+```
+
 ### Layouts
 
 ```
