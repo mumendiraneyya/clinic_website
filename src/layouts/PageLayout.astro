@@ -7,6 +7,7 @@ import Announcement from '~/components/widgets/Announcement.astro';
 import { headerData, footerData } from '~/navigation';
 import { fetchPosts } from '~/utils/blog';
 import { getBlogPermalink, getPermalink } from '~/utils/permalinks';
+import { describeNumberOfPosts } from '~/utils/arabic';
 
 import type { MetaData } from '~/types';
 
@@ -19,14 +20,46 @@ const { metadata } = Astro.props;
 import { UI } from 'astrowind:config';
 const showAnnouncement = UI?.showAnnouncement ?? true;
 
-// Build dynamic header with blog posts
+// Build dynamic header with blog categories
 const posts = await fetchPosts();
+
+// Define category order
+const categoryOrder = [
+  'مقطع تعريفي ومقابلات عامة',
+  'جراحة عامة',
+  'القناة الشرجية',
+  'فتوق جدار البطن',
+];
+
+// Count posts per category
+const categoryCounts: Record<string, { title: string; slug: string; count: number }> = {};
+posts.forEach((post) => {
+  if (post.category?.slug) {
+    if (!categoryCounts[post.category.slug]) {
+      categoryCounts[post.category.slug] = {
+        title: post.category.title,
+        slug: post.category.slug,
+        count: 0,
+      };
+    }
+    categoryCounts[post.category.slug].count++;
+  }
+});
+
+// Build category links in specified order
 const blogLinks = [
   { text: 'جميع المنشورات', href: getBlogPermalink() },
-  ...posts.slice(0, 5).map((post) => ({
-    text: post.title,
-    href: getPermalink(post.permalink, 'post'),
-  })),
+  ...categoryOrder
+    .map((categoryTitle) => {
+      const categoryData = Object.values(categoryCounts).find((c) => c.title === categoryTitle);
+      if (!categoryData) return null;
+      return {
+        text: categoryData.title,
+        description: describeNumberOfPosts(categoryData.count),
+        href: getPermalink(categoryData.slug, 'category'),
+      };
+    })
+    .filter((link): link is { text: string; href: string } => link !== null),
 ];
 
 const dynamicHeaderData = {

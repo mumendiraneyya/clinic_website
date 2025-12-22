@@ -16,6 +16,7 @@ interface Link {
 
 interface MenuLink extends Link {
   links?: Array<MenuLink>;
+  description?: string;
 }
 
 export interface Props {
@@ -79,7 +80,7 @@ const currentPath = `/${trimSlash(new URL(Astro.url).pathname)}`;
                       <Icon name="tabler:chevron-down" class="w-3.5 h-3.5 ms-1" />
                     </a>
                     <ul class="dropdown-menu hidden backdrop-blur-md dark:bg-dark rounded absolute font-medium bg-white/90 min-w-[200px] drop-shadow-xl">
-                      {subLinks.map(({ text: text2, href: href2 }) => (
+                      {subLinks.map(({ text: text2, href: href2, description: desc2 }) => (
                         <li>
                           <a
                             class:list={[
@@ -88,7 +89,7 @@ const currentPath = `/${trimSlash(new URL(Astro.url).pathname)}`;
                             ]}
                             href={href2}
                           >
-                            {text2}
+                            {text2}{desc2 && <span class="font-normal text-muted"> ({desc2})</span>}
                           </a>
                         </li>
                       ))}
@@ -137,7 +138,7 @@ const currentPath = `/${trimSlash(new URL(Astro.url).pathname)}`;
                     {text}
                   </a>
                   <ul class="dropdown-menu">
-                    {subLinks.map(({ text: text2, href: href2 }) => (
+                    {subLinks.map(({ text: text2, href: href2, description: desc2 }) => (
                       <li>
                         <a
                           class:list={[
@@ -146,7 +147,7 @@ const currentPath = `/${trimSlash(new URL(Astro.url).pathname)}`;
                           ]}
                           href={href2}
                         >
-                          {text2}
+                          {text2}{desc2 && <span class="font-normal text-muted"> ({desc2})</span>}
                         </a>
                       </li>
                     ))}
