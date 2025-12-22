@@ -39,7 +39,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
     <Fragment slot="content">
       <!-- Mobile: Same as desktop but with vertical toggle layout -->
       <div class="flex md:hidden flex-row justify-center items-center gap-2 mb-4">
-        <div class={`flex items-start gap-2 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-sm ${bookingDisabled ? 'p-1' : 'p-2'}`}>
+        <div class={`flex items-start gap-2 bg-white/50 dark:bg-white/20 backdrop-blur-sm rounded-2xl shadow-sm ${bookingDisabled ? 'p-1' : 'p-2'}`}>
           {/* Toggle group - hidden when booking disabled */}
           {!bookingDisabled && <label class="flex flex-col items-center gap-1 cursor-pointer text-xs">
             <span id="booking-label-mobile" class="text-muted dark:text-slate-300 whitespace-nowrap">في العيادة</span>
@@ -70,7 +70,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
           href="https://wa.me/962799133299"
           target="_blank"
           rel="noopener noreferrer"
-          class="btn-secondary"
+          class="btn-secondary dark:bg-gray-900/50"
           aria-label="تواصل معنا عبر واتساب"
         >
           <span class="hidden min-[400px]:inline min-[500px]:hidden">استفسر</span>
@@ -81,7 +81,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
 
       <!-- Desktop: Horizontal toggle layout -->
       <div class="hidden md:flex flex-row justify-center items-center gap-4 mb-4">
-        <div class={`flex items-center gap-3 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm pe-1 py-1 rounded-full shadow-sm ${bookingDisabled ? 'ps-1' : 'ps-4'}`}>
+        <div class={`flex items-center gap-3 bg-white/50 dark:bg-white/20 backdrop-blur-sm pe-1 py-1 rounded-full shadow-sm ${bookingDisabled ? 'ps-1' : 'ps-4'}`}>
           {!bookingDisabled && <label class="flex items-center gap-3 cursor-pointer text-sm whitespace-nowrap">
             <span id="booking-label" class="text-muted dark:text-slate-300">موعد في العيادة</span>
             <div class="relative">
@@ -111,7 +111,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
           href="https://wa.me/962799133299"
           target="_blank"
           rel="noopener noreferrer"
-          class="btn-secondary"
+          class="btn-secondary dark:bg-gray-900/50"
         >
           <span>هل لديك تساؤل؟ تواصل معنا</span>
           <Icon name="tabler:brand-whatsapp" class="w-5 h-5 pr-1 text-[#25D366]" />
