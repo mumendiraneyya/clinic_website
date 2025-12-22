@@ -1,0 +1,252 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+import PhoneVerification from '~/components/booking/PhoneVerification.astro';
+import PhoneSelector from '~/components/booking/PhoneSelector.astro';
+import { Icon } from 'astro-icon/components';
+
+const metadata = {
+  title: 'حجز موعد',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+// API endpoint for token validation
+const VALIDATE_TOKEN_ENDPOINT = 'https://n8n.orwa.tech/webhook/b1ac96a5-c166-4ec0-9a3a-37198d210e46';
+
+// Cal.com configuration
+const CAL_BASE_LINK = 'د.-مو-من-ديرانية-z6vyi6';
+const CAL_NAMESPACE = 'booking';
+---
+
+<Layout metadata={metadata}>
+  <section class="py-8 md:py-12">
+    <div class="max-w-md mx-auto px-4 sm:px-6">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-2xl md:text-3xl font-bold mb-2 font-heading dark:text-gray-200">
+          حجز موعد
+        </h1>
+        <p id="booking-type-label" class="text-muted dark:text-slate-400">
+          <!-- Will be set by JS based on type param -->
+        </p>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading-state" class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+        <p class="mt-4 text-muted dark:text-slate-400">جارٍ التحقق...</p>
+      </div>
+
+      <!-- Phone Selector (shown when valid token exists) -->
+      <div id="selector-container" class="hidden">
+        <PhoneSelector id="phone-selector" phone="" />
+      </div>
+
+      <!-- Phone Verification (shown when no token or changing number) -->
+      <div id="verification-container" class="hidden">
+        <PhoneVerification id="phone-verification" />
+      </div>
+
+      <!-- Back to Home Link -->
+      <div class="text-center mt-8">
+        <a href="/" class="text-sm text-muted dark:text-slate-400 hover:text-primary inline-flex items-center gap-1">
+          <Icon name="tabler:arrow-right" class="w-4 h-4" />
+          <span>العودة للصفحة الرئيسية</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cal.com Embed Script -->
+  <script is:inline define:vars={{ CAL_BASE_LINK, CAL_NAMESPACE, VALIDATE_TOKEN_ENDPOINT }}>
+    (function (C, A, L) {
+      let p = function (a, ar) { a.q.push(ar); };
+      let d = C.document;
+      C.Cal = C.Cal || function () {
+        let cal = C.Cal;
+        let ar = arguments;
+        if (!cal.loaded) {
+          cal.ns = {};
+          cal.q = cal.q || [];
+          d.head.appendChild(d.createElement("script")).src = A;
+          cal.loaded = true;
+        }
+        if (ar[0] === L) {
+          const api = function () { p(api, arguments); };
+          const namespace = ar[1];
+          api.q = api.q || [];
+          if (typeof namespace === "string") {
+            cal.ns[namespace] = cal.ns[namespace] || api;
+            p(cal.ns[namespace], ar);
+            p(cal, ["initNamespace", namespace]);
+          } else p(cal, ar);
+          return;
+        }
+        p(cal, ar);
+      };
+    })(window, "https://app.cal.com/embed/embed.js", "init");
+
+    Cal("init", CAL_NAMESPACE, { origin: "https://app.cal.com" });
+  </script>
+
+  <script is:inline define:vars={{ CAL_BASE_LINK, CAL_NAMESPACE, VALIDATE_TOKEN_ENDPOINT }}>
+    var STORAGE_KEY = 'phone_verification_token';
+
+    // Get booking type from URL
+    function getBookingType() {
+      var params = new URLSearchParams(window.location.search);
+      return params.get('type') === 'remote' ? 'remote' : 'clinic';
+    }
+
+    // Validate token with server
+    async function validateToken(token) {
+      try {
+        var response = await fetch(VALIDATE_TOKEN_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ token: token }),
+        });
+        return await response.json();
+      } catch (e) {
+        return { success: false, payload: null };
+      }
+    }
+
+    // Open Cal.com modal with prefilled data
+    function openCalModal(phone, token) {
+      var bookingType = getBookingType();
+      var calLink = CAL_BASE_LINK + '/' + bookingType;
+
+      var config = {
+        layout: 'month_view',
+        theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+        attendeePhoneNumber: phone,
+        verificationToken: token,
+      };
+
+      Cal.ns[CAL_NAMESPACE]("modal", { calLink: calLink, config: config });
+    }
+
+    // Show/hide containers
+    function showLoading() {
+      var el = document.getElementById('loading-state');
+      if (el) el.classList.remove('hidden');
+      el = document.getElementById('selector-container');
+      if (el) el.classList.add('hidden');
+      el = document.getElementById('verification-container');
+      if (el) el.classList.add('hidden');
+    }
+
+    function showSelector(phone) {
+      var el = document.getElementById('loading-state');
+      if (el) el.classList.add('hidden');
+      el = document.getElementById('selector-container');
+      if (el) el.classList.remove('hidden');
+      el = document.getElementById('verification-container');
+      if (el) el.classList.add('hidden');
+
+      // Update phone in selector
+      var selector = document.getElementById('phone-selector');
+      if (selector) {
+        selector.dataset.phone = phone;
+        // Update display
+        var phoneDisplay = selector.querySelector('p.font-mono');
+        if (phoneDisplay) {
+          phoneDisplay.textContent = formatPhoneDisplay(phone);
+        }
+      }
+    }
+
+    function showVerification() {
+      var el = document.getElementById('loading-state');
+      if (el) el.classList.add('hidden');
+      el = document.getElementById('selector-container');
+      if (el) el.classList.add('hidden');
+      el = document.getElementById('verification-container');
+      if (el) el.classList.remove('hidden');
+    }
+
+    // Format phone for display
+    function formatPhoneDisplay(phone) {
+      var digits = phone.replace(/^\+/, '');
+      if (digits.length >= 12) {
+        return '+' + digits.slice(0, 3) + ' ' + digits.slice(3, 5) + ' ' + digits.slice(5, 8) + ' ' + digits.slice(8);
+      }
+      return phone.startsWith('+') ? phone : '+' + phone;
+    }
+
+    // Main initialization
+    async function initBookingPage() {
+      // Set booking type label
+      var bookingType = getBookingType();
+      var typeLabel = document.getElementById('booking-type-label');
+      if (typeLabel) {
+        typeLabel.textContent = bookingType === 'clinic' ? 'موعد في العيادة' : 'استشارة عن بعد';
+      }
+
+      showLoading();
+
+      // Check for existing token
+      var token = localStorage.getItem(STORAGE_KEY);
+
+      if (token) {
+        // Validate token
+        var result = await validateToken(token);
+
+        if (result.success && result.payload) {
+          // Token is valid, show selector with phone
+          var phone = '+' + result.payload.phone;
+          showSelector(phone);
+          return;
+        } else {
+          // Token invalid, clear it
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+
+      // No valid token, show verification form
+      showVerification();
+    }
+
+    // Event handlers
+    function setupEventHandlers() {
+      // Phone verified event (from PhoneVerification component)
+      document.addEventListener('phone-verified', function(e) {
+        var token = e.detail.token;
+        var phone = e.detail.phone;
+
+        // Save token to localStorage
+        localStorage.setItem(STORAGE_KEY, token);
+
+        // Open Cal.com modal
+        openCalModal(phone, token);
+      });
+
+      // Phone selected event (from PhoneSelector component)
+      document.addEventListener('phone-selected', function(e) {
+        var phone = e.detail.phone;
+        var token = localStorage.getItem(STORAGE_KEY);
+
+        if (token) {
+          openCalModal(phone, token);
+        }
+      });
+
+      // Change phone event (from PhoneSelector component)
+      document.addEventListener('change-phone', function() {
+        showVerification();
+      });
+    }
+
+    // Initialize on page load
+    document.addEventListener('astro:page-load', function() {
+      // Only run on this page
+      if (!window.location.pathname.includes('/landing/book')) return;
+
+      initBookingPage();
+      setupEventHandlers();
+    });
+  </script>
+</Layout>

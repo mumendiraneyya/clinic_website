@@ -97,3 +97,68 @@ src/pages/index.astro
 ### Theme doesn't match
 - The theme is determined at click time based on `document.documentElement.classList.contains('dark')`
 - If AstroWind's theme detection changes, the selector may need updating
+
+## Advanced Config Options
+
+The Cal.com embed modal accepts a `config` object that supports prefilling fields and triggering reschedule mode. These options are passed to `Cal.ns[namespace]("modal", { calLink, config })`.
+
+### Prefilling Attendee Fields
+
+You can prefill booking form fields via the config object:
+
+```javascript
+config.attendeePhoneNumber = '+962781234567';  // Prefills phone number field
+config.name = 'John Doe';                       // Prefills name field
+config.email = 'john@example.com';              // Prefills email field
+```
+
+Custom fields use their identifier (slug) as the key:
+
+```javascript
+config.verificationToken = 'eyJhbGciOiJIUzI1...';  // Custom field by identifier
+```
+
+**Note**: To make prefilled fields read-only, enable "Disable input if prefilled" in Cal.com dashboard (Advanced → Booking Questions) for each field. This feature has known bugs with inline embeds but works with modal embeds.
+
+### Passing Metadata
+
+Metadata is stored with the booking but not shown in the UI:
+
+```javascript
+config['metadata[myKey]'] = 'myValue';
+```
+
+Metadata is accessible in webhooks via `payload.metadata["myKey"]` and stored in the booking table.
+
+### Rescheduling Bookings
+
+To open the modal in reschedule mode instead of new booking mode:
+
+```javascript
+config.rescheduleUid = 'vURi9QMgyuDcLDP2BUSMPx';  // Booking UID to reschedule
+```
+
+The modal will display the existing booking and allow the user to select a new time slot.
+
+### Example: Full Config Usage
+
+```javascript
+const config = JSON.parse(el.getAttribute('data-booking-config') || '{}');
+config.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+
+// For new bookings with prefilled phone (verified via OTP)
+config.attendeePhoneNumber = '+962781234567';
+config.verificationToken = 'jwt-token-here';
+
+// OR for rescheduling an existing booking
+config.rescheduleUid = 'booking-uid-here';
+
+Cal.ns[namespace]("modal", { calLink: calLink, config: config });
+```
+
+## External Resources
+
+- [Prefill booking form in Embed](https://cal.com/help/embedding/prefill-booking-form-embed)
+- [Pre-fill fields/questions](https://cal.com/help/bookings/prefill-fields)
+- [Managing booking fields](https://cal.com/docs/platform/guides/booking-fields)
+- [Embed instructions](https://cal.com/help/embedding/embed-instructions)

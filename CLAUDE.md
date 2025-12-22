@@ -206,3 +206,5 @@ Appointment booking is integrated via Cal.com cloud embed. See [context/cal-com-
 - Event types: `/clinic` (in-person) and `/remote` (telemedicine)
 - Uses custom `data-booking-*` attributes (NOT `data-cal-*`) to avoid Astro View Transitions conflicts
 - Theme syncs automatically with AstroWind dark/light mode
+- Supports prefilling fields via config: `attendeePhoneNumber`, `name`, `email`, custom fields by identifier
+- Supports rescheduling via `config.rescheduleUid`

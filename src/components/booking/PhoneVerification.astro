@@ -1,0 +1,296 @@
+---
+/**
+ * PhoneVerification Component
+ *
+ * A reusable component for phone number verification via SMS or WhatsApp.
+ * Handles the full verification flow: phone input → send code → enter code → verify.
+ *
+ * Dispatches custom events:
+ * - 'phone-verified': When verification succeeds, includes { token, phone } in detail
+ *
+ * Usage:
+ * <PhoneVerification id="my-verification" />
+ *
+ * Listen for verification:
+ * document.getElementById('my-verification').addEventListener('phone-verified', (e) => {
+ *   const { token, phone } = e.detail;
+ * });
+ */
+
+interface Props {
+  id?: string;
+  class?: string;
+}
+
+const { id = 'phone-verification', class: className = '' } = Astro.props;
+
+// API endpoints
+const SEND_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/c6c748c4-6c9d-4b13-a395-e014cbaf6e05';
+const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9b1e-e1db3c4f1b11';
+---
+
+<div id={id} class={`phone-verification ${className}`} data-send-endpoint={SEND_CODE_ENDPOINT} data-verify-endpoint={VERIFY_CODE_ENDPOINT}>
+  <!-- Phone Input Section -->
+  <div class="phone-input-section">
+    <label for={`${id}-phone`} class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+      رقم الهاتف
+    </label>
+    <div class="flex gap-2 mb-4">
+      <input
+        type="tel"
+        id={`${id}-phone`}
+        class="phone-input flex-1 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
+        placeholder="962xxxxxxxxx"
+        dir="ltr"
+        inputmode="numeric"
+      />
+    </div>
+
+    <!-- Method Selector -->
+    <div class="method-selector mb-4">
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        طريقة استلام رمز التحقق
+      </label>
+      <div class="flex gap-4">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input
+            type="radio"
+            name={`${id}-method`}
+            value="sms"
+            checked
+            class="method-radio w-4 h-4 text-primary focus:ring-primary"
+          />
+          <span class="text-gray-700 dark:text-gray-300">رسالة نصية SMS</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input
+            type="radio"
+            name={`${id}-method`}
+            value="whatsapp"
+            class="method-radio w-4 h-4 text-primary focus:ring-primary"
+          />
+          <span class="text-gray-700 dark:text-gray-300">واتساب</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Send Code Button -->
+    <button
+      type="button"
+      class="send-code-btn w-full btn-primary py-3 flex items-center justify-center gap-2"
+    >
+      <span class="btn-text">إرسال رمز التحقق</span>
+      <span class="btn-spinner hidden">
+        <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </span>
+    </button>
+  </div>
+
+  <!-- Status Message -->
+  <div class="status-message hidden mt-4 p-4 rounded-lg text-center"></div>
+
+  <!-- Verification Code Section (hidden initially) -->
+  <div class="code-input-section hidden mt-6">
+    <label for={`${id}-code`} class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+      رمز التحقق
+    </label>
+    <input
+      type="text"
+      id={`${id}-code`}
+      class="code-input w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent text-center text-2xl tracking-widest"
+      placeholder="0000"
+      maxlength="4"
+      dir="ltr"
+      inputmode="numeric"
+      autocomplete="one-time-code"
+    />
+
+    <!-- Verify Button -->
+    <button
+      type="button"
+      class="verify-btn w-full btn-primary py-3 mt-4 flex items-center justify-center gap-2"
+    >
+      <span class="btn-text">تحقق</span>
+      <span class="btn-spinner hidden">
+        <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </span>
+    </button>
+  </div>
+</div>
+
+<script>
+  function initPhoneVerification() {
+    document.querySelectorAll('.phone-verification').forEach((container) => {
+      // Skip if already initialized
+      if (container.dataset.initialized === 'true') return;
+      container.dataset.initialized = 'true';
+
+      const id = container.id;
+      const sendEndpoint = container.dataset.sendEndpoint;
+      const verifyEndpoint = container.dataset.verifyEndpoint;
+
+      const phoneInput = container.querySelector('.phone-input') as HTMLInputElement;
+      const methodRadios = container.querySelectorAll('.method-radio') as NodeListOf<HTMLInputElement>;
+      const sendCodeBtn = container.querySelector('.send-code-btn') as HTMLButtonElement;
+      const statusMessage = container.querySelector('.status-message') as HTMLElement;
+      const codeInputSection = container.querySelector('.code-input-section') as HTMLElement;
+      const codeInput = container.querySelector('.code-input') as HTMLInputElement;
+      const verifyBtn = container.querySelector('.verify-btn') as HTMLButtonElement;
+
+      let codeSentSuccessfully = false;
+
+      // Helper: Show/hide spinner
+      function setLoading(btn: HTMLButtonElement, loading: boolean) {
+        const text = btn.querySelector('.btn-text') as HTMLElement;
+        const spinner = btn.querySelector('.btn-spinner') as HTMLElement;
+        if (loading) {
+          text.classList.add('hidden');
+          spinner.classList.remove('hidden');
+          btn.disabled = true;
+        } else {
+          text.classList.remove('hidden');
+          spinner.classList.add('hidden');
+          btn.disabled = false;
+        }
+      }
+
+      // Helper: Show status message
+      function showStatus(message: string, type: 'success' | 'error' | 'info') {
+        statusMessage.textContent = message;
+        statusMessage.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'dark:bg-green-900', 'dark:text-green-200', 'bg-red-100', 'text-red-800', 'dark:bg-red-900', 'dark:text-red-200', 'bg-blue-100', 'text-blue-800', 'dark:bg-blue-900', 'dark:text-blue-200');
+
+        if (type === 'success') {
+          statusMessage.classList.add('bg-green-100', 'text-green-800', 'dark:bg-green-900', 'dark:text-green-200');
+        } else if (type === 'error') {
+          statusMessage.classList.add('bg-red-100', 'text-red-800', 'dark:bg-red-900', 'dark:text-red-200');
+        } else {
+          statusMessage.classList.add('bg-blue-100', 'text-blue-800', 'dark:bg-blue-900', 'dark:text-blue-200');
+        }
+      }
+
+      // Helper: Get selected method
+      function getSelectedMethod(): string {
+        for (const radio of methodRadios) {
+          if (radio.checked) return radio.value;
+        }
+        return 'sms';
+      }
+
+      // Helper: Normalize phone number (remove spaces, dashes, plus sign)
+      function normalizePhone(phone: string): string {
+        return phone.replace(/[\s\-\+]/g, '');
+      }
+
+      // Send verification code
+      async function sendCode() {
+        const phone = normalizePhone(phoneInput.value);
+        const method = getSelectedMethod();
+
+        if (!phone || phone.length < 10) {
+          showStatus('الرجاء إدخال رقم هاتف صحيح', 'error');
+          return;
+        }
+
+        setLoading(sendCodeBtn, true);
+
+        try {
+          const response = await fetch(sendEndpoint!, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ phone, method }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            codeSentSuccessfully = true;
+            showStatus(method === 'whatsapp' ? 'تم إرسال رمز التحقق عبر واتساب' : 'تم إرسال رمز التحقق عبر رسالة نصية', 'success');
+            codeInputSection.classList.remove('hidden');
+            codeInput.focus();
+          } else if (data.message) {
+            // Backoff message from server
+            showStatus(data.message, 'info');
+            // Still show code input if we've sent successfully before
+            if (codeSentSuccessfully) {
+              codeInputSection.classList.remove('hidden');
+            }
+          } else {
+            showStatus('حدث خطأ. الرجاء المحاولة مرة أخرى', 'error');
+          }
+        } catch (error) {
+          showStatus('حدث خطأ في الاتصال. الرجاء المحاولة مرة أخرى', 'error');
+        } finally {
+          setLoading(sendCodeBtn, false);
+        }
+      }
+
+      // Verify code
+      async function verifyCode() {
+        const phone = normalizePhone(phoneInput.value);
+        const code = codeInput.value.trim();
+
+        if (!code || code.length !== 4) {
+          showStatus('الرجاء إدخال رمز التحقق المكون من 4 أرقام', 'error');
+          return;
+        }
+
+        setLoading(verifyBtn, true);
+
+        try {
+          const response = await fetch(verifyEndpoint!, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ phone, code }),
+          });
+
+          const data = await response.json();
+
+          if (data.success && data.token) {
+            showStatus('تم التحقق بنجاح!', 'success');
+
+            // Dispatch custom event with token and phone
+            container.dispatchEvent(new CustomEvent('phone-verified', {
+              bubbles: true,
+              detail: { token: data.token, phone: '+' + phone }
+            }));
+          } else {
+            showStatus('رمز التحقق غير صحيح. الرجاء المحاولة مرة أخرى', 'error');
+            codeInput.value = '';
+            codeInput.focus();
+          }
+        } catch (error) {
+          showStatus('حدث خطأ في الاتصال. الرجاء المحاولة مرة أخرى', 'error');
+        } finally {
+          setLoading(verifyBtn, false);
+        }
+      }
+
+      // Event listeners
+      sendCodeBtn.addEventListener('click', sendCode);
+      verifyBtn.addEventListener('click', verifyCode);
+
+      // Allow Enter key to submit
+      phoneInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendCode();
+      });
+
+      codeInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') verifyCode();
+      });
+
+      // Auto-format: only allow numbers in code input
+      codeInput.addEventListener('input', () => {
+        codeInput.value = codeInput.value.replace(/\D/g, '').slice(0, 4);
+      });
+    });
+  }
+
+  // Initialize on page load and after View Transitions
+  document.addEventListener('astro:page-load', initPhoneVerification);
+</script>

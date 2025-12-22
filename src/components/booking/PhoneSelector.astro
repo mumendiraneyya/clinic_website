@@ -1,0 +1,107 @@
+---
+/**
+ * PhoneSelector Component
+ *
+ * Shows a verified phone number with options to proceed or change.
+ * Used when a user already has a valid verification token.
+ *
+ * Dispatches custom events:
+ * - 'phone-selected': When user chooses to proceed with verified number, includes { phone } in detail
+ * - 'change-phone': When user wants to use a different phone number
+ *
+ * Usage:
+ * <PhoneSelector id="my-selector" phone="+962782760965" />
+ *
+ * Listen for events:
+ * document.getElementById('my-selector').addEventListener('phone-selected', (e) => {
+ *   const { phone } = e.detail;
+ * });
+ * document.getElementById('my-selector').addEventListener('change-phone', () => {
+ *   // Show verification form
+ * });
+ */
+
+interface Props {
+  id?: string;
+  class?: string;
+  phone?: string;
+}
+
+const { id = 'phone-selector', class: className = '', phone = '' } = Astro.props;
+
+// Format phone for display (e.g., +962 78 276 0965)
+function formatPhoneDisplay(phone: string): string {
+  // Remove + if present
+  const digits = phone.replace(/^\+/, '');
+  if (digits.length >= 12) {
+    // Format: XXX XX XXX XXXX
+    return `+${digits.slice(0, 3)} ${digits.slice(3, 5)} ${digits.slice(5, 8)} ${digits.slice(8)}`;
+  }
+  return phone;
+}
+
+const displayPhone = formatPhoneDisplay(phone);
+---
+
+<div id={id} class={`phone-selector ${className}`} data-phone={phone}>
+  <div class="text-center">
+    <p class="text-gray-600 dark:text-gray-400 mb-2">
+      رقم الهاتف المحفوظ
+    </p>
+
+    <p class="text-2xl font-bold text-gray-900 dark:text-white mb-6 font-mono tracking-wide" dir="ltr">
+      {displayPhone}
+    </p>
+
+    <!-- Proceed Button -->
+    <button
+      type="button"
+      class="proceed-btn w-full btn-primary py-3 mb-3 flex items-center justify-center gap-2"
+    >
+      <span>متابعة بهذا الرقم</span>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 rotate-180" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+      </svg>
+    </button>
+
+    <!-- Change Number Link -->
+    <button
+      type="button"
+      class="change-phone-btn text-sm text-primary hover:text-secondary underline underline-offset-4"
+    >
+      ليس رقمك؟ اضغط هنا لتغيير الرقم المحفوظ
+    </button>
+  </div>
+</div>
+
+<script>
+  function initPhoneSelector() {
+    document.querySelectorAll('.phone-selector').forEach((container) => {
+      // Skip if already initialized
+      if (container.dataset.initialized === 'true') return;
+      container.dataset.initialized = 'true';
+
+      const phone = container.dataset.phone;
+      const proceedBtn = container.querySelector('.proceed-btn') as HTMLButtonElement;
+      const changePhoneBtn = container.querySelector('.change-phone-btn') as HTMLButtonElement;
+
+      // Proceed with verified number
+      proceedBtn.addEventListener('click', () => {
+        container.dispatchEvent(new CustomEvent('phone-selected', {
+          bubbles: true,
+          detail: { phone }
+        }));
+      });
+
+      // Request to change number
+      changePhoneBtn.addEventListener('click', () => {
+        container.dispatchEvent(new CustomEvent('change-phone', {
+          bubbles: true
+        }));
+      });
+    });
+  }
+
+  // Initialize on page load and after View Transitions
+  document.addEventListener('astro:page-load', initPhoneSelector);
+</script>

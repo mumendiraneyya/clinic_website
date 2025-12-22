@@ -1,5 +1,7 @@
 ---
 import Layout from '~/layouts/PageLayout.astro';
+import Location from '~/components/widgets/Location.astro';
+import { Icon } from 'astro-icon/components';
 
 const metadata = {
   title: 'تم الحجز بنجاح',
@@ -21,9 +23,37 @@ const metadata = {
         تم الحجز بنجاح
       </h1>
 
-      <p class="text-xl text-muted dark:text-slate-300 mb-8">
-        شكراً لك! سنتواصل معك قريباً لتأكيد موعدك.
+      <p class="text-xl text-muted dark:text-slate-300 mb-4">
+        تم تأكيد موعدك وستصلك رسالة تأكيد على هاتفك.
       </p>
+
+      <!-- Booking Details Card -->
+      <div id="booking-details" class="hidden bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 text-start">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <Icon name="tabler:calendar-event" class="w-5 h-5 text-primary" />
+          <span>تفاصيل الموعد</span>
+        </h2>
+
+        <div class="space-y-3">
+          <!-- Appointment Type -->
+          <div class="flex items-center gap-3">
+            <Icon name="tabler:stethoscope" class="w-5 h-5 text-muted" />
+            <span id="booking-type" class="text-gray-700 dark:text-gray-300"></span>
+          </div>
+
+          <!-- Date -->
+          <div class="flex items-center gap-3">
+            <Icon name="tabler:calendar" class="w-5 h-5 text-muted" />
+            <span id="booking-date" class="text-gray-700 dark:text-gray-300"></span>
+          </div>
+
+          <!-- Time -->
+          <div class="flex items-center gap-3">
+            <Icon name="tabler:clock" class="w-5 h-5 text-muted" />
+            <span id="booking-time" class="text-gray-700 dark:text-gray-300"></span>
+          </div>
+        </div>
+      </div>
 
       <a
         href="/"
@@ -32,28 +62,100 @@ const metadata = {
         العودة للصفحة الرئيسية
       </a>
     </div>
-
-    <!-- Debug section - shows URL parameters (for development/prototyping) -->
-    <div id="debug-section" class="max-w-3xl mx-auto px-4 sm:px-6 mt-12 hidden">
-      <details class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4" open>
-        <summary class="cursor-pointer text-sm text-muted dark:text-slate-400 font-mono">
-          URL Parameters (debug)
-        </summary>
-        <pre id="params-output" class="mt-4 text-xs overflow-x-auto text-start bg-gray-200 dark:bg-gray-900 p-4 rounded" dir="ltr"></pre>
-      </details>
-    </div>
   </section>
 
-  <script>
-    // Read URL parameters client-side
-    document.addEventListener('astro:page-load', () => {
-      const params = Object.fromEntries(new URLSearchParams(window.location.search));
-      const debugSection = document.getElementById('debug-section');
-      const paramsOutput = document.getElementById('params-output');
+  <!-- Location Widget - shown only for clinic appointments -->
+  <div id="location-section" class="hidden">
+    <Location
+      title="موقع العيادة"
+      address="١٣ شارع عبد الله بن جبير<br>عمّان، الأردن<br>الرمز البريدي: ١١١٩١"
+      phone="العيادة 0798872899<br>الطبيب 0799133299"
+      directions="الطابق الثاني، مجمع عيادات النور التخصصية (بجوار طوارئ مستشفى ابن الهيثم)"
+      mapEmbedUrl="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3383.6483017800597!2d35.87309270000001!3d31.9975482!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151ca187ec5aa2d7%3A0xc23a1a2298e1af8b!2z2LnZitin2K_YqSDYry4g2YXYpNmF2YYg2YXYo9mF2YjZhiDYr9mK2LHYp9mG2YrYqQ!5e0!3m2!1sen!2sjo!4v1765579024750!5m2!1sen!2sjo"
+      mapLink="https://maps.app.goo.gl/RE3yv34U16Ssdezj7"
+    >
+      <Fragment slot="bg">
+        <div class="absolute inset-0 bg-tertiary/20 dark:bg-transparent"></div>
+      </Fragment>
+    </Location>
+  </div>
 
-      if (Object.keys(params).length > 0 && debugSection && paramsOutput) {
-        debugSection.classList.remove('hidden');
-        paramsOutput.textContent = JSON.stringify(params, null, 2);
+  <script is:inline>
+    // Arabic day and month names
+    var arabicDays = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    var arabicMonths = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+
+    // Convert number to Arabic numerals
+    function toArabicNumerals(num) {
+      var arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+      return String(num).split('').map(function(d) {
+        return arabicDigits[parseInt(d)] || d;
+      }).join('');
+    }
+
+    // Format date in Arabic
+    function formatArabicDate(dateStr) {
+      var date = new Date(dateStr);
+      var day = arabicDays[date.getDay()];
+      var dayNum = toArabicNumerals(date.getDate());
+      var month = arabicMonths[date.getMonth()];
+      var year = toArabicNumerals(date.getFullYear());
+      return day + '، ' + dayNum + ' ' + month + ' ' + year;
+    }
+
+    // Format time in Arabic (12-hour format)
+    function formatArabicTime(dateStr) {
+      var date = new Date(dateStr);
+      var hours = date.getHours();
+      var minutes = date.getMinutes();
+      var period = hours >= 12 ? 'مساءً' : 'صباحًا';
+      hours = hours % 12 || 12;
+      var minutesStr = minutes < 10 ? '0' + minutes : String(minutes);
+      return toArabicNumerals(hours) + ':' + toArabicNumerals(minutesStr) + ' ' + period;
+    }
+
+    function initBookingComplete() {
+      var params = Object.fromEntries(new URLSearchParams(window.location.search));
+
+      // Check if we have booking data
+      if (!params.startTime) return;
+
+      var bookingDetails = document.getElementById('booking-details');
+      var locationSection = document.getElementById('location-section');
+      var bookingType = document.getElementById('booking-type');
+      var bookingDate = document.getElementById('booking-date');
+      var bookingTime = document.getElementById('booking-time');
+
+      // Show booking details
+      if (bookingDetails) {
+        bookingDetails.classList.remove('hidden');
+      }
+
+      // Set booking type
+      if (bookingType) {
+        var isClinic = params.type === 'clinic' || params.eventTypeSlug === 'clinic';
+        bookingType.textContent = isClinic ? 'موعد في العيادة' : 'استشارة عن بعد';
+      }
+
+      // Set date and time
+      if (bookingDate && params.startTime) {
+        bookingDate.textContent = formatArabicDate(params.startTime);
+      }
+      if (bookingTime && params.startTime) {
+        bookingTime.textContent = formatArabicTime(params.startTime);
+      }
+
+      // Show location for clinic appointments
+      var isClinicAppointment = params.type === 'clinic' || params.eventTypeSlug === 'clinic';
+      if (isClinicAppointment && locationSection) {
+        locationSection.classList.remove('hidden');
+      }
+    }
+
+    // Initialize on page load
+    document.addEventListener('astro:page-load', function() {
+      if (window.location.pathname.includes('/landing/booking-complete')) {
+        initBookingComplete();
       }
     });
   </script>

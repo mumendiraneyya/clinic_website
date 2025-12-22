@@ -631,47 +631,13 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
     </Fragment>
   </CallToAction> -->
 
-  <!-- Cal.com Embed Script -->
+  <!-- Booking Redirect Script -->
   <script is:inline>
-    (function (C, A, L) {
-      let p = function (a, ar) { a.q.push(ar); };
-      let d = C.document;
-      C.Cal = C.Cal || function () {
-        let cal = C.Cal;
-        let ar = arguments;
-        if (!cal.loaded) {
-          cal.ns = {};
-          cal.q = cal.q || [];
-          d.head.appendChild(d.createElement("script")).src = A;
-          cal.loaded = true;
-        }
-        if (ar[0] === L) {
-          const api = function () { p(api, arguments); };
-          const namespace = ar[1];
-          api.q = api.q || [];
-          if (typeof namespace === "string") {
-            cal.ns[namespace] = cal.ns[namespace] || api;
-            p(cal.ns[namespace], ar);
-            p(cal, ["initNamespace", namespace]);
-          } else p(cal, ar);
-          return;
-        }
-        p(cal, ar);
-      };
-    })(window, "https://app.cal.com/embed/embed.js", "init");
-
-    Cal("init", "landing", { origin: "https://app.cal.com" });
-    // Cal.ns.clinic("ui", { theme: 'dark', "hideEventTypeDetails": false, "layout": "month_view" });
-
-    // Manual click handler using data-booking-* attributes
-    // (data-cal-* triggers Cal.com's auto-binding which conflicts with Astro View Transitions)
-    function setupCalButton() {
+    // Redirect to booking page with appropriate type parameter
+    function setupBookingButton() {
       document.querySelectorAll('[data-booking-link]').forEach(function(el) {
         el.addEventListener('click', function(e) {
           e.preventDefault();
-          const baseLink = el.getAttribute('data-booking-link');
-          const namespace = el.getAttribute('data-booking-namespace') || 'clinic';
-          const config = JSON.parse(el.getAttribute('data-booking-config') || '{}');
 
           // Determine booking type - check mobile checkbox first, then desktop checkbox
           // Scope to correct container to avoid duplicate ID issues
@@ -688,18 +654,14 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
             isClinic = inClinicCheckbox ? inClinicCheckbox.checked : true;
           }
 
-          const suffix = isClinic ? '/clinic' : '/remote';
-          const calLink = baseLink + suffix;
-
-          // Sync theme with AstroWind's current theme state
-          config.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-          Cal.ns[namespace]("modal", { calLink: calLink, config: config });
+          const bookingType = isClinic ? 'clinic' : 'remote';
+          window.location.href = '/landing/book?type=' + bookingType;
         });
       });
     }
 
     // Use astro:page-load which fires on initial load and after View Transitions
-    document.addEventListener('astro:page-load', setupCalButton);
+    document.addEventListener('astro:page-load', setupBookingButton);
 
     // Desktop: Checkbox label update (scoped to hero-actions-container to avoid duplicate ID issues)
     document.addEventListener('astro:page-load', function() {
