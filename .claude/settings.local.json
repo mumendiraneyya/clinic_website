@@ -10,7 +10,8 @@
       "WebSearch",
       "WebFetch(domain:cal.com)",
       "WebFetch(domain:github.com)",
-      "mcp__chrome-devtools__list_console_messages"
+      "mcp__chrome-devtools__list_console_messages",
+      "mcp__chrome-devtools__click"
     ],
     "deny": [],
     "ask": []

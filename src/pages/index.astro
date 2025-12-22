@@ -631,44 +631,250 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
     </Fragment>
   </CallToAction> -->
 
-  <!-- Booking Redirect Script -->
+  <!-- Cal.com Embed Script -->
   <script is:inline>
-    // Redirect to booking page with appropriate type parameter
+    (function (C, A, L) {
+      let p = function (a, ar) { a.q.push(ar); };
+      let d = C.document;
+      C.Cal = C.Cal || function () {
+        let cal = C.Cal;
+        let ar = arguments;
+        if (!cal.loaded) {
+          cal.ns = {};
+          cal.q = cal.q || [];
+          d.head.appendChild(d.createElement("script")).src = A;
+          cal.loaded = true;
+        }
+        if (ar[0] === L) {
+          const api = function () { p(api, arguments); };
+          const namespace = ar[1];
+          api.q = api.q || [];
+          if (typeof namespace === "string") {
+            cal.ns[namespace] = cal.ns[namespace] || api;
+            p(cal.ns[namespace], ar);
+            p(cal, ["initNamespace", namespace]);
+          } else p(cal, ar);
+          return;
+        }
+        p(cal, ar);
+      };
+    })(window, "https://app.cal.com/embed/embed.js", "init");
+
+    Cal("init", "landing", { origin: "https://app.cal.com" });
+  </script>
+
+  <!-- Booking Flow Script -->
+  <script is:inline>
+    var STORAGE_KEY = 'phone_verification_token';
+    var VALIDATE_ENDPOINT = 'https://n8n.orwa.tech/webhook/b1ac96a5-c166-4ec0-9a3a-37198d210e46';
+    var CAL_BASE_LINK = 'د.-مو-من-ديرانية-z6vyi6';
+    var CAL_NAMESPACE = 'landing';
+
+    // Current booking modal elements
+    var bookingModal = null;
+    var bookingBackdrop = null;
+    var bookingIframe = null;
+
+    // Get booking type from checkbox state
+    function getBookingType() {
+      var isMobile = window.innerWidth < 768;
+      var isClinic = true;
+
+      if (isMobile) {
+        var mobileContainer = document.getElementById('hero-mobile-actions');
+        var mobileCheckbox = mobileContainer ? mobileContainer.querySelector('#booking-in-clinic-mobile') : null;
+        isClinic = mobileCheckbox ? mobileCheckbox.checked : true;
+      } else {
+        var actionsContainer = document.getElementById('hero-actions-container');
+        var inClinicCheckbox = actionsContainer ? actionsContainer.querySelector('#booking-in-clinic') : null;
+        isClinic = inClinicCheckbox ? inClinicCheckbox.checked : true;
+      }
+
+      return isClinic ? 'clinic' : 'remote';
+    }
+
+    // Validate token with server
+    async function validateToken(token) {
+      try {
+        var response = await fetch(VALIDATE_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ token: token }),
+        });
+        return await response.json();
+      } catch (e) {
+        return { success: false, payload: null };
+      }
+    }
+
+    // Open Cal.com modal
+    function openCalModal(phone, token, bookingType) {
+      var calLink = CAL_BASE_LINK + '/' + bookingType;
+
+      var config = {
+        layout: 'month_view',
+        theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+        attendeePhoneNumber: phone,
+        verificationToken: token,
+      };
+
+      Cal.ns[CAL_NAMESPACE]("modal", { calLink: calLink, config: config });
+    }
+
+    // Create and show booking popup modal
+    function showBookingPopup(bookingType) {
+      // Create backdrop
+      bookingBackdrop = document.createElement('div');
+      bookingBackdrop.id = 'booking-popup-backdrop';
+      bookingBackdrop.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9998;opacity:0;transition:opacity 0.2s ease;';
+
+      // Create modal container
+      bookingModal = document.createElement('div');
+      bookingModal.id = 'booking-popup-modal';
+      bookingModal.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.95);background:white;border-radius:1rem;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);z-index:9999;width:90%;max-width:400px;max-height:90vh;overflow:hidden;opacity:0;transition:opacity 0.2s ease, transform 0.2s ease;';
+
+      // Handle dark mode
+      if (document.documentElement.classList.contains('dark')) {
+        bookingModal.style.background = '#1f2937';
+      }
+
+      // Create close button
+      var closeBtn = document.createElement('button');
+      closeBtn.innerHTML = '&times;';
+      closeBtn.style.cssText = 'position:absolute;top:0.5rem;left:0.5rem;width:2rem;height:2rem;border:none;background:transparent;font-size:1.5rem;cursor:pointer;color:#6b7280;z-index:1;';
+      closeBtn.onclick = closeBookingPopup;
+
+      // Create iframe
+      bookingIframe = document.createElement('iframe');
+      bookingIframe.src = '/popup/book/?type=' + bookingType;
+      bookingIframe.style.cssText = 'width:100%;height:320px;border:none;';
+
+      // Assemble modal
+      bookingModal.appendChild(closeBtn);
+      bookingModal.appendChild(bookingIframe);
+
+      // Add to DOM
+      document.body.appendChild(bookingBackdrop);
+      document.body.appendChild(bookingModal);
+
+      // Prevent body scroll
+      document.body.style.overflow = 'hidden';
+
+      // Animate in
+      requestAnimationFrame(function() {
+        bookingBackdrop.style.opacity = '1';
+        bookingModal.style.opacity = '1';
+        bookingModal.style.transform = 'translate(-50%,-50%) scale(1)';
+      });
+
+      // Close on backdrop click
+      bookingBackdrop.onclick = closeBookingPopup;
+    }
+
+    // Close booking popup modal
+    function closeBookingPopup(callback) {
+      // Handle case where this is called as an event handler (callback is MouseEvent)
+      if (callback && typeof callback !== 'function') {
+        callback = null;
+      }
+
+      if (!bookingModal || !bookingBackdrop) {
+        if (callback) callback();
+        return;
+      }
+
+      // Animate out
+      bookingBackdrop.style.opacity = '0';
+      bookingModal.style.opacity = '0';
+      bookingModal.style.transform = 'translate(-50%,-50%) scale(0.95)';
+
+      // Remove after animation
+      setTimeout(function() {
+        if (bookingBackdrop && bookingBackdrop.parentNode) {
+          bookingBackdrop.parentNode.removeChild(bookingBackdrop);
+        }
+        if (bookingModal && bookingModal.parentNode) {
+          bookingModal.parentNode.removeChild(bookingModal);
+        }
+        bookingModal = null;
+        bookingBackdrop = null;
+        bookingIframe = null;
+        document.body.style.overflow = '';
+
+        // Execute callback after modal is fully closed
+        if (callback) callback();
+      }, 200);
+    }
+
+    // Handle messages from popup iframe
+    function handlePopupMessage(event) {
+      // Only accept messages from our popup
+      if (!event.data || !event.data.action) return;
+
+      var action = event.data.action;
+      var phone = event.data.phone;
+      var token = event.data.token;
+      var bookingType = event.data.bookingType;
+
+      if (action === 'proceed') {
+        // CRITICAL: Close our modal first, then open Cal.com modal
+        closeBookingPopup(function() {
+          // Small delay to ensure DOM is clean
+          setTimeout(function() {
+            openCalModal(phone, token, bookingType);
+          }, 50);
+        });
+      } else if (action === 'change-phone') {
+        closeBookingPopup(function() {
+          window.location.href = '/book/?type=' + bookingType + '&change=true';
+        });
+      } else if (action === 'close') {
+        closeBookingPopup();
+      }
+    }
+
+    // Setup booking button click handler
     function setupBookingButton() {
       document.querySelectorAll('[data-booking-link]').forEach(function(el) {
-        el.addEventListener('click', function(e) {
+        el.addEventListener('click', async function(e) {
           e.preventDefault();
 
-          // Determine booking type - check mobile checkbox first, then desktop checkbox
-          // Scope to correct container to avoid duplicate ID issues
-          const isMobile = window.innerWidth < 768;
-          let isClinic = true;
+          var bookingType = getBookingType();
+          var token = localStorage.getItem(STORAGE_KEY);
 
-          if (isMobile) {
-            const mobileContainer = document.getElementById('hero-mobile-actions');
-            const mobileCheckbox = mobileContainer ? mobileContainer.querySelector('#booking-in-clinic-mobile') : null;
-            isClinic = mobileCheckbox ? mobileCheckbox.checked : true;
-          } else {
-            const actionsContainer = document.getElementById('hero-actions-container');
-            const inClinicCheckbox = actionsContainer ? actionsContainer.querySelector('#booking-in-clinic') : null;
-            isClinic = inClinicCheckbox ? inClinicCheckbox.checked : true;
+          // No token - go directly to full booking page
+          if (!token) {
+            window.location.href = '/book/?type=' + bookingType;
+            return;
           }
 
-          const bookingType = isClinic ? 'clinic' : 'remote';
-          window.location.href = '/landing/book?type=' + bookingType;
+          // Validate token
+          var result = await validateToken(token);
+
+          if (result.success && result.payload) {
+            // Valid token - show popup for quick booking
+            showBookingPopup(bookingType);
+          } else {
+            // Invalid token - clear and go to booking page
+            localStorage.removeItem(STORAGE_KEY);
+            window.location.href = '/book/?type=' + bookingType;
+          }
         });
       });
     }
+
+    // Listen for messages from popup
+    window.addEventListener('message', handlePopupMessage);
 
     // Use astro:page-load which fires on initial load and after View Transitions
     document.addEventListener('astro:page-load', setupBookingButton);
 
     // Desktop: Checkbox label update (scoped to hero-actions-container to avoid duplicate ID issues)
     document.addEventListener('astro:page-load', function() {
-      const actionsContainer = document.getElementById('hero-actions-container');
+      var actionsContainer = document.getElementById('hero-actions-container');
       if (actionsContainer) {
-        const checkbox = actionsContainer.querySelector('#booking-in-clinic');
-        const label = actionsContainer.querySelector('#booking-label');
+        var checkbox = actionsContainer.querySelector('#booking-in-clinic');
+        var label = actionsContainer.querySelector('#booking-label');
         if (checkbox && label) {
           checkbox.addEventListener('change', function() {
             label.textContent = this.checked ? 'موعد في العيادة' : 'استشارة عن بعد';
@@ -679,10 +885,10 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
 
     // Mobile: Checkbox label update (scoped to hero-mobile-actions to avoid duplicate ID issues)
     document.addEventListener('astro:page-load', function() {
-      const mobileContainer = document.getElementById('hero-mobile-actions');
+      var mobileContainer = document.getElementById('hero-mobile-actions');
       if (mobileContainer) {
-        const checkbox = mobileContainer.querySelector('#booking-in-clinic-mobile');
-        const label = mobileContainer.querySelector('#booking-label-mobile');
+        var checkbox = mobileContainer.querySelector('#booking-in-clinic-mobile');
+        var label = mobileContainer.querySelector('#booking-label-mobile');
         if (checkbox && label) {
           checkbox.addEventListener('change', function() {
             label.textContent = this.checked ? 'في العيادة' : 'عن بعد';
@@ -696,7 +902,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
       document.querySelectorAll('a[href="/#hero-section"], a[href="#hero-section"]').forEach(function(link) {
         link.addEventListener('click', function(e) {
           e.preventDefault();
-          const heroSection = document.getElementById('hero-section');
+          var heroSection = document.getElementById('hero-section');
           if (heroSection) {
             // Scroll to just past the hero image (window height)
             window.scrollTo({
@@ -706,6 +912,13 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
           }
         });
       });
+    });
+
+    // Close popup on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && bookingModal) {
+        closeBookingPopup();
+      }
     });
   </script>
 </Layout>

@@ -60,7 +60,7 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
             checked
             class="method-radio w-4 h-4 text-primary focus:ring-primary"
           />
-          <span class="text-gray-700 dark:text-gray-300">رسالة نصية SMS</span>
+          <span class="text-gray-700 dark:text-gray-300">رسالة نصية قصيرة</span>
         </label>
         <label class="flex items-center gap-2 cursor-pointer">
           <input
@@ -182,9 +182,27 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
         return 'sms';
       }
 
-      // Helper: Normalize phone number (remove spaces, dashes, plus sign)
+      // Helper: Normalize phone number
+      // - Remove spaces and dashes
+      // - Strip leading + or 00
+      // - Replace leading 0 with 962 (Jordan default)
       function normalizePhone(phone: string): string {
-        return phone.replace(/[\s\-\+]/g, '');
+        let normalized = phone.replace(/[\s\-]/g, '');
+
+        // Strip leading +
+        if (normalized.startsWith('+')) {
+          normalized = normalized.slice(1);
+        }
+        // Strip leading 00
+        else if (normalized.startsWith('00')) {
+          normalized = normalized.slice(2);
+        }
+        // Replace leading 0 with Jordan country code
+        else if (normalized.startsWith('0')) {
+          normalized = '962' + normalized.slice(1);
+        }
+
+        return normalized;
       }
 
       // Send verification code
@@ -294,3 +312,17 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
   // Initialize on page load and after View Transitions
   document.addEventListener('astro:page-load', initPhoneVerification);
 </script>
+
+<style is:global>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&display=swap');
+
+  .phone-verification .phone-input {
+    font-family: 'Source Code Pro', monospace !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  .phone-verification .code-input {
+    font-family: 'Source Code Pro', monospace !important;
+    letter-spacing: 0.5em !important;
+  }
+</style>

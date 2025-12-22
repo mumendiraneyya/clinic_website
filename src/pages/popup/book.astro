@@ -1,0 +1,192 @@
+---
+/**
+ * Popup Book Page
+ *
+ * A minimal page (no layout/headers) designed to be shown in a modal popup.
+ * Contains only PhoneSelector for users with a valid JWT token.
+ *
+ * Communicates with parent window via postMessage:
+ * - { action: 'proceed', phone, token, bookingType } - User wants to proceed with booking
+ * - { action: 'change-phone', bookingType } - User wants to use a different phone number
+ * - { action: 'close' } - Close the popup
+ *
+ * Query params:
+ * - type: 'clinic' | 'remote' - Booking type
+ */
+
+import PopupLayout from '~/layouts/PopupLayout.astro';
+import PhoneSelector from '~/components/booking/PhoneSelector.astro';
+---
+
+<PopupLayout title="حجز">
+  <div class="p-6 pt-12 pb-4">
+    <div class="max-w-sm mx-auto">
+      <!-- Header -->
+      <div class="text-center mb-4">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">حجز</h1>
+        <p id="booking-type-label" class="text-base text-muted dark:text-slate-400"></p>
+      </div>
+
+      <!-- Phone Selector -->
+      <div id="selector-container">
+        <PhoneSelector id="phone-selector" phone="" />
+      </div>
+
+      <!-- Loading State (shown while validating token) -->
+      <div id="loading-state" class="hidden text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent"></div>
+        <p class="mt-2 text-sm text-muted dark:text-slate-400">جارٍ التحقق...</p>
+      </div>
+
+      <!-- Error State (shown if no valid token) -->
+      <div id="error-state" class="hidden text-center py-8">
+        <p class="text-sm text-red-600 dark:text-red-400 mb-4">لم يتم العثور على رقم هاتف محفوظ</p>
+        <button id="go-to-verify" class="btn-primary text-sm py-2 px-4">
+          التحقق من رقم الهاتف
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline>
+    var STORAGE_KEY = 'phone_verification_token';
+    var VALIDATE_ENDPOINT = 'https://n8n.orwa.tech/webhook/b1ac96a5-c166-4ec0-9a3a-37198d210e46';
+
+    // Get booking type from URL
+    function getBookingType() {
+      var params = new URLSearchParams(window.location.search);
+      return params.get('type') === 'remote' ? 'remote' : 'clinic';
+    }
+
+    // Format phone for display
+    function formatPhoneDisplay(phone) {
+      var digits = phone.replace(/^\+/, '');
+      if (digits.length >= 12) {
+        return '+' + digits.slice(0, 3) + ' ' + digits.slice(3, 5) + ' ' + digits.slice(5, 8) + ' ' + digits.slice(8);
+      }
+      return phone.startsWith('+') ? phone : '+' + phone;
+    }
+
+    // Validate token with server
+    async function validateToken(token) {
+      try {
+        var response = await fetch(VALIDATE_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ token: token }),
+        });
+        return await response.json();
+      } catch (e) {
+        return { success: false, payload: null };
+      }
+    }
+
+    // Send message to parent window
+    function postToParent(data) {
+      if (window.parent !== window) {
+        window.parent.postMessage(data, '*');
+      }
+    }
+
+    // Show/hide states
+    function showLoading() {
+      document.getElementById('loading-state').classList.remove('hidden');
+      document.getElementById('selector-container').classList.add('hidden');
+      document.getElementById('error-state').classList.add('hidden');
+    }
+
+    function showSelector(phone) {
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('selector-container').classList.remove('hidden');
+      document.getElementById('error-state').classList.add('hidden');
+
+      // Update phone in selector
+      var selector = document.getElementById('phone-selector');
+      if (selector) {
+        selector.dataset.phone = phone;
+        var phoneDisplay = selector.querySelector('p[dir="ltr"]');
+        if (phoneDisplay) {
+          phoneDisplay.textContent = formatPhoneDisplay(phone);
+        }
+      }
+    }
+
+    function showError() {
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('selector-container').classList.add('hidden');
+      document.getElementById('error-state').classList.remove('hidden');
+    }
+
+    // Initialize
+    async function init() {
+      var bookingType = getBookingType();
+
+      // Set booking type label
+      var typeLabel = document.getElementById('booking-type-label');
+      if (typeLabel) {
+        typeLabel.textContent = bookingType === 'clinic' ? 'موعد في العيادة' : 'استشارة عن بعد';
+      }
+
+      showLoading();
+
+      // Check for token
+      var token = localStorage.getItem(STORAGE_KEY);
+      if (!token) {
+        showError();
+        return;
+      }
+
+      // Validate token
+      var result = await validateToken(token);
+      if (result.success && result.payload) {
+        var phone = '+' + result.payload.phone;
+        showSelector(phone);
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+        showError();
+      }
+    }
+
+    // Event handlers
+    function setupEventHandlers() {
+      var bookingType = getBookingType();
+
+      // Phone selected - proceed with booking
+      document.addEventListener('phone-selected', function(e) {
+        var phone = e.detail.phone;
+        var token = localStorage.getItem(STORAGE_KEY);  // Read fresh at event time
+        postToParent({
+          action: 'proceed',
+          phone: phone,
+          token: token,
+          bookingType: bookingType
+        });
+      });
+
+      // Change phone - redirect to full verification page
+      document.addEventListener('change-phone', function() {
+        postToParent({
+          action: 'change-phone',
+          bookingType: bookingType
+        });
+      });
+
+      // Go to verify button (when no token)
+      var goToVerifyBtn = document.getElementById('go-to-verify');
+      if (goToVerifyBtn) {
+        goToVerifyBtn.addEventListener('click', function() {
+          postToParent({
+            action: 'change-phone',
+            bookingType: bookingType
+          });
+        });
+      }
+    }
+
+    // Run on load
+    document.addEventListener('DOMContentLoaded', function() {
+      init();
+      setupEventHandlers();
+    });
+  </script>
+</PopupLayout>
