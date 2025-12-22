@@ -32,15 +32,16 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
 <div id={id} class={`phone-verification ${className}`} data-send-endpoint={SEND_CODE_ENDPOINT} data-verify-endpoint={VERIFY_CODE_ENDPOINT}>
   <!-- Phone Input Section -->
   <div class="phone-input-section">
-    <label for={`${id}-phone`} class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+    <label for={`${id}-phone`} class="block text-sm font-medium text-secondary dark:text-gray-300 mb-2">
       رقم الهاتف
     </label>
     <div class="flex gap-2 mb-4">
+      <span class="country-flag hidden items-center justify-center w-12 text-2xl"></span>
       <input
         type="tel"
         id={`${id}-phone`}
         class="phone-input flex-1 px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
-        placeholder="962xxxxxxxxx"
+        placeholder="07xxxxxxxx"
         dir="ltr"
         inputmode="numeric"
       />
@@ -48,7 +49,7 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
 
     <!-- Method Selector -->
     <div class="method-selector mb-4">
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+      <label class="block text-sm font-medium text-secondary dark:text-gray-300 mb-2">
         طريقة استلام رمز التحقق
       </label>
       <div class="flex gap-4">
@@ -136,6 +137,7 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
       const verifyEndpoint = container.dataset.verifyEndpoint;
 
       const phoneInput = container.querySelector('.phone-input') as HTMLInputElement;
+      const countryFlag = container.querySelector('.country-flag') as HTMLElement;
       const methodRadios = container.querySelectorAll('.method-radio') as NodeListOf<HTMLInputElement>;
       const sendCodeBtn = container.querySelector('.send-code-btn') as HTMLButtonElement;
       const statusMessage = container.querySelector('.status-message') as HTMLElement;
@@ -144,6 +146,21 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
       const verifyBtn = container.querySelector('.verify-btn') as HTMLButtonElement;
 
       let codeSentSuccessfully = false;
+
+      // Helper: Update the flag display (uses window.getFlagFromPhone from phone-utils.js)
+      function updateFlag() {
+        const normalized = normalizePhone(phoneInput.value);
+        const flag = (window as any).getFlagFromPhone ? (window as any).getFlagFromPhone(normalized) : '';
+        countryFlag.textContent = flag;
+        // Show element only when flag is detected
+        if (flag) {
+          countryFlag.classList.remove('hidden');
+          countryFlag.classList.add('flex');
+        } else {
+          countryFlag.classList.add('hidden');
+          countryFlag.classList.remove('flex');
+        }
+      }
 
       // Helper: Show/hide spinner
       function setLoading(btn: HTMLButtonElement, loading: boolean) {
@@ -302,10 +319,16 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
         if (e.key === 'Enter') verifyCode();
       });
 
+      // Update flag as user types
+      phoneInput.addEventListener('input', updateFlag);
+
       // Auto-format: only allow numbers in code input
       codeInput.addEventListener('input', () => {
         codeInput.value = codeInput.value.replace(/\D/g, '').slice(0, 4);
       });
+
+      // Initialize flag on load
+      updateFlag();
     });
   }
 
@@ -317,12 +340,12 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
   @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&display=swap');
 
   .phone-verification .phone-input {
-    font-family: 'Source Code Pro', monospace !important;
+    font-family: 'New Rail Alphabet', monospace !important;
     letter-spacing: 0.05em !important;
   }
 
   .phone-verification .code-input {
-    font-family: 'Source Code Pro', monospace !important;
+    font-family: 'New Rail Alphabet', monospace !important;
     letter-spacing: 0.5em !important;
   }
 </style>

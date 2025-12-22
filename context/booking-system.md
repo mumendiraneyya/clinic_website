@@ -158,7 +158,7 @@ See `context/cal-com-embed.md` for more Cal.com details.
 ## Styling
 
 Both PhoneVerification and PhoneSelector use:
-- Font: Source Code Pro (weight 400)
+- Font: New Rail Alphabet (weight 400)
 - Phone input: `letter-spacing: 0.05em`
 - Code input: `letter-spacing: 0.5em`
 

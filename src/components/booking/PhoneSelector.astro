@@ -32,7 +32,7 @@ const { id = 'phone-selector', class: className = '', phone = '' } = Astro.props
 
 <div id={id} class={`phone-selector ${className}`} data-phone={phone}>
   <div class="text-center">
-    <p class="text-gray-600 dark:text-gray-400 mb-2">
+    <p class="text-secondary mb-2">
       رقم الهاتف المحفوظ
     </p>
 
@@ -100,10 +100,8 @@ const { id = 'phone-selector', class: className = '', phone = '' } = Astro.props
 </script>
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&display=swap');
-
   .phone-number {
-    font-family: 'Source Code Pro', monospace !important;
+    font-family: 'New Rail Alphabet', monospace !important;
     letter-spacing: 0.05em;
   }
 </style>
