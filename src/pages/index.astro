@@ -27,8 +27,11 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
 
   <Hero
     id="hero-section"
-    image1={{ src: '~/assets/images/hero-photo.webp', alt: 'صورة الطبيب' }}
-    image2={{ src: '~/assets/images/hero-artwork.svg', alt: 'شعار العيادة' }}
+    images={[
+      { src: '~/assets/images/hero-artwork-bottom.svg', alt: 'خلفية شعار العيادة', class: 'opacity-80 dark:opacity-15' },
+      { src: '~/assets/images/hero-artwork-top.svg', alt: 'شعار العيادة' },
+      { src: '~/assets/images/hero-photo.webp', alt: 'صورة الطبيب' },
+    ]}
     fullHeight={true}
   >
     <Fragment slot="content">

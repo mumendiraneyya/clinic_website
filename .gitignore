@@ -25,4 +25,5 @@ pnpm-lock.yaml
 .wrangler
 
 **/*.xcf
+**/*.svgz
 screenshot_fullheight_*.png

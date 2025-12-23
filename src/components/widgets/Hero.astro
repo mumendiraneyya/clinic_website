@@ -11,8 +11,7 @@ const {
 
   content = await Astro.slots.render('content'),
   actions = await Astro.slots.render('actions'),
-  image1 = await Astro.slots.render('image1'),
-  image2 = await Astro.slots.render('image2'),
+  images = [],
 
   id,
   bg = await Astro.slots.render('bg'),
@@ -35,38 +34,24 @@ const {
       <!-- Hero image - full width on mobile -->
       <div class="relative w-full">
         {
-          (image1 || image2) && (
+          images.length > 0 && (
             <div class="relative grid [&>*]:col-start-1 [&>*]:row-start-1">
-              {image2 && (
-                typeof image2 === 'string' ? (
-                  <Fragment set:html={image2} />
+              {images.map((img, index) => (
+                typeof img === 'string' ? (
+                  <div style={`z-index: ${index + 1}`} set:html={img} />
                 ) : (
                   <Image
-                    class="w-full h-full object-cover"
+                    class={`w-full h-full object-cover ${img.class || ''}`}
+                    style={`z-index: ${index + 1}`}
                     widths={[400, 768]}
                     sizes="100vw"
                     loading="eager"
                     width={768}
                     height={432}
-                    {...image2}
+                    {...img}
                   />
                 )
-              )}
-              {image1 && (
-                typeof image1 === 'string' ? (
-                  <Fragment set:html={image1} />
-                ) : (
-                  <Image
-                    class="w-full h-full object-cover"
-                    widths={[400, 768]}
-                    sizes="100vw"
-                    loading="eager"
-                    width={768}
-                    height={432}
-                    {...image1}
-                  />
-                )
-              )}
+              ))}
             </div>
           )
         }
@@ -126,38 +111,24 @@ const {
     >
       <div id="hero-image-inner" class="relative max-w-5xl w-full">
         {
-          (image1 || image2) && (
+          images.length > 0 && (
             <div class="relative grid [&>*]:col-start-1 [&>*]:row-start-1">
-              {image2 && (
-                typeof image2 === 'string' ? (
-                  <Fragment set:html={image2} />
+              {images.map((img, index) => (
+                typeof img === 'string' ? (
+                  <div style={`z-index: ${index + 1}`} set:html={img} />
                 ) : (
                   <Image
-                    class="w-full h-full object-cover rounded-md"
+                    class={`w-full h-full object-cover rounded-md ${img.class || ''}`}
+                    style={`z-index: ${index + 1}`}
                     widths={[400, 768, 1024, 2040]}
                     sizes="(max-width: 767px) 400px, (max-width: 1023px) 768px, (max-width: 2039px) 1024px, 2040px"
                     loading="eager"
                     width={1024}
                     height={576}
-                    {...image2}
+                    {...img}
                   />
                 )
-              )}
-              {image1 && (
-                typeof image1 === 'string' ? (
-                  <Fragment set:html={image1} />
-                ) : (
-                  <Image
-                    class="w-full h-full object-cover rounded-md"
-                    widths={[400, 768, 1024, 2040]}
-                    sizes="(max-width: 767px) 400px, (max-width: 1023px) 768px, (max-width: 2039px) 1024px, 2040px"
-                    loading="eager"
-                    width={1024}
-                    height={576}
-                    {...image1}
-                  />
-                )
-              )}
+              ))}
             </div>
           )
         }
@@ -491,38 +462,24 @@ const {
         </div>
         <div class="intersect-once intersect-no-queue intersect-quarter motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade">
           {
-            (image1 || image2) && (
+            images.length > 0 && (
               <div class="relative grid m-auto max-w-5xl [&>*]:col-start-1 [&>*]:row-start-1">
-                {image2 && (
-                  typeof image2 === 'string' ? (
-                    <Fragment set:html={image2} />
+                {images.map((img, index) => (
+                  typeof img === 'string' ? (
+                    <div style={`z-index: ${index + 1}`} set:html={img} />
                   ) : (
                     <Image
-                      class="w-full h-full object-cover rounded-md"
+                      class={`w-full h-full object-cover rounded-md ${img.class || ''}`}
+                      style={`z-index: ${index + 1}`}
                       widths={[400, 768, 1024, 2040]}
                       sizes="(max-width: 767px) 400px, (max-width: 1023px) 768px, (max-width: 2039px) 1024px, 2040px"
                       loading="eager"
                       width={1024}
                       height={576}
-                      {...image2}
+                      {...img}
                     />
                   )
-                )}
-                {image1 && (
-                  typeof image1 === 'string' ? (
-                    <Fragment set:html={image1} />
-                  ) : (
-                    <Image
-                      class="w-full h-full object-cover rounded-md"
-                      widths={[400, 768, 1024, 2040]}
-                      sizes="(max-width: 767px) 400px, (max-width: 1023px) 768px, (max-width: 2039px) 1024px, 2040px"
-                      loading="eager"
-                      width={1024}
-                      height={576}
-                      {...image1}
-                    />
-                  )
-                )}
+                ))}
               </div>
             )
           }

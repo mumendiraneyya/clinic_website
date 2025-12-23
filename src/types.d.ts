@@ -219,11 +219,17 @@ export interface Form {
 }
 
 // WIDGETS
+export interface HeroImage {
+  src: string;
+  alt: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
 export interface Hero extends Omit<Headline, 'classes'>, Omit<Widget, 'isDark' | 'classes'> {
   content?: string;
   actions?: string | CallToAction[];
-  image1?: string | unknown;
-  image2?: string | unknown;
+  images?: (string | HeroImage)[];
   fullHeight?: boolean;
 }
 
