@@ -15,10 +15,10 @@ const metadata = {
 // API endpoint for token validation
 const VALIDATE_TOKEN_ENDPOINT = 'https://n8n.orwa.tech/webhook/b1ac96a5-c166-4ec0-9a3a-37198d210e46';
 
-// Cal.com configuration
-const CAL_PRIVATE_LINKS = {
-  clinic: 'https://cal.com/d/o1rV3ZHVMHehDi1SitN34y/clinic',
-  remote: 'https://cal.com/d/jJVCjooNzHp1QaNDawJ64b/remote',
+// Cal.com configuration - use username-based paths (private links don't support /embed)
+const CAL_LINKS = {
+  clinic: 'د.-مو-من-ديرانية-z6vyi6/clinic',
+  remote: 'د.-مو-من-ديرانية-z6vyi6/remote',
 };
 const CAL_NAMESPACE = 'booking';
 ---
@@ -67,7 +67,7 @@ const CAL_NAMESPACE = 'booking';
 
   <!-- Cal.com Embed Script -->
   <script is:inline define:vars={{ CAL_NAMESPACE }}>
-    /* eslint-disable prefer-rest-params, no-var */
+    /* eslint-disable prefer-rest-params, no-var, no-undef */
     (function (C, A, L) {
       var p = function (a, ar) { a.q.push(ar); };
       var d = C.document;
@@ -99,8 +99,8 @@ const CAL_NAMESPACE = 'booking';
     /* eslint-enable prefer-rest-params, no-var */
   </script>
 
-  <script is:inline define:vars={{ CAL_PRIVATE_LINKS, CAL_NAMESPACE, VALIDATE_TOKEN_ENDPOINT }}>
-    /* eslint-disable no-var */
+  <script is:inline define:vars={{ CAL_LINKS, CAL_NAMESPACE, VALIDATE_TOKEN_ENDPOINT }}>
+    /* eslint-disable no-var, no-undef */
     var STORAGE_KEY = 'phone_verification_token';
 
     // Get booking type from URL
@@ -126,7 +126,7 @@ const CAL_NAMESPACE = 'booking';
     // Open Cal.com modal with prefilled data
     function openCalModal(phone, token) {
       var bookingType = getBookingType();
-      var calLink = CAL_PRIVATE_LINKS[bookingType];
+      var calLink = CAL_LINKS[bookingType];
 
       var config = {
         layout: 'month_view',
