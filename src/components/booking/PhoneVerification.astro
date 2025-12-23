@@ -126,13 +126,18 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
 </div>
 
 <script>
+  declare global {
+    interface Window {
+      getFlagFromPhone?: (phone: string) => string;
+    }
+  }
+
   function initPhoneVerification() {
-    document.querySelectorAll('.phone-verification').forEach((container) => {
+    document.querySelectorAll<HTMLElement>('.phone-verification').forEach((container) => {
       // Skip if already initialized
       if (container.dataset.initialized === 'true') return;
       container.dataset.initialized = 'true';
 
-      const id = container.id;
       const sendEndpoint = container.dataset.sendEndpoint;
       const verifyEndpoint = container.dataset.verifyEndpoint;
 
@@ -150,7 +155,7 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
       // Helper: Update the flag display (uses window.getFlagFromPhone from phone-utils.js)
       function updateFlag() {
         const normalized = normalizePhone(phoneInput.value);
-        const flag = (window as any).getFlagFromPhone ? (window as any).getFlagFromPhone(normalized) : '';
+        const flag = window.getFlagFromPhone ? window.getFlagFromPhone(normalized) : '';
         countryFlag.textContent = flag;
         // Show element only when flag is detected
         if (flag) {
@@ -204,7 +209,7 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
       // - Strip leading + or 00
       // - Replace leading 0 with 962 (Jordan default)
       function normalizePhone(phone: string): string {
-        let normalized = phone.replace(/[\s\-]/g, '');
+        let normalized = phone.replace(/[\s-]/g, '');
 
         // Strip leading +
         if (normalized.startsWith('+')) {
@@ -258,7 +263,7 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
           } else {
             showStatus('حدث خطأ. الرجاء المحاولة مرة أخرى', 'error');
           }
-        } catch (error) {
+        } catch {
           showStatus('حدث خطأ في الاتصال. الرجاء المحاولة مرة أخرى', 'error');
         } finally {
           setLoading(sendCodeBtn, false);
@@ -299,7 +304,7 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
             codeInput.value = '';
             codeInput.focus();
           }
-        } catch (error) {
+        } catch {
           showStatus('حدث خطأ في الاتصال. الرجاء المحاولة مرة أخرى', 'error');
         } finally {
           setLoading(verifyBtn, false);

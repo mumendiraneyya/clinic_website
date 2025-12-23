@@ -2,15 +2,10 @@
 import Layout from '~/layouts/PageLayout.astro';
 
 import Hero from '~/components/widgets/Hero.astro';
-import Note from '~/components/widgets/Note.astro';
 import Features from '~/components/widgets/Features.astro';
-import Features2 from '~/components/widgets/Features2.astro';
-import Steps from '~/components/widgets/Steps.astro';
-import Content from '~/components/widgets/Content.astro';
 import BlogLatestPosts from '~/components/widgets/BlogLatestPosts.astro';
 import FAQs from '~/components/widgets/FAQs.astro';
 import Stats from '~/components/widgets/Stats.astro';
-import CallToAction from '~/components/widgets/CallToAction.astro';
 import Location from '~/components/widgets/Location.astro';
 import Testimonials from '~/components/widgets/Testimonials.astro';
 import { Icon } from 'astro-icon/components';
@@ -636,12 +631,13 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
 
   <!-- Cal.com Embed Script -->
   <script is:inline>
+    /* eslint-disable prefer-rest-params, no-var */
     (function (C, A, L) {
-      let p = function (a, ar) { a.q.push(ar); };
-      let d = C.document;
+      var p = function (a, ar) { a.q.push(ar); };
+      var d = C.document;
       C.Cal = C.Cal || function () {
-        let cal = C.Cal;
-        let ar = arguments;
+        var cal = C.Cal;
+        var ar = arguments;
         if (!cal.loaded) {
           cal.ns = {};
           cal.q = cal.q || [];
@@ -649,8 +645,8 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
           cal.loaded = true;
         }
         if (ar[0] === L) {
-          const api = function () { p(api, arguments); };
-          const namespace = ar[1];
+          var api = function () { p(api, arguments); };
+          var namespace = ar[1];
           api.q = api.q || [];
           if (typeof namespace === "string") {
             cal.ns[namespace] = cal.ns[namespace] || api;
@@ -664,10 +660,12 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
     })(window, "https://app.cal.com/embed/embed.js", "init");
 
     Cal("init", "landing", { origin: "https://app.cal.com" });
+    /* eslint-enable prefer-rest-params, no-var */
   </script>
 
   <!-- Booking Flow Script -->
   <script is:inline>
+    /* eslint-disable no-var */
     var STORAGE_KEY = 'phone_verification_token';
     var VALIDATE_ENDPOINT = 'https://n8n.orwa.tech/webhook/b1ac96a5-c166-4ec0-9a3a-37198d210e46';
     var CAL_BASE_LINK = 'د.-مو-من-ديرانية-z6vyi6';
@@ -705,7 +703,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
           body: new URLSearchParams({ token: token }),
         });
         return await response.json();
-      } catch (e) {
+      } catch {
         return { success: false, payload: null };
       }
     }
@@ -749,7 +747,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
 
       // Create iframe
       bookingIframe = document.createElement('iframe');
-      bookingIframe.src = '/popup/book/?type=' + bookingType;
+      bookingIframe.src = '/popup/book?type=' + bookingType;
       bookingIframe.style.cssText = 'width:100%;height:320px;border:none;';
 
       // Assemble modal
@@ -829,7 +827,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
         });
       } else if (action === 'change-phone') {
         closeBookingPopup(function() {
-          window.location.href = '/book/?type=' + bookingType + '&change=true';
+          window.location.href = '/book?type=' + bookingType + '&change=true';
         });
       } else if (action === 'close') {
         closeBookingPopup();
@@ -847,7 +845,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
 
           // No token - go directly to full booking page
           if (!token) {
-            window.location.href = '/book/?type=' + bookingType;
+            window.location.href = '/book?type=' + bookingType;
             return;
           }
 
@@ -860,7 +858,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
           } else {
             // Invalid token - clear and go to booking page
             localStorage.removeItem(STORAGE_KEY);
-            window.location.href = '/book/?type=' + bookingType;
+            window.location.href = '/book?type=' + bookingType;
           }
         });
       });

@@ -16,7 +16,10 @@ const metadata = {
 const VALIDATE_TOKEN_ENDPOINT = 'https://n8n.orwa.tech/webhook/b1ac96a5-c166-4ec0-9a3a-37198d210e46';
 
 // Cal.com configuration
-const CAL_BASE_LINK = 'د.-مو-من-ديرانية-z6vyi6';
+const CAL_PRIVATE_LINKS = {
+  clinic: 'https://cal.com/d/o1rV3ZHVMHehDi1SitN34y/clinic',
+  remote: 'https://cal.com/d/jJVCjooNzHp1QaNDawJ64b/remote',
+};
 const CAL_NAMESPACE = 'booking';
 ---
 
@@ -63,13 +66,14 @@ const CAL_NAMESPACE = 'booking';
   <script src="/scripts/phone-utils.js" is:inline></script>
 
   <!-- Cal.com Embed Script -->
-  <script is:inline define:vars={{ CAL_BASE_LINK, CAL_NAMESPACE, VALIDATE_TOKEN_ENDPOINT }}>
+  <script is:inline define:vars={{ CAL_NAMESPACE }}>
+    /* eslint-disable prefer-rest-params, no-var */
     (function (C, A, L) {
-      let p = function (a, ar) { a.q.push(ar); };
-      let d = C.document;
+      var p = function (a, ar) { a.q.push(ar); };
+      var d = C.document;
       C.Cal = C.Cal || function () {
-        let cal = C.Cal;
-        let ar = arguments;
+        var cal = C.Cal;
+        var ar = arguments;
         if (!cal.loaded) {
           cal.ns = {};
           cal.q = cal.q || [];
@@ -77,8 +81,8 @@ const CAL_NAMESPACE = 'booking';
           cal.loaded = true;
         }
         if (ar[0] === L) {
-          const api = function () { p(api, arguments); };
-          const namespace = ar[1];
+          var api = function () { p(api, arguments); };
+          var namespace = ar[1];
           api.q = api.q || [];
           if (typeof namespace === "string") {
             cal.ns[namespace] = cal.ns[namespace] || api;
@@ -92,9 +96,11 @@ const CAL_NAMESPACE = 'booking';
     })(window, "https://app.cal.com/embed/embed.js", "init");
 
     Cal("init", CAL_NAMESPACE, { origin: "https://app.cal.com" });
+    /* eslint-enable prefer-rest-params, no-var */
   </script>
 
-  <script is:inline define:vars={{ CAL_BASE_LINK, CAL_NAMESPACE, VALIDATE_TOKEN_ENDPOINT }}>
+  <script is:inline define:vars={{ CAL_PRIVATE_LINKS, CAL_NAMESPACE, VALIDATE_TOKEN_ENDPOINT }}>
+    /* eslint-disable no-var */
     var STORAGE_KEY = 'phone_verification_token';
 
     // Get booking type from URL
@@ -112,7 +118,7 @@ const CAL_NAMESPACE = 'booking';
           body: new URLSearchParams({ token: token }),
         });
         return await response.json();
-      } catch (e) {
+      } catch {
         return { success: false, payload: null };
       }
     }
@@ -120,7 +126,7 @@ const CAL_NAMESPACE = 'booking';
     // Open Cal.com modal with prefilled data
     function openCalModal(phone, token) {
       var bookingType = getBookingType();
-      var calLink = CAL_BASE_LINK + '/' + bookingType;
+      var calLink = CAL_PRIVATE_LINKS[bookingType];
 
       var config = {
         layout: 'month_view',
@@ -230,7 +236,9 @@ const CAL_NAMESPACE = 'booking';
         // Reload page with change=false to sync UI state and auto-open Cal.com
         // This ensures if user cancels Cal.com, they see PhoneSelector not verification form
         var bookingType = getBookingType();
-        window.location.href = '/book/?type=' + bookingType + '&change=false';
+        setTimeout(() => { 
+          window.location.href = '/book?type=' + bookingType + '&change=false'
+        }, 500);
       });
 
       // Phone selected event (from PhoneSelector component)

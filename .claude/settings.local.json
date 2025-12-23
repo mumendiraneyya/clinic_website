@@ -16,7 +16,8 @@
       "WebFetch(domain:codepen.io)",
       "WebFetch(domain:gist.github.com)",
       "WebFetch(domain:developers.google.com)",
-      "WebFetch(domain:nutbread.github.io)"
+      "WebFetch(domain:nutbread.github.io)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []
