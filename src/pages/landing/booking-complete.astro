@@ -15,16 +15,16 @@ const metadata = {
 <Layout metadata={metadata}>
   <section class="py-12 md:py-20">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-      <div class="mb-8">
-        <span class="text-6xl">✅</span>
+      <div id="status-icon" class="mb-8">
+        <span class="text-6xl">⏳</span>
       </div>
 
-      <h1 class="text-4xl md:text-5xl font-bold mb-4 font-heading dark:text-gray-200">
-        تم الحجز بنجاح
+      <h1 id="status-title" class="text-4xl md:text-5xl font-bold mb-4 font-heading dark:text-gray-200">
+        جارٍ تأكيد الحجز...
       </h1>
 
-      <p class="text-xl text-muted dark:text-slate-300 mb-4">
-        تم بعث موعدك وستصلك رسالة تأكيد على هاتفك.
+      <p id="status-message" class="text-xl text-muted dark:text-slate-300 mb-4">
+        يرجى الانتظار بينما نتحقق من حالة موعدك.
       </p>
 
       <!-- Booking Details Card -->
@@ -144,6 +144,41 @@ const metadata = {
   </div>
 
   <script is:inline>
+    // Cal.com API configuration
+    var CAL_API_BASE = 'https://api.cal.com/v2';
+    var CAL_API_VERSION = '2024-08-13';
+    var POLL_INTERVAL_MS = 3000; // Poll every 3 seconds
+    var MAX_POLL_ATTEMPTS = 40; // Max ~2 minutes of polling
+
+    // Status configurations
+    var STATUS_CONFIG = {
+      pending: {
+        icon: '⏳',
+        title: 'جارٍ تأكيد الحجز...',
+        message: 'يرجى الانتظار بينما نتحقق من حالة موعدك.'
+      },
+      accepted: {
+        icon: '✅',
+        title: 'تم تأكيد الحجز بنجاح',
+        message: 'تم تأكيد موعدك وستصلك رسالة تأكيد على هاتفك.'
+      },
+      rejected: {
+        icon: '❌',
+        title: 'تم رفض الحجز',
+        message: 'للأسف، لم يتم قبول الحجز. يرجى المحاولة مرة أخرى أو التواصل معنا.'
+      },
+      cancelled: {
+        icon: '🚫',
+        title: 'تم إلغاء الحجز',
+        message: 'تم إلغاء هذا الموعد. يمكنك حجز موعد جديد من الصفحة الرئيسية.'
+      },
+      error: {
+        icon: '⚠️',
+        title: 'حدث خطأ',
+        message: 'تعذر التحقق من حالة الحجز. يرجى المحاولة مرة أخرى لاحقًا.'
+      }
+    };
+
     // Arabic day and month names
     var arabicDays = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
     var arabicMonths = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
@@ -395,12 +430,84 @@ const metadata = {
       setupCalendarDropdown();
     }
 
-    function initBookingComplete() {
-      var params = Object.fromEntries(new URLSearchParams(window.location.search));
+    // Update status UI elements
+    function updateStatusUI(statusKey) {
+      var config = STATUS_CONFIG[statusKey];
+      if (!config) return;
 
-      // Check if we have booking data
-      if (!params.startTime) return;
+      var iconEl = document.getElementById('status-icon');
+      var titleEl = document.getElementById('status-title');
+      var messageEl = document.getElementById('status-message');
 
+      if (iconEl) iconEl.innerHTML = '<span class="text-6xl">' + config.icon + '</span>';
+      if (titleEl) titleEl.textContent = config.title;
+      if (messageEl) messageEl.textContent = config.message;
+    }
+
+    // Fetch booking status from Cal.com API
+    function fetchBookingStatus(bookingUid) {
+      return fetch(CAL_API_BASE + '/bookings/' + bookingUid, {
+        method: 'GET',
+        headers: {
+          'cal-api-version': CAL_API_VERSION
+        }
+      })
+      .then(function(response) {
+        if (!response.ok) {
+          throw new Error('API request failed: ' + response.status);
+        }
+        return response.json();
+      })
+      .then(function(data) {
+        if (data.status === 'success' && data.data) {
+          return data.data;
+        }
+        throw new Error('Invalid API response');
+      });
+    }
+
+    // Poll for booking status until it changes from pending
+    function pollBookingStatus(bookingUid, params, attempt) {
+      if (attempt >= MAX_POLL_ATTEMPTS) {
+        // Max attempts reached, show error
+        updateStatusUI('error');
+        return;
+      }
+
+      fetchBookingStatus(bookingUid)
+        .then(function(booking) {
+          var status = booking.status ? booking.status.toLowerCase() : 'pending';
+
+          // Check for final statuses
+          if (status === 'accepted') {
+            updateStatusUI('accepted');
+            showBookingDetails(params, booking);
+          } else if (status === 'rejected') {
+            updateStatusUI('rejected');
+          } else if (status === 'cancelled') {
+            updateStatusUI('cancelled');
+          } else {
+            // Still pending, poll again after interval
+            setTimeout(function() {
+              pollBookingStatus(bookingUid, params, attempt + 1);
+            }, POLL_INTERVAL_MS);
+          }
+        })
+        .catch(function(error) {
+          console.error('Error fetching booking status:', error);
+          // On error, retry a few times before giving up
+          if (attempt < 3) {
+            setTimeout(function() {
+              pollBookingStatus(bookingUid, params, attempt + 1);
+            }, POLL_INTERVAL_MS);
+          } else {
+            updateStatusUI('error');
+          }
+        });
+    }
+
+    // Show booking details after confirmation
+    function showBookingDetails(params, booking) {
       var bookingDetails = document.getElementById('booking-details');
       var locationSection = document.getElementById('location-section');
       var bookingType = document.getElementById('booking-type');
@@ -443,6 +550,20 @@ const metadata = {
 
       // Setup calendar links
       setupCalendarLinks(params);
+    }
+
+    function initBookingComplete() {
+      var params = Object.fromEntries(new URLSearchParams(window.location.search));
+
+      // Check if we have booking data
+      if (!params.uid) {
+        // No UID, cannot verify - show error
+        updateStatusUI('error');
+        return;
+      }
+
+      // Start polling for booking status
+      pollBookingStatus(params.uid, params, 0);
     }
 
     // Initialize on page load
