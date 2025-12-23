@@ -20,11 +20,11 @@ const metadata = {
       </div>
 
       <h1 id="status-title" class="text-4xl md:text-5xl font-bold mb-4 font-heading dark:text-gray-200">
-        جارٍ تأكيد الحجز...
+        تأكيد الحجز جارٍ...
       </h1>
 
-      <p id="status-message" class="text-xl text-muted dark:text-slate-300 mb-4">
-        يرجى الانتظار بينما نتحقق من حالة موعدك.
+      <p id="status-message" class="text-xl text-muted dark:text-slate-300 mb-8">
+        يرجى الانتظار بينما نتحقق من حالة حجزك.
       </p>
 
       <!-- Booking Details Card -->
@@ -62,8 +62,9 @@ const metadata = {
       </div>
 
       <!-- Action Buttons -->
-      <div id="add-to-calendar-container" class="hidden mb-6 flex flex-wrap items-center justify-center gap-4">
-        <div class="relative">
+      <div class="mb-6 flex flex-wrap items-center justify-center gap-4">
+        <!-- Add to Calendar - only shown on success -->
+        <div id="add-to-calendar-container" class="hidden relative">
           <button
             id="add-to-calendar-btn"
             type="button"
@@ -113,11 +114,13 @@ const metadata = {
             </div>
           </div>
         </div>
+
+        <!-- Home button - always visible -->
         <a
           href="/"
           class="btn-primary inline-flex items-center gap-2"
         >
-          العودة للصفحة الرئيسية
+          العودة إلى الصفحة الرئيسية
         </a>
       </div>
 
@@ -144,6 +147,7 @@ const metadata = {
   </div>
 
   <script is:inline>
+    /* eslint-disable no-var */
     // Cal.com API configuration
     var CAL_API_BASE = 'https://api.cal.com/v2';
     var CAL_API_VERSION = '2024-08-13';
@@ -154,8 +158,8 @@ const metadata = {
     var STATUS_CONFIG = {
       pending: {
         icon: '⏳',
-        title: 'جارٍ تأكيد الحجز...',
-        message: 'يرجى الانتظار بينما نتحقق من حالة موعدك.'
+        title: 'تأكيد الحجز جارٍ...',
+        message: 'يرجى الانتظار بينما نتحقق من حالة حجزك.'
       },
       accepted: {
         icon: '✅',
@@ -164,18 +168,18 @@ const metadata = {
       },
       rejected: {
         icon: '❌',
-        title: 'تم رفض الحجز',
-        message: 'للأسف، لم يتم قبول الحجز. يرجى المحاولة مرة أخرى أو التواصل معنا.'
+        title: 'رفض الحجز',
+        message: 'للأسف، لم يتم قبول الحجز. ترجى المحاولة مرة ثانية من الصفحة الرئيسية أو التواصلَ معنا.'
       },
       cancelled: {
         icon: '🚫',
-        title: 'تم إلغاء الحجز',
+        title: 'الحجز ملغى',
         message: 'تم إلغاء هذا الموعد. يمكنك حجز موعد جديد من الصفحة الرئيسية.'
       },
       error: {
         icon: '⚠️',
         title: 'حدث خطأ',
-        message: 'تعذر التحقق من حالة الحجز. يرجى المحاولة مرة أخرى لاحقًا.'
+        message: 'تعذر التحقق من حالة الحجز. ترجى المحاولة مرة أخرى لاحقًا.'
       }
     };
 
@@ -210,6 +214,22 @@ const metadata = {
       hours = hours % 12 || 12;
       var minutesStr = minutes < 10 ? '0' + minutes : String(minutes);
       return toArabicNumerals(hours) + ':' + toArabicNumerals(minutesStr) + ' ' + period;
+    }
+
+    // Get Arabic timezone name from IANA timezone
+    function getArabicTimezoneName(timeZone, locale) {
+      locale = locale || 'ar-JO';
+      try {
+        var formatter = new Intl.DateTimeFormat(locale, {
+          timeZone: timeZone,
+          timeZoneName: 'shortGeneric'
+        });
+        var parts = formatter.formatToParts(new Date());
+        var tzPart = parts.find(function(part) { return part.type === 'timeZoneName'; });
+        return tzPart ? tzPart.value : timeZone.split('/')[1];
+      } catch {
+        return timeZone.split('/')[1] || timeZone;
+      }
     }
 
     // Format date for calendar (YYYYMMDDTHHmmssZ)
@@ -516,6 +536,12 @@ const metadata = {
 
       var isClinic = params.eventTypeSlug === 'clinic';
 
+      // Get attendee timezone from booking data
+      var attendeeTimezone = null;
+      if (booking && booking.attendees && booking.attendees.length > 0) {
+        attendeeTimezone = booking.attendees[0].timeZone;
+      }
+
       // Show booking details
       if (bookingDetails) {
         bookingDetails.classList.remove('hidden');
@@ -531,7 +557,8 @@ const metadata = {
         bookingDate.textContent = 'يوم ' + formatArabicDate(params.startTime);
       }
       if (bookingTime && params.startTime) {
-        bookingTime.textContent = formatArabicTime(params.startTime) + ' بتوقيتك';
+        var timezoneLabel = attendeeTimezone ? getArabicTimezoneName(attendeeTimezone) : 'توقيتك';
+        bookingTime.textContent = formatArabicTime(params.startTime) + ' ب' + timezoneLabel;
       }
 
       // Show location for clinic appointments
