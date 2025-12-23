@@ -270,12 +270,15 @@ document.addEventListener('astro:page-load', init);
 Appointment booking is integrated via Cal.com cloud embed. See [context/cal-com-embed.md](context/cal-com-embed.md) for detailed documentation.
 
 **Quick reference:**
-- Implementation: `src/pages/index.astro` (Hero content slot + inline script)
+- Implementation: `src/pages/index.astro` (Hero content slot + inline script), `src/pages/book.astro`
 - Event types: `/clinic` (in-person) and `/remote` (telemedicine)
+- Cal.com link: `د.-مو-من-ديرانية-z6vyi6` (username-based, NOT private links)
 - Uses custom `data-booking-*` attributes (NOT `data-cal-*`) to avoid Astro View Transitions conflicts
 - Theme syncs automatically with AstroWind dark/light mode
 - Supports prefilling fields via config: `attendeePhoneNumber`, `verificationToken`
 - Supports rescheduling via `config.rescheduleUid`
+
+**Important:** Private links (`/d/hash/event`) don't work with embeds - use username-based links only.
 
 ### Location Widget
 

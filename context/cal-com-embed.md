@@ -14,6 +14,17 @@ Two Cal.com event types are configured:
 
 The user selects between these using a toggle switch on the landing page.
 
+## Private Links Limitation
+
+**Cal.com private links do NOT work with the embed feature.**
+
+Private links use the `/d/[hash]/[slug]` URL format (e.g., `cal.com/d/o1rV3ZHVMHehDi1SitN34y/clinic`). The embed widget appends `/embed` to the calLink path, but private link routes don't support this suffix - they return 404.
+
+- ✅ `cal.com/username/event/embed` - Works
+- ❌ `cal.com/d/hash/event/embed` - Returns 404
+
+**Workaround:** Use the standard username-based links for embeds. Private links can only be used for direct navigation (not embedded).
+
 ## Implementation Details
 
 ### Location

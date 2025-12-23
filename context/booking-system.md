@@ -140,9 +140,18 @@ API endpoints:
 
 ### `/src/pages/landing/booking-complete.astro`
 - Shows booking confirmation after Cal.com redirect
-- Parses URL parameters from Cal.com
-- Displays date/time in Arabic
+- **Polls Cal.com API** (`/v2/bookings/{uid}`) to verify booking status
+- Initial state shows "pending" with loading indicator
+- Updates to accepted/rejected/cancelled based on API response
+- Displays date/time in Arabic with attendee's timezone from API
+- "Add to Calendar" dropdown (Google Calendar, Apple Calendar, Outlook)
 - Shows clinic location map for in-person appointments
+- Home button always visible; calendar button only on success
+
+**Booking status polling:**
+- Polls every 3 seconds, max 40 attempts (~2 minutes)
+- Status states: `pending` → `accepted` | `rejected` | `cancelled` | `error`
+- Uses `cal-api-version: 2024-08-13` header
 
 ## localStorage
 
