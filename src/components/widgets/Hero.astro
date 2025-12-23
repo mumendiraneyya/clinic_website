@@ -277,6 +277,11 @@ const {
     #hero-mobile-actions.is-fixed {
       transition: opacity 0.3s ease, transform 0.3s ease;
     }
+
+    /* Manual override by Orwa: until I find a better way to do this */
+    html.dark #hero-actions-container:not(.is-fixed) #booking-label {
+      color: #555555 !important;
+    }
   </style>
 
   <script>
