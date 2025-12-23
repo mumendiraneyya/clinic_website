@@ -4,7 +4,7 @@ author: د. مؤمن ديرانية
 title: لقاء على قناة آرام
 excerpt: لقاء مع الدكتور مؤمن ديرانية على قناة آرام.
 videoUrl: https://youtu.be/a1bOCq5a0qw
-category: مقطع تعريفي ومقابلات عامة
+category: مقاطع تعريفية ومقابلات عامة
 tags:
   - فيديو
 ---

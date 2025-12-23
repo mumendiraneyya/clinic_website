@@ -25,7 +25,7 @@ const posts = await fetchPosts();
 
 // Define category order
 const categoryOrder = [
-  'مقطع تعريفي ومقابلات عامة',
+  'مقاطع تعريفية ومقابلات عامة',
   'جراحة عامة',
   'القناة الشرجية',
   'فتوق جدار البطن',
@@ -59,7 +59,7 @@ const blogLinks = [
         href: getPermalink(categoryData.slug, 'category'),
       };
     })
-    .filter((link): link is { text: string; href: string } => link !== null),
+    .filter((link): link is { text: string; description: string; href: string } => link !== null),
 ];
 
 const dynamicHeaderData = {

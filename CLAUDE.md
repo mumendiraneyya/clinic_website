@@ -107,6 +107,7 @@ Blog posts are defined in `src/content/config.ts` using Astro's content collecti
 - Supports `.md` and `.mdx` files
 - Schema includes: title, publishDate, excerpt, image, category, tags, author, metadata
 - Image paths use the `~` alias: `image: ~/assets/images/posts/filename.jpg`
+- **Blog categories in header menu**: The "المنشورات" dropdown dynamically lists categories, but category names are hardcoded in `PageLayout.astro`. See [context/header-menu.md](context/header-menu.md) for details on adding/changing categories.
 
 ### Component Structure
 
@@ -155,13 +156,7 @@ The site logo (`src/components/Logo.astro`) displays a stethoscope emoji (🩺) 
 
 ### Header Menu
 
-The header (`src/components/widgets/Header.astro`) uses a two-phase responsive design. See [context/header-menu.md](context/header-menu.md) for detailed documentation.
-
-**Quick reference:**
-- **Mobile (< 768px)**: Hamburger menu with full-screen navigation
-- **Desktop (≥ 768px)**: Horizontal menu with responsive font sizing
-- Menu font scales from 0.75rem at 768px to 1.25rem at 1024px+ (matching logo)
-- Uses `clamp(0.75rem, calc(-0.75rem + 3.125vw), 1.25rem)` for smooth scaling
+The header (`src/components/widgets/Header.astro`) uses a two-phase responsive design with mobile hamburger menu and desktop horizontal menu. See [context/header-menu.md](context/header-menu.md) for detailed documentation.
 
 ### Hero Component
 

@@ -3,24 +3,41 @@ import { getPermalink, getBlogPermalink, getAsset } from './utils/permalinks';
 export const headerData = {
   links: [
     {
-      text: 'من نحن',
+      text: 'عن العيادة',
       href: getPermalink('/#hero-section'),
-    },
-    {
-      text: 'ماذا نعالج',
-      href: getPermalink('/#features'),
+      links: [
+        {
+          text: 'من نحن',
+          href: getPermalink('/#hero-section'),
+        },
+        {
+          text: 'ماذا نعالج',
+          href: getPermalink('/#features'),
+        },
+        {
+          text: 'أسئلة شائعة',
+          href: getPermalink('/#faq'),
+        },
+        {
+          text: 'قالوا عنا',
+          href: getPermalink('/#testimonials'),
+        },
+      ],
     },
     {
       text: 'المنشورات',
       href: getBlogPermalink(),
     },
     {
-      text: 'أسئلة شائعة',
-      href: getPermalink('/#faq'),
-    },
-    {
-      text: 'قالوا عنا',
-      href: getPermalink('/#testimonials'),
+      text: 'حجوزاتي',
+      href: getPermalink('/bookings'),
+      links: [
+        {
+          hidden: true,
+          text: 'استشارة عن بعد',
+          href: getPermalink('/video'),
+        },
+      ],
     },
     {
       text: 'أين تجدنا',

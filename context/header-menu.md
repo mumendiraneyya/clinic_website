@@ -25,14 +25,14 @@ The navigation links use CSS `clamp()` for smooth responsive scaling:
 
 ```css
 .nav-link {
-  font-size: clamp(0.75rem, calc(-0.75rem + 3.125vw), 1.25rem);
+  font-size: clamp(1rem, calc(0.25rem + 1.56vw), 1.25rem);
   font-weight: 500;
 }
 ```
 
 This formula:
-- **768px**: Menu items at minimum 0.75rem (12px)
-- **900px**: Menu items scale proportionally (~16px)
+- **768px**: Menu items at minimum 1rem (16px)
+- **900px**: Menu items scale proportionally (~18px)
 - **1024px+**: Menu items reach maximum 1.25rem (20px), matching the logo size
 
 ## Key Files
@@ -95,6 +95,44 @@ html.dark #header.expanded .nav-mobile {
   background: rgb(15, 23, 42);
 }
 ```
+
+## Dynamic Blog Categories Menu
+
+The "المنشورات" menu item dynamically generates dropdown sub-items from blog post categories. This is implemented in `src/layouts/PageLayout.astro`.
+
+### How It Works
+
+1. Fetches all blog posts via `fetchPosts()`
+2. Counts posts per category
+3. Builds dropdown links with category names and post counts
+4. Injects these as sub-links under the "المنشورات" menu item
+
+### Category Order
+
+Categories appear in a specific order defined in `PageLayout.astro`:
+
+```javascript
+const categoryOrder = [
+  'مقاطع تعريفية ومقابلات عامة',
+  'جراحة عامة',
+  'القناة الشرجية',
+  'فتوق جدار البطن',
+];
+```
+
+**Important:** Category names must match exactly between this array and the `category` field in post frontmatter. If a category doesn't match, it won't appear in the menu.
+
+### Adding a New Category
+
+1. Add posts with the new category name in frontmatter
+2. Add the exact category name to `categoryOrder` in `PageLayout.astro`
+3. The menu will automatically show the category with post count
+
+### Menu Structure
+
+The generated "المنشورات" dropdown contains:
+- "جميع المنشورات" (link to all posts)
+- Each category with post count, e.g., "جراحة عامة (5 منشورات)"
 
 ## Design Decisions
 

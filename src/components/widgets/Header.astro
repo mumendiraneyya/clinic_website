@@ -17,6 +17,7 @@ interface Link {
 interface MenuLink extends Link {
   links?: Array<MenuLink>;
   description?: string;
+  hidden?: boolean;
 }
 
 export interface Props {
@@ -38,6 +39,12 @@ const {
 } = Astro.props;
 
 const currentPath = `/${trimSlash(new URL(Astro.url).pathname)}`;
+
+// Filter out hidden menu items
+const enabledLinks = links.filter((link) => !link.hidden).map((link) => ({
+  ...link,
+  links: link.links?.filter((subLink) => !subLink.hidden),
+}));
 ---
 
 <header
@@ -68,7 +75,7 @@ const currentPath = `/${trimSlash(new URL(Astro.url).pathname)}`;
       <nav class="nav-desktop flex-1 flex justify-center mx-4" aria-label="Main navigation">
         <ul class="flex items-center gap-1">
           {
-            links.map(({ text, href, links: subLinks }) => (
+            enabledLinks.map(({ text, href, links: subLinks }) => (
               <li class={subLinks?.length ? 'dropdown relative' : ''}>
                 {subLinks?.length ? (
                   <>
@@ -104,6 +111,7 @@ const currentPath = `/${trimSlash(new URL(Astro.url).pathname)}`;
                     href={href}
                   >
                     {text}
+                    <Icon name="tabler:chevron-down" class="w-3.5 h-3.5 ms-1 invisible" />
                   </a>
                 )}
               </li>
@@ -127,7 +135,7 @@ const currentPath = `/${trimSlash(new URL(Astro.url).pathname)}`;
     >
       <ul class="flex flex-col w-full text-xl tracking-[0.01rem] font-medium pt-4">
         {
-          links.map(({ text, href, links: subLinks }) => (
+          enabledLinks.map(({ text, href, links: subLinks }) => (
             <li class={subLinks?.length ? 'dropdown' : ''}>
               {subLinks?.length ? (
                 <>
@@ -207,9 +215,9 @@ const currentPath = `/${trimSlash(new URL(Astro.url).pathname)}`;
 </header>
 
 <style>
-  /* Responsive nav font size: scales from 0.75rem at 768px to 1.25rem at 1024px+ (matching logo) */
+  /* Responsive nav font size: scales from 1rem at 768px to 1.25rem at 1024px+ */
   .nav-link {
-    font-size: clamp(0.75rem, calc(-0.75rem + 3.125vw), 1.25rem);
+    font-size: clamp(1rem, calc(0.25rem + 1.56vw), 1.25rem);
     font-weight: 500;
   }
 </style>
