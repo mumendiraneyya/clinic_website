@@ -237,11 +237,16 @@ Response: { success: true, payload: { phone, method, iat }, age: <days> }
 ```
 POST https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da-7711f0006da1
 Body: token=<jwt>
-Response: { status: "success", data: [...bookings], pagination: {...} }
+Response: { status: "success", data: [...bookings], pagination: {...}, token_payload: {...} }
          or { status: "error" } if token invalid
 ```
 
-The bookings endpoint returns only upcoming, accepted appointments. Each booking includes:
+The response includes:
+- `data` - Array of upcoming, accepted appointments
+- `pagination` - Pagination info (totalItems, currentPage, etc.)
+- `token_payload` - Decoded JWT payload with `{ phone, method, iat }`
+
+Each booking includes:
 - `uid` - Booking unique identifier
 - `start`, `end` - ISO datetime strings
 - `eventType.slug` - "clinic" or "remote"

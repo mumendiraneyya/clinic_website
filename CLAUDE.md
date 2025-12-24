@@ -11,6 +11,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **NEVER reload or navigate when asked to take a screenshot** - just take the screenshot of the current state. Reloading disrupts what the user is trying to show you.
 - **NEVER start the dev server yourself** - always ask the user to start it. The user manages the dev server lifecycle.
 
+## Working with External APIs
+
+When consuming external API endpoints (e.g., n8n webhooks), if you notice issues like typos in field names or unexpected response formats:
+- **Alert the user first** before writing code or documentation that uses the incorrect format
+- Give the user the opportunity to fix the API before proceeding
+- Don't document or code around API issues without flagging them
+
 ## Project Overview
 
 Medical clinic website for Dr. Mu'men Diraneyya (د. مؤمن ديرانية). Built with Astro 5.0 + Tailwind CSS based on the AstroWind template. **This is a static site generator project** - Astro builds static HTML/CSS/JS files that are deployed to Cloudflare Pages. There is no server-side runtime.
@@ -41,6 +48,15 @@ Setting `trailingSlash` to `true` or `ignore` breaks the Astro dev server's `/_i
 2. Cloudflare Pages handles URL routing regardless of this setting
 
 If images suddenly break during development with 404 errors on `/_image`, check this setting first.
+
+### Known Issues Under Investigation
+
+**Infinite spinner on `/book` page**
+- Sometimes the `/book` page hangs with "جارٍ التحقق..." spinner indefinitely
+- Occurs when redirecting from `/bookings` page (e.g., clicking booking button)
+- Root cause not yet identified
+- May be related to: token validation timing, Cal.com embed initialization, or race conditions in the verification flow
+- Files to investigate: `src/pages/book.astro`, `src/components/booking/PhoneVerification.astro`
 
 ## Commands
 

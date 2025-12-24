@@ -89,13 +89,29 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
         </div>
 
         <!-- Empty state -->
-        <div id="empty-state" class="hidden text-center py-12">
-          <Icon name="tabler:calendar-off" class="w-16 h-16 mx-auto text-muted mb-4" />
-          <p class="text-xl text-muted dark:text-slate-400 mb-4">لا توجد حجوزات قادمة</p>
-          <a href="/book?type=clinic" class="btn-primary inline-flex items-center gap-2">
+        <div id="empty-state" class="hidden text-center py-6">
+          <Icon name="tabler:calendar-off" class="w-12 h-12 mx-auto text-muted mb-3" />
+          <p class="text-lg text-muted dark:text-slate-400 mb-4">لا توجد حجوزات قادمة</p>
+          <a id="empty-book-btn" href="/book?type=clinic" class="btn-primary inline-flex items-center gap-2">
             <Icon name="tabler:calendar-plus" class="w-5 h-5" />
             <span>احجز موعدًا جديدًا</span>
           </a>
+          <!-- Booking type toggle -->
+          <div class="flex items-center justify-center gap-3 mt-3">
+            <label class="flex items-center gap-3 cursor-pointer text-sm">
+              <span id="empty-booking-label" class="text-muted font-bold dark:text-slate-300">موعد في العيادة</span>
+              <div class="relative">
+                <input
+                  type="checkbox"
+                  id="empty-booking-type"
+                  checked
+                  class="sr-only peer"
+                />
+                <div class="w-11 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:bg-primary transition-colors"></div>
+                <div class="absolute top-0.5 start-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-full rtl:peer-checked:-translate-x-full transition-transform"></div>
+              </div>
+            </label>
+          </div>
         </div>
 
         <!-- Bookings list -->
@@ -105,10 +121,26 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
 
         <!-- New booking button (shown when there are bookings) -->
         <div id="new-booking-container" class="hidden mt-8 text-center">
-          <a href="/book?type=clinic" class="btn-secondary inline-flex items-center gap-2">
+          <a id="new-book-btn" href="/book?type=clinic" class="btn-secondary inline-flex items-center gap-2">
             <Icon name="tabler:calendar-plus" class="w-5 h-5" />
             <span>حجز موعد جديد</span>
           </a>
+          <!-- Booking type toggle -->
+          <div class="flex items-center justify-center gap-3 mt-4">
+            <label class="flex items-center gap-3 cursor-pointer text-sm">
+              <span id="new-booking-label" class="text-muted font-bold dark:text-slate-300">موعد في العيادة</span>
+              <div class="relative">
+                <input
+                  type="checkbox"
+                  id="new-booking-type"
+                  checked
+                  class="sr-only peer"
+                />
+                <div class="w-11 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:bg-primary transition-colors"></div>
+                <div class="absolute top-0.5 start-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-full rtl:peer-checked:-translate-x-full transition-transform"></div>
+              </div>
+            </label>
+          </div>
         </div>
       </div>
 
@@ -151,6 +183,71 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
   <script is:inline define:vars={{ BOOKINGS_ENDPOINT }}>
     /* eslint-disable no-var, no-undef */
     var STORAGE_KEY = 'phone_verification_token';
+    var BOOKING_TYPE_KEY = 'preferred_booking_type';
+
+    // Booking type toggle management
+    function setupBookingTypeToggles() {
+      var emptyToggle = document.getElementById('empty-booking-type');
+      var emptyLabel = document.getElementById('empty-booking-label');
+      var emptyBtn = document.getElementById('empty-book-btn');
+      var newToggle = document.getElementById('new-booking-type');
+      var newLabel = document.getElementById('new-booking-label');
+      var newBtn = document.getElementById('new-book-btn');
+
+      // Load saved preference (default to clinic = checked)
+      var savedType = localStorage.getItem(BOOKING_TYPE_KEY);
+      var isClinic = savedType !== 'remote'; // Default to clinic
+
+      // Set initial state for both toggles
+      function updateToggleState(checked) {
+        var type = checked ? 'clinic' : 'remote';
+        var label = checked ? 'موعد في العيادة' : 'استشارة عن بعد';
+        var href = '/book?type=' + type;
+
+        if (emptyToggle) emptyToggle.checked = checked;
+        if (emptyLabel) emptyLabel.textContent = label;
+        if (emptyBtn) emptyBtn.href = href;
+
+        if (newToggle) newToggle.checked = checked;
+        if (newLabel) newLabel.textContent = label;
+        if (newBtn) newBtn.href = href;
+
+        localStorage.setItem(BOOKING_TYPE_KEY, type);
+      }
+
+      // Initialize state
+      updateToggleState(isClinic);
+
+      // Sync toggles and save preference on change
+      if (emptyToggle) {
+        emptyToggle.addEventListener('change', function() {
+          updateToggleState(this.checked);
+        });
+      }
+      if (newToggle) {
+        newToggle.addEventListener('change', function() {
+          updateToggleState(this.checked);
+        });
+      }
+    }
+
+    // Set preferred booking type based on most recent booking
+    function setPreferredTypeFromBookings(bookings) {
+      if (!bookings || bookings.length === 0) return;
+
+      // Sort by start time descending to get most recent
+      var sorted = bookings.slice().sort(function(a, b) {
+        return new Date(b.start).getTime() - new Date(a.start).getTime();
+      });
+
+      var mostRecent = sorted[0];
+      var type = mostRecent.eventType?.slug || 'clinic';
+
+      // Only update if no saved preference exists
+      if (!localStorage.getItem(BOOKING_TYPE_KEY)) {
+        localStorage.setItem(BOOKING_TYPE_KEY, type);
+      }
+    }
 
     // UI State management
     function showLoading() {
@@ -206,6 +303,11 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
       var phoneDisplay = document.getElementById('verified-phone');
       var template = document.getElementById('booking-card-template');
       var pageTitle = document.getElementById('page-title');
+
+      // Set preferred booking type based on most recent booking (if not already set)
+      setPreferredTypeFromBookings(bookings);
+      // Setup booking type toggles with the current preference
+      setupBookingTypeToggles();
 
       // Update page title with booking count
       var bookingCount = bookings ? bookings.length : 0;
@@ -325,7 +427,7 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
       });
     }
 
-    // Update booking count after cancellation
+    // Update booking count and card titles after cancellation
     function updateBookingCount() {
       var cards = document.querySelectorAll('[data-booking-card]');
       var count = cards.length;
@@ -340,6 +442,19 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
 
       if (pageTitle && window.describeNumberOfBookings) {
         pageTitle.textContent = window.describeNumberOfBookings(count);
+      }
+
+      // Update remaining card titles with new indices
+      if (window.BookingCardUtils) {
+        var toArabic = window.BookingCardUtils.toArabicNumerals;
+        cards.forEach(function(card, idx) {
+          var titleSpan = card.querySelector('.booking-card-title span');
+          if (titleSpan) {
+            var indexArabic = toArabic(idx + 1);
+            var totalArabic = toArabic(count);
+            titleSpan.textContent = 'تفاصيل الحجز (' + indexArabic + ' من ' + totalArabic + ')';
+          }
+        });
       }
     }
 
@@ -370,14 +485,8 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
         return;
       }
 
-      // Extract phone from first booking's attendee data
-      var phone = '';
-      if (result.data && result.data.length > 0) {
-        var attendee = result.data[0].attendees?.[0];
-        if (attendee?.phoneNumber) {
-          phone = attendee.phoneNumber.replace('+', '');
-        }
-      }
+      // Extract phone from token payload returned by endpoint
+      var phone = result.token_payload?.phone || '';
 
       // Cache bookings for returning after phone change cancel
       cachedBookingsData = result.data;
