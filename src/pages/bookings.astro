@@ -75,14 +75,14 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
             </div>
           </div>
           <!-- Confirmation state (hidden by default) -->
-          <div id="phone-confirm-state" class="hidden flex items-center justify-between">
+          <div id="phone-confirm-state" class="hidden flex items-center justify-between gap-4">
             <span class="text-sm text-red-600 dark:text-red-400">هل تريد نسيان الرقم <span id="confirm-phone-number" dir="ltr" class="verified-phone-display"></span> من على هذا الجهاز؟</span>
-            <div class="flex items-center gap-3">
-              <button id="cancel-delete-btn" type="button" class="text-sm text-muted hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-                لا
+            <div class="flex items-center gap-3 flex-shrink-0">
+              <button id="cancel-delete-btn" type="button" class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" aria-label="لا">
+                <Icon name="tabler:x" class="w-6 h-6" />
               </button>
-              <button id="confirm-delete-btn" type="button" class="text-sm text-red-500 hover:text-red-600 transition-colors">
-                نعم
+              <button id="confirm-delete-btn" type="button" class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-red-100 dark:bg-red-900/30 text-red-500 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors" aria-label="نعم">
+                <Icon name="tabler:check" class="w-6 h-6" />
               </button>
             </div>
           </div>
@@ -565,38 +565,40 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
         });
       }
 
-      // Confirm delete button - actually removes token
-      var confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-      if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener('click', function() {
-          localStorage.removeItem(STORAGE_KEY);
-          cachedBookingsData = null;
-          cachedPhone = '';
-          // Reset verification message to default
-          var messageEl = document.getElementById('verification-message');
-          if (messageEl) {
-            messageEl.textContent = 'للاطلاع على حجوزاتك، يرجى التحقق من رقم هاتفك أولاً';
-          }
-          // Hide cancel button since there's nothing to return to
-          var cancelContainer = document.getElementById('cancel-change-container');
-          if (cancelContainer) {
-            cancelContainer.classList.add('hidden');
-          }
-          // Reset phone display states
-          document.getElementById('phone-normal-state')?.classList.remove('hidden');
-          document.getElementById('phone-confirm-state')?.classList.add('hidden');
-          showVerification();
-        });
+      // Confirm delete handler - actually removes token
+      function handleConfirmDelete() {
+        localStorage.removeItem(STORAGE_KEY);
+        cachedBookingsData = null;
+        cachedPhone = '';
+        // Reset verification message to default
+        var messageEl = document.getElementById('verification-message');
+        if (messageEl) {
+          messageEl.textContent = 'للاطلاع على حجوزاتك، يرجى التحقق من رقم هاتفك أولاً';
+        }
+        // Hide cancel button since there's nothing to return to
+        var cancelContainer = document.getElementById('cancel-change-container');
+        if (cancelContainer) {
+          cancelContainer.classList.add('hidden');
+        }
+        // Reset phone display states
+        document.getElementById('phone-normal-state')?.classList.remove('hidden');
+        document.getElementById('phone-confirm-state')?.classList.add('hidden');
+        showVerification();
       }
 
-      // Cancel delete button - returns to normal state
-      var cancelDeleteBtn = document.getElementById('cancel-delete-btn');
-      if (cancelDeleteBtn) {
-        cancelDeleteBtn.addEventListener('click', function() {
-          document.getElementById('phone-normal-state')?.classList.remove('hidden');
-          document.getElementById('phone-confirm-state')?.classList.add('hidden');
-        });
+      // Cancel delete handler - returns to normal state
+      function handleCancelDelete() {
+        document.getElementById('phone-normal-state')?.classList.remove('hidden');
+        document.getElementById('phone-confirm-state')?.classList.add('hidden');
       }
+
+      // Confirm delete button
+      var confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+      if (confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', handleConfirmDelete);
+
+      // Cancel delete button
+      var cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+      if (cancelDeleteBtn) cancelDeleteBtn.addEventListener('click', handleCancelDelete);
 
       // Cancel change button - returns to bookings view
       var cancelChangeBtn = document.getElementById('cancel-change-btn');
