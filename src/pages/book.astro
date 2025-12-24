@@ -258,25 +258,32 @@ const CAL_NAMESPACE = 'booking';
     }
 
     // Initialize on page load (with guard against double initialization)
-    var initialized = false;
+    // Use a global key to track initialization across script re-executions
+    var initKey = 'book_page_initialized_' + window.location.search;
+
     function init() {
       // Only run on this page
       if (!window.location.pathname.startsWith('/book')) return;
 
-      // Prevent double initialization (DOMContentLoaded + astro:page-load can both fire)
-      if (initialized) return;
-      initialized = true;
+      // Prevent double initialization using sessionStorage (survives script re-runs)
+      // Clear on actual page navigation (different search params = different init)
+      if (window[initKey]) return;
+      window[initKey] = true;
 
       initBookingPage();
       setupEventHandlers();
     }
 
-    // Use DOMContentLoaded as fallback for direct navigation
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
+    // Clear init flag on navigation away (for View Transitions)
+    document.addEventListener('astro:before-swap', function() {
+      window[initKey] = false;
+    });
+
+    // For View Transitions: astro:page-load may have already fired, so also run directly
     document.addEventListener('astro:page-load', init);
+
+    // Run init on next tick to ensure DOM is ready
+    // This handles both direct navigation and View Transitions
+    queueMicrotask(init);
   </script>
 </Layout>

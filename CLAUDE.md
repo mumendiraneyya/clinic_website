@@ -49,14 +49,38 @@ Setting `trailingSlash` to `true` or `ignore` breaks the Astro dev server's `/_i
 
 If images suddenly break during development with 404 errors on `/_image`, check this setting first.
 
-### Known Issues Under Investigation
+### Astro View Transitions and Inline Scripts
 
-**Infinite spinner on `/book` page**
-- Sometimes the `/book` page hangs with "جارٍ التحقق..." spinner indefinitely
-- Occurs when redirecting from `/bookings` page (e.g., clicking booking button)
-- Root cause not yet identified
-- May be related to: token validation timing, Cal.com embed initialization, or race conditions in the verification flow
-- Files to investigate: `src/pages/book.astro`, `src/components/booking/PhoneVerification.astro`
+**Important:** When using `is:inline` scripts with Astro View Transitions (`ClientRouter`), the `astro:page-load` event may fire BEFORE the new page's script registers its listener. Use this pattern:
+
+```javascript
+// Use a global key to track initialization (survives script re-runs)
+var initKey = 'my_page_initialized_' + window.location.search;
+
+function init() {
+  if (!window.location.pathname.startsWith('/my-page')) return;
+  if (window[initKey]) return;  // Prevent double init
+  window[initKey] = true;
+  // ... initialization code
+}
+
+// Clear init flag when navigating away
+document.addEventListener('astro:before-swap', function() {
+  window[initKey] = false;
+});
+
+// Register listener (may miss the event if already fired)
+document.addEventListener('astro:page-load', init);
+
+// Also run on next microtask - handles both direct load and View Transitions
+queueMicrotask(init);
+```
+
+Key points:
+- `astro:page-load` listener may miss the event during View Transitions
+- `queueMicrotask(init)` ensures init runs after DOM is ready
+- Global `window[initKey]` prevents double initialization across event handlers
+- `astro:before-swap` clears the flag for the next navigation
 
 ## Commands
 
