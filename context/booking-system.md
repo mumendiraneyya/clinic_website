@@ -144,11 +144,15 @@ API endpoints:
 - Reusable card component for displaying booking details
 - Shows: appointment type, date, time (with timezone), location/video link
 - "Add to Calendar" dropdown (Google, Apple, Outlook)
+- Optional reschedule and cancel buttons (hidden by default, enabled via `showReschedule`/`showCancel` options)
+- Cancel confirmation overlay with loading/success/error states
 - Exposes `window.BookingCardUtils` with:
   - `initBookingCard(cardId, booking, options)` - Initialize card with booking data
   - `formatArabicDate(dateStr)` - Format date in Arabic
   - `formatArabicTime(dateStr)` - Format time in Arabic (12-hour)
   - `getArabicTimezoneName(timeZone)` - Get Arabic timezone name
+  - `toArabicNumerals(num)` - Convert Western numerals to Arabic
+  - `cancelBooking(cardId, bookingUid, onSuccess, onError)` - Cancel booking via Cal.com API
 
 ### `/src/pages/bookings.astro`
 - Booking management dashboard
@@ -325,11 +329,66 @@ document.addEventListener('astro:page-load', init);
 
 **Why the guard?** Both `DOMContentLoaded` and `astro:page-load` can fire on page load, causing initialization code to run twice. The `initialized` flag ensures it only runs once.
 
+## Reschedule & Cancellation
+
+Users can reschedule or cancel appointments from the `/bookings` page.
+
+### Rescheduling
+
+**Flow:**
+1. User clicks "تغيير الموعد" button on a booking card
+2. Cal.com modal opens in reschedule mode via `config.rescheduleUid`
+3. User selects new time slot
+4. Cal.com redirects to `/landing/booking-complete` with new booking details
+
+**Implementation:**
+- Cal.com embed script loaded on `/bookings` page (namespace: `bookings`)
+- `onReschedule` callback opens Cal.com modal with `rescheduleUid` config
+- Same modal as new booking, but pre-populated with existing booking
+
+### Cancellation
+
+**Flow:**
+1. User clicks "إلغاء" button on a booking card
+2. Confirmation overlay appears: "هل تريد إلغاء هذا الحجز؟"
+3. User confirms with "نعم، إلغاء الحجز"
+4. API call to Cal.com cancel endpoint
+5. Loading → Success/Error state shown
+6. Card removed from list after success
+
+**Key Discovery:** Cal.com cancel API works **without authentication** - just the booking UID is sufficient:
+```bash
+POST https://api.cal.com/v2/bookings/{bookingUid}/cancel
+Headers: Content-Type: application/json, cal-api-version: 2024-08-13
+Body: { "cancellationReason": "ألغاه المستخدم", "cancelSubsequentBookings": false }
+```
+
+**Implementation:**
+- `BookingCardUtils.cancelBooking(cardId, bookingUid, onSuccess, onError)` utility function
+- Direct client-side API call to Cal.com (no n8n webhook needed)
+- UI states: confirmation overlay → loading → success/error
+
+### BookingCard Options
+
+```javascript
+window.BookingCardUtils.initBookingCard(cardId, booking, {
+  index: 1,                    // Position in list (optional)
+  total: 3,                    // Total bookings (optional)
+  showReschedule: true,        // Show reschedule button
+  showCancel: true,            // Show cancel button
+  onLocationClick: (isClinic, meetingUrl) => { ... },
+  onReschedule: (booking) => { ... },   // Called when reschedule clicked
+  onCancel: (booking) => { ... }        // Called when cancel confirmed
+});
+```
+
+### Post-Booking Navigation
+
+The `/landing/booking-complete` page shows "الذهاب إلى صفحة حجوزاتي" button after booking confirmation, allowing users to easily access the bookings management page.
+
 ## Future Enhancements
 
 Planned features for the booking system:
-- Cancel appointments from /bookings page
-- Reschedule appointments (Cal.com supports via `config.rescheduleUid`)
 - Booking history (past appointments)
 - SMS reminders integration
 - Multiple phone numbers per user

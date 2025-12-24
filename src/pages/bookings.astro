@@ -266,12 +266,42 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
           window.BookingCardUtils.initBookingCard(item.cardId, item.booking, {
             index: item.index,
             total: totalBookings,
+            showReschedule: true,
+            showCancel: true,
             onLocationClick: function(isClinic, meetingUrl) {
               if (isClinic) {
                 window.open('https://maps.app.goo.gl/RE3yv34U16Ssdezj7', '_blank');
               } else {
                 window.open(meetingUrl || ('https://app.cal.com/video/' + item.booking.uid), '_blank');
               }
+            },
+            onReschedule: function(booking) {
+              // Open Cal.com modal in reschedule mode
+              var calLink = 'د.-مو-من-ديرانية-z6vyi6/' + booking.eventType.slug;
+              var config = {
+                layout: 'month_view',
+                theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+                rescheduleUid: booking.uid
+              };
+              Cal.ns.bookings("modal", { calLink: calLink, config: config });
+            },
+            onCancel: function(booking) {
+              // Cancel via Cal.com API (no auth needed - UID is sufficient)
+              window.BookingCardUtils.cancelBooking(
+                item.cardId,
+                booking.uid,
+                function() {
+                  // Success - remove card after delay and update count
+                  setTimeout(function() {
+                    var card = document.getElementById(item.cardId);
+                    if (card) card.remove();
+                    updateBookingCount();
+                  }, 2000);
+                },
+                function(message) {
+                  console.error('Cancel failed:', message);
+                }
+              );
             }
           });
         });
@@ -293,6 +323,24 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
           setTimeout(function() { clearInterval(checkInterval); }, 5000);
         }
       });
+    }
+
+    // Update booking count after cancellation
+    function updateBookingCount() {
+      var cards = document.querySelectorAll('[data-booking-card]');
+      var count = cards.length;
+      var pageTitle = document.getElementById('page-title');
+
+      if (count === 0) {
+        // Show empty state
+        document.getElementById('bookings-list')?.classList.add('hidden');
+        document.getElementById('empty-state')?.classList.remove('hidden');
+        document.getElementById('new-booking-container')?.classList.add('hidden');
+      }
+
+      if (pageTitle && window.describeNumberOfBookings) {
+        pageTitle.textContent = window.describeNumberOfBookings(count);
+      }
     }
 
     // Main initialization
@@ -469,5 +517,39 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
         initBookingsPage();
       }
     });
+  </script>
+
+  <!-- Cal.com Embed Script (for reschedule modal) -->
+  <script is:inline>
+    /* eslint-disable prefer-rest-params, no-var, no-undef */
+    (function (C, A, L) {
+      var p = function (a, ar) { a.q.push(ar); };
+      var d = C.document;
+      C.Cal = C.Cal || function () {
+        var cal = C.Cal;
+        var ar = arguments;
+        if (!cal.loaded) {
+          cal.ns = {};
+          cal.q = cal.q || [];
+          d.head.appendChild(d.createElement("script")).src = A;
+          cal.loaded = true;
+        }
+        if (ar[0] === L) {
+          var api = function () { p(api, arguments); };
+          var namespace = ar[1];
+          api.q = api.q || [];
+          if (typeof namespace === "string") {
+            cal.ns[namespace] = cal.ns[namespace] || api;
+            p(cal.ns[namespace], ar);
+            p(cal, ["initNamespace", namespace]);
+          } else p(cal, ar);
+          return;
+        }
+        p(cal, ar);
+      };
+    })(window, "https://app.cal.com/embed/embed.js", "init");
+
+    Cal("init", "bookings", { origin: "https://app.cal.com" });
+    /* eslint-enable prefer-rest-params, no-var */
   </script>
 </Layout>

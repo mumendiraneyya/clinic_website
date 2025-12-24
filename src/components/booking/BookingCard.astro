@@ -24,7 +24,7 @@ const { id, class: className = '' } = Astro.props;
 ---
 
 <div id={id} class:list={['booking-card', className]} data-booking-card>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-start">
+  <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-start">
     <!-- Header with title -->
     <h2 class="booking-card-title text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
       <Icon name="tabler:calendar-event" class="w-5 h-5 text-primary" />
@@ -59,7 +59,7 @@ const { id, class: className = '' } = Astro.props;
     </div>
 
     <!-- Actions - centered -->
-    <div class="mt-6 flex justify-center">
+    <div class="mt-6 flex flex-wrap justify-center gap-2">
       <!-- Add to Calendar -->
       <div class="booking-card-calendar-container relative">
         <button
@@ -105,6 +105,44 @@ const { id, class: className = '' } = Astro.props;
             </a>
           </div>
         </div>
+      </div>
+
+      <!-- Reschedule button (hidden by default) -->
+      <button type="button" class="booking-card-reschedule-btn hidden btn-secondary text-sm inline-flex items-center gap-2">
+        <Icon name="tabler:calendar-repeat" class="w-4 h-4" />
+        <span>تغيير الموعد</span>
+      </button>
+
+      <!-- Cancel button (hidden by default) -->
+      <button type="button" class="booking-card-cancel-btn hidden btn-secondary text-sm inline-flex items-center gap-2 !text-red-600 hover:!text-red-700 dark:!text-red-400 dark:hover:!text-red-300">
+        <Icon name="tabler:calendar-x" class="w-4 h-4" />
+        <span>إلغاء</span>
+      </button>
+    </div>
+
+    <!-- Cancel confirmation overlay (hidden by default) -->
+    <div class="booking-card-cancel-confirm hidden absolute inset-0 bg-white/95 dark:bg-gray-800/95 rounded-xl flex flex-col items-center justify-center p-6 z-20">
+      <p class="text-lg text-gray-900 dark:text-white mb-4">هل تريد إلغاء هذا الحجز؟</p>
+      <div class="flex gap-3">
+        <button type="button" class="booking-card-cancel-no btn-secondary">لا</button>
+        <button type="button" class="booking-card-cancel-yes btn-primary !bg-red-600 hover:!bg-red-700">نعم، إلغاء الحجز</button>
+      </div>
+    </div>
+
+    <!-- Cancel loading/success/error states -->
+    <div class="booking-card-cancel-status hidden absolute inset-0 bg-white/95 dark:bg-gray-800/95 rounded-xl flex flex-col items-center justify-center p-6 z-20">
+      <div class="booking-card-cancel-loading hidden text-center">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+        <p class="mt-4 text-gray-700 dark:text-gray-300">جارٍ إلغاء الحجز...</p>
+      </div>
+      <div class="booking-card-cancel-success hidden text-center">
+        <span class="text-5xl">✅</span>
+        <p class="mt-4 text-gray-900 dark:text-white font-medium">تم إلغاء الحجز بنجاح</p>
+      </div>
+      <div class="booking-card-cancel-error hidden text-center">
+        <span class="text-5xl">❌</span>
+        <p class="mt-4 text-gray-900 dark:text-white booking-card-cancel-error-msg">حدث خطأ</p>
+        <button type="button" class="booking-card-cancel-retry btn-secondary mt-4">إعادة المحاولة</button>
       </div>
     </div>
   </div>
@@ -304,6 +342,11 @@ const { id, class: className = '' } = Astro.props;
     index?: number;
     total?: number;
     onLocationClick?: (isClinic: boolean, meetingUrl?: string) => void;
+    // Reschedule/Cancel options
+    showReschedule?: boolean;
+    showCancel?: boolean;
+    onReschedule?: (booking: Booking) => void;
+    onCancel?: (booking: Booking) => void;
   }
 
   /**
@@ -402,6 +445,116 @@ const { id, class: className = '' } = Astro.props;
     if (googleLink) googleLink.href = generateGoogleCalendarUrl(params);
     if (appleLink) appleLink.href = generateIcsDataUrl(params);
     if (outlookLink) outlookLink.href = generateOutlookCalendarUrl(params);
+
+    // Show/hide reschedule button
+    const rescheduleBtn = card.querySelector('.booking-card-reschedule-btn');
+    if (rescheduleBtn && options.showReschedule) {
+      rescheduleBtn.classList.remove('hidden');
+      rescheduleBtn.addEventListener('click', () => {
+        if (options.onReschedule) {
+          options.onReschedule(booking);
+        }
+      });
+    }
+
+    // Show/hide cancel button and wire up confirmation flow
+    const cancelBtn = card.querySelector('.booking-card-cancel-btn');
+    const cancelConfirm = card.querySelector('.booking-card-cancel-confirm');
+    const cancelNo = card.querySelector('.booking-card-cancel-no');
+    const cancelYes = card.querySelector('.booking-card-cancel-yes');
+
+    if (cancelBtn && options.showCancel) {
+      cancelBtn.classList.remove('hidden');
+
+      cancelBtn.addEventListener('click', () => {
+        cancelConfirm?.classList.remove('hidden');
+      });
+
+      cancelNo?.addEventListener('click', () => {
+        cancelConfirm?.classList.add('hidden');
+      });
+
+      cancelYes?.addEventListener('click', () => {
+        if (options.onCancel) {
+          options.onCancel(booking);
+        }
+      });
+    }
+  }
+
+  // Cal.com API constants
+  const CAL_API_BASE = 'https://api.cal.com/v2';
+  const CAL_API_VERSION = '2024-08-13';
+
+  /**
+   * Cancel a booking via Cal.com API
+   * @param cardId - The card element ID (for updating UI states)
+   * @param bookingUid - The booking UID to cancel
+   * @param onSuccess - Callback on successful cancellation
+   * @param onError - Callback on error
+   */
+  async function cancelBooking(
+    cardId: string,
+    bookingUid: string,
+    onSuccess?: () => void,
+    onError?: (message: string) => void
+  ): Promise<void> {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+
+    const confirmEl = card.querySelector('.booking-card-cancel-confirm');
+    const statusEl = card.querySelector('.booking-card-cancel-status');
+    const loadingEl = card.querySelector('.booking-card-cancel-loading');
+    const successEl = card.querySelector('.booking-card-cancel-success');
+    const errorEl = card.querySelector('.booking-card-cancel-error');
+    const errorMsgEl = card.querySelector('.booking-card-cancel-error-msg');
+    const retryBtn = card.querySelector('.booking-card-cancel-retry');
+
+    // Hide confirm, show loading
+    confirmEl?.classList.add('hidden');
+    statusEl?.classList.remove('hidden');
+    loadingEl?.classList.remove('hidden');
+    successEl?.classList.add('hidden');
+    errorEl?.classList.add('hidden');
+
+    try {
+      // Call Cal.com API directly (no auth needed!)
+      const response = await fetch(`${CAL_API_BASE}/bookings/${bookingUid}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'cal-api-version': CAL_API_VERSION
+        },
+        body: JSON.stringify({
+          cancellationReason: 'ألغاه المستخدم',
+          cancelSubsequentBookings: false
+        })
+      });
+      const result = await response.json();
+
+      loadingEl?.classList.add('hidden');
+
+      if (result.status === 'success') {
+        successEl?.classList.remove('hidden');
+        if (onSuccess) onSuccess();
+      } else {
+        errorEl?.classList.remove('hidden');
+        if (errorMsgEl) errorMsgEl.textContent = 'حدث خطأ أثناء إلغاء الحجز';
+        if (onError) onError(result.error?.message || 'Unknown error');
+      }
+    } catch {
+      loadingEl?.classList.add('hidden');
+      errorEl?.classList.remove('hidden');
+      if (errorMsgEl) errorMsgEl.textContent = 'تعذر الاتصال بالخادم';
+      if (onError) onError('Network error');
+    }
+
+    // Wire up retry button
+    if (retryBtn) {
+      retryBtn.addEventListener('click', () => {
+        cancelBooking(cardId, bookingUid, onSuccess, onError);
+      });
+    }
   }
 
   // Expose utilities globally
@@ -412,6 +565,8 @@ const { id, class: className = '' } = Astro.props;
         formatArabicDate: typeof formatArabicDate;
         formatArabicTime: typeof formatArabicTime;
         getArabicTimezoneName: typeof getArabicTimezoneName;
+        toArabicNumerals: typeof toArabicNumerals;
+        cancelBooking: typeof cancelBooking;
       };
     }
   }
@@ -420,6 +575,8 @@ const { id, class: className = '' } = Astro.props;
     initBookingCard,
     formatArabicDate,
     formatArabicTime,
-    getArabicTimezoneName
+    getArabicTimezoneName,
+    toArabicNumerals,
+    cancelBooking
   };
 </script>

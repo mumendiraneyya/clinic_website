@@ -2,6 +2,7 @@
 import Layout from '~/layouts/PageLayout.astro';
 import Location from '~/components/widgets/Location.astro';
 import BookingCard from '~/components/booking/BookingCard.astro';
+import { Icon } from 'astro-icon/components';
 
 const metadata = {
   title: 'تم الحجز بنجاح',
@@ -39,6 +40,14 @@ const metadata = {
           class="btn-primary inline-flex items-center gap-2"
         >
           العودة إلى الصفحة الرئيسية
+        </a>
+      </div>
+
+      <!-- Bookings page button - shown after confirmation -->
+      <div id="bookings-link-container" class="hidden mb-6 text-center">
+        <a href="/bookings" class="btn-secondary inline-flex items-center gap-2">
+          <Icon name="tabler:calendar-event" class="w-5 h-5" />
+          <span>الذهاب إلى صفحة حجوزاتي</span>
         </a>
       </div>
 
@@ -218,6 +227,12 @@ const metadata = {
             }
           }
         });
+      }
+
+      // Show bookings page navigation button
+      var bookingsLink = document.getElementById('bookings-link-container');
+      if (bookingsLink) {
+        bookingsLink.classList.remove('hidden');
       }
     }
 
