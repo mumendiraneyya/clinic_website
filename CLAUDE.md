@@ -122,6 +122,59 @@ Blog posts are defined in `src/content/config.ts` using Astro's content collecti
 - `src/utils/blog.ts` - Blog data fetching and filtering
 - `src/utils/frontmatter.ts` - Remark/rehype plugins for reading time, responsive tables, lazy images
 - `src/utils/images-optimization.ts` - Image optimization utilities using Unpic
+- `src/utils/arabic.ts` - Arabic language utilities (server-side TypeScript)
+
+### Arabic Language Utilities
+
+Arabic has complex plural rules that differ from English. The site provides utilities for proper Arabic number/count formatting:
+
+**Server-side (TypeScript):** `src/utils/arabic.ts`
+- `describeNumberOfPosts(count)` - Blog post counts
+- `describeNumberOfBookings(count)` - Booking counts
+
+**Client-side (JavaScript):** `public/scripts/arabic-utils.js`
+- `describeArabicCount(count, forms)` - Generic Arabic plural forms
+- `describeNumberOfBookings(count)` - Booking count title
+- `describeDuration(seconds, accusative)` - Duration in Arabic (e.g., "٣ ساعات و٢٠ دقيقة")
+- `describeRelativeTime(date, reference, label)` - Relative time (e.g., "بعد يومين")
+
+**Arabic plural rules:**
+```javascript
+// Forms array: [singular, dual, plural 3-10, plural 11+]
+describeArabicCount(count, ['حجز واحد', 'حجزان اثنان', 'حجوزات', 'حجزًا']);
+// 0: '' (empty)
+// 1: 'حجز واحد'
+// 2: 'حجزان اثنان'
+// 3-10: '٥ حجوزات' (with Arabic numerals)
+// 11+: '١٥ حجزًا' (accusative singular)
+```
+
+**Design principle:** When adding new count descriptions, use `describeArabicCount()` with appropriate forms rather than creating new functions. Only create a named wrapper (like `describeNumberOfBookings`) if the count will be used in multiple places.
+
+### Client-Side Scripts Pattern
+
+For JavaScript that runs in the browser (not at build time), use `public/scripts/`:
+
+**Location:** `public/scripts/*.js`
+- `phone-utils.js` - Phone number formatting
+- `arabic-utils.js` - Arabic language utilities
+
+**Usage in Astro pages:**
+```html
+<script src="/scripts/arabic-utils.js" is:inline></script>
+<script is:inline>
+  // Functions available on window object
+  var title = window.describeNumberOfBookings(count);
+</script>
+```
+
+**Why this pattern:**
+- Astro's `is:inline` scripts don't support ES module imports
+- Scripts in `public/` are served as-is (no bundling)
+- Functions are exported to `window` for use in inline scripts
+- Use ES5 syntax (`var`, `function`) for maximum browser compatibility
+
+**Design principle:** When adding utilities needed by inline scripts, add them to the appropriate `public/scripts/*.js` file. If the utility is also useful at build time, add a TypeScript version to `src/utils/` as well.
 
 ### Icon System
 
@@ -259,6 +312,34 @@ if (document.readyState === 'loading') {
 }
 document.addEventListener('astro:page-load', init);
 ```
+
+### Bookings Management Page
+
+The `/bookings` page displays a user's upcoming appointments after phone verification.
+
+**Key files:**
+- `src/pages/bookings.astro` - Main page with phone display, verification flow, and booking list
+- `src/components/booking/BookingCard.astro` - Reusable booking card component
+
+**BookingCard utilities (`window.BookingCardUtils`):**
+- `initBookingCard(cardId, booking, options)` - Initialize a card with booking data
+- `formatArabicDate(dateStr)` - Format date in Arabic (e.g., "الأربعاء، ٣١ ديسمبر ٢٠٢٥")
+- `formatArabicTime(dateStr)` - Format time in Arabic 12-hour format
+- `toArabicNumerals(num)` - Convert Western numerals to Arabic (e.g., "123" → "١٢٣")
+
+**initBookingCard options:**
+```javascript
+{
+  index: 1,           // 1-based position in list
+  total: 4,           // Total bookings count
+  onLocationClick: (isClinic, meetingUrl) => { ... }
+}
+```
+
+**Design principles:**
+- Bookings are sorted by start time (earliest first) before rendering
+- Use `toArabicNumerals()` from BookingCardUtils for consistent Arabic numeral display
+- Card titles show position: "تفاصيل الحجز (١ من ٤)"
 
 ### Cal.com Booking
 

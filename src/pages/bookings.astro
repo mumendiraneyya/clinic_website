@@ -21,11 +21,14 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
     <div class="max-w-2xl mx-auto px-4 sm:px-6">
       <!-- Header -->
       <div class="text-center mb-8">
-        <h1 class="text-2xl md:text-3xl font-bold mb-2 font-heading dark:text-gray-200">
+        <h1 id="page-title" class="text-2xl md:text-3xl font-bold mb-2 font-heading dark:text-gray-200">
           حجوزاتي
         </h1>
         <p class="text-muted dark:text-slate-400">
           استعرض مواعيدك القادمة
+        </p>
+        <p class="text-sm text-muted dark:text-slate-500 mt-4 max-w-md mx-auto">
+          حجوزاتك مرتبطة برقم هاتفك. للوصول إليها، يجب التحقق من ملكيتك للرقم عبر رسالة نصية قصيرة أو رسالة واتساب. هذا يضمن أن صاحب الرقم فقط هو من يستطيع الاطلاع على مواعيده وإعادة جدولتها وإلغاءها. في الوقت الراهن، لا نوفر طريقة لاستعراض المواعيد السابقة وهذه الصفحة هي لإدارة المواعيد المستقبلية فقط.
         </p>
       </div>
 
@@ -58,8 +61,8 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
             <div class="flex flex-row-reverse items-center gap-1 flex-shrink-0">
               <span id="verified-phone" dir="ltr" class="verified-phone-display text-gray-700 dark:text-gray-300 whitespace-nowrap"></span>
               <button id="change-phone-btn" type="button" class="inline-flex items-center gap-1 p-1.5 text-muted hover:text-primary transition-colors" title="تغيير الرقم">
-                <Icon name="tabler:pencil" class="w-3.5 h-3.5" />
-                <span class="hidden min-[340px]:inline text-xs">تعديل</span>
+                <Icon name="tabler:arrows-right-left" class="w-3.5 h-3.5" />
+                <span class="hidden min-[340px]:inline text-xs">تغيير</span>
               </button>
               <button id="delete-phone-btn" type="button" class="inline-flex items-center gap-1 p-1.5 text-muted hover:text-red-500 transition-colors" title="نسيان الرقم">
                 <Icon name="tabler:x" class="w-3.5 h-3.5" />
@@ -68,7 +71,7 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
               <Icon name="tabler:phone" class="w-5 h-5 text-primary -scale-x-100" />
-              <p class="text-secondary whitespace-nowrap">رقم الهاتف المحفوظ</p>
+              <p class="text-secondary whitespace-nowrap">رقم الهاتف المستخدم للحجز</p>
             </div>
           </div>
           <!-- Confirmation state (hidden by default) -->
@@ -135,6 +138,8 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
 
   <!-- Phone utilities -->
   <script src="/scripts/phone-utils.js" is:inline></script>
+  <!-- Arabic utilities -->
+  <script src="/scripts/arabic-utils.js" is:inline></script>
 
   <style>
     .verified-phone-display {
@@ -200,6 +205,13 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
       var newBookingContainer = document.getElementById('new-booking-container');
       var phoneDisplay = document.getElementById('verified-phone');
       var template = document.getElementById('booking-card-template');
+      var pageTitle = document.getElementById('page-title');
+
+      // Update page title with booking count
+      var bookingCount = bookings ? bookings.length : 0;
+      if (pageTitle && window.describeNumberOfBookings) {
+        pageTitle.textContent = window.describeNumberOfBookings(bookingCount);
+      }
 
       // Display phone number
       if (phoneDisplay && window.formatPhoneDisplay) {
@@ -217,6 +229,11 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
         newBookingContainer?.classList.add('hidden');
         return;
       }
+
+      // Sort bookings by start time (earliest first)
+      bookings.sort(function(a, b) {
+        return new Date(a.start).getTime() - new Date(b.start).getTime();
+      });
 
       // Hide empty state, show new booking button
       emptyState?.classList.add('hidden');
@@ -237,15 +254,18 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
         if (card) {
           card.id = cardId;
           bookingsList?.appendChild(clone);
-          cardsToInit.push({ cardId: cardId, booking: booking });
+          cardsToInit.push({ cardId: cardId, booking: booking, index: index + 1 });
         }
       });
 
       // Initialize cards after all are in the DOM
       // Wait for BookingCardUtils to be available (script may load async)
+      var totalBookings = cardsToInit.length;
       function initCards() {
         cardsToInit.forEach(function(item) {
           window.BookingCardUtils.initBookingCard(item.cardId, item.booking, {
+            index: item.index,
+            total: totalBookings,
             onLocationClick: function(isClinic, meetingUrl) {
               if (isClinic) {
                 window.open('https://maps.app.goo.gl/RE3yv34U16Ssdezj7', '_blank');
@@ -320,8 +340,6 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
       showBookings();
     }
 
-    // Track if we're in "change phone" mode (has existing token but wants to change)
-    var isChangingPhone = false;
     var cachedBookingsData = null;
     var cachedPhone = '';
 

@@ -301,6 +301,8 @@ const { id, class: className = '' } = Astro.props;
   }
 
   interface InitBookingCardOptions {
+    index?: number;
+    total?: number;
     onLocationClick?: (isClinic: boolean, meetingUrl?: string) => void;
   }
 
@@ -321,6 +323,14 @@ const { id, class: className = '' } = Astro.props;
       endTime: booking.end,
       meetingUrl: booking.meetingUrl
     };
+
+    // Set card title with index if provided
+    const titleEl = card.querySelector('.booking-card-title span');
+    if (titleEl && options.index !== undefined && options.total !== undefined) {
+      const indexArabic = toArabicNumerals(options.index);
+      const totalArabic = toArabicNumerals(options.total);
+      titleEl.textContent = `تفاصيل الحجز (${indexArabic} من ${totalArabic})`;
+    }
 
     // Set booking type
     const typeEl = card.querySelector('.booking-card-type');
