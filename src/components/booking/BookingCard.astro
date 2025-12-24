@@ -1,0 +1,415 @@
+---
+/**
+ * BookingCard Component
+ *
+ * Displays a booking card with details and actions (add to calendar, location link).
+ * Can be used standalone or in a list of bookings.
+ *
+ * Props:
+ * - id: Unique identifier for this card (used for element IDs)
+ * - booking: Booking object from Cal.com API (optional, can be set via JS)
+ *
+ * When booking prop is not provided, the card is hidden by default and must be
+ * populated via JavaScript using the initBookingCard() function.
+ */
+
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  id: string;
+  class?: string;
+}
+
+const { id, class: className = '' } = Astro.props;
+---
+
+<div id={id} class:list={['booking-card', className]} data-booking-card>
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 text-start">
+    <!-- Header with title -->
+    <h2 class="booking-card-title text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+      <Icon name="tabler:calendar-event" class="w-5 h-5 text-primary" />
+      <span>تفاصيل الحجز</span>
+    </h2>
+
+    <!-- Details grid: 1 column on mobile, 2 columns on md+ -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+      <!-- Appointment Type -->
+      <div class="flex items-center gap-3">
+        <Icon name="tabler:stethoscope" class="w-5 h-5 text-muted flex-shrink-0" />
+        <span class="booking-card-type text-gray-700 dark:text-gray-300"></span>
+      </div>
+
+      <!-- Date -->
+      <div class="flex items-center gap-3">
+        <Icon name="tabler:calendar" class="w-5 h-5 text-muted flex-shrink-0" />
+        <span class="booking-card-date text-gray-700 dark:text-gray-300"></span>
+      </div>
+
+      <!-- Time -->
+      <div class="flex items-center gap-3">
+        <Icon name="tabler:clock" class="w-5 h-5 text-muted flex-shrink-0" />
+        <span class="booking-card-time text-gray-700 dark:text-gray-300"></span>
+      </div>
+
+      <!-- Location Link -->
+      <div class="booking-card-link-row hidden flex items-center gap-3">
+        <Icon name="tabler:link" class="w-5 h-5 text-muted flex-shrink-0" />
+        <button type="button" class="booking-card-link text-primary hover:underline cursor-pointer bg-transparent border-none p-0 text-start"></button>
+      </div>
+    </div>
+
+    <!-- Actions - centered -->
+    <div class="mt-6 flex justify-center">
+      <!-- Add to Calendar -->
+      <div class="booking-card-calendar-container relative">
+        <button
+          type="button"
+          class="booking-card-calendar-btn btn-secondary text-sm inline-flex items-center gap-2"
+        >
+          <Icon name="tabler:calendar-plus" class="w-4 h-4" />
+          <span>إضافة إلى التقويم</span>
+          <Icon name="tabler:chevron-down" class="w-3 h-3" />
+        </button>
+
+        <!-- Dropdown Menu - centered below button -->
+        <div
+          class="booking-card-calendar-dropdown hidden absolute z-10 mt-2 w-56 rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10"
+          style="left: 50%; transform: translateX(-50%);"
+        >
+          <div class="py-1">
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="booking-card-google-link flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              <Icon name="calendar-google" class="w-5 h-5" />
+              <span>تقويم غوغل</span>
+            </a>
+            <a
+              href="#"
+              download="appointment.ics"
+              class="booking-card-apple-link flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              <Icon name="calendar-apple" class="w-5 h-5" />
+              <span>تقويم أبل</span>
+            </a>
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="booking-card-outlook-link flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              <Icon name="calendar-outlook" class="w-5 h-5" />
+              <span>تقويم أوتلك</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /**
+   * Booking Card utilities
+   *
+   * These functions are exposed globally via window.BookingCardUtils
+   * for use by pages that include this component.
+   */
+
+  // Arabic day and month names
+  const arabicDays = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+  const arabicMonths = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+
+  // Convert number to Arabic numerals
+  function toArabicNumerals(num: number | string): string {
+    const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return String(num).split('').map(d => arabicDigits[parseInt(d)] || d).join('');
+  }
+
+  // Format date in Arabic
+  function formatArabicDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    const day = arabicDays[date.getDay()];
+    const dayNum = toArabicNumerals(date.getDate());
+    const month = arabicMonths[date.getMonth()];
+    const year = toArabicNumerals(date.getFullYear());
+    return `${day}، ${dayNum} ${month} ${year}`;
+  }
+
+  // Format time in Arabic (12-hour format)
+  function formatArabicTime(dateStr: string): string {
+    const date = new Date(dateStr);
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const period = hours >= 12 ? 'مساءً' : 'صباحًا';
+    hours = hours % 12 || 12;
+    const minutesStr = minutes < 10 ? '0' + minutes : String(minutes);
+    return `${toArabicNumerals(hours)}:${toArabicNumerals(minutesStr)} ${period}`;
+  }
+
+  // Get Arabic timezone name from IANA timezone
+  function getArabicTimezoneName(timeZone: string, locale = 'ar-JO'): string {
+    try {
+      const formatter = new Intl.DateTimeFormat(locale, {
+        timeZone: timeZone,
+        timeZoneName: 'shortGeneric'
+      });
+      const parts = formatter.formatToParts(new Date());
+      const tzPart = parts.find(part => part.type === 'timeZoneName');
+      return tzPart ? tzPart.value : timeZone.split('/')[1];
+    } catch {
+      return timeZone.split('/')[1] || timeZone;
+    }
+  }
+
+  // Format date for calendar (YYYYMMDDTHHmmssZ)
+  function formatCalendarDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  }
+
+  interface BookingParams {
+    uid: string;
+    eventTypeSlug: string;
+    startTime: string;
+    endTime: string;
+    meetingUrl?: string;
+  }
+
+  function composeCalendarEventTitle(params: BookingParams): string {
+    if (params.eventTypeSlug === 'clinic') {
+      return 'موعد طبي في عيادة د. مؤمن ديرانية';
+    }
+    return 'استشارة طبية عن بعد مع د. مؤمن ديرانية';
+  }
+
+  function getCalendarLocationLink(params: BookingParams): string {
+    if (params.eventTypeSlug === 'clinic') {
+      return 'https://maps.app.goo.gl/RE3yv34U16Ssdezj7';
+    }
+    return params.meetingUrl || `https://app.cal.com/video/${params.uid}`;
+  }
+
+  function getCalendarLocation(params: BookingParams): string {
+    if (params.eventTypeSlug === 'clinic') {
+      return '31.99769375488415, 35.87301759398745';
+    }
+    return 'عن طريق الفيديو (الرابط موجود في الوصف)';
+  }
+
+  function buildCalendarDescription(params: BookingParams): string {
+    const lines: string[] = [];
+    const isClinic = params.eventTypeSlug === 'clinic';
+
+    if (isClinic) {
+      lines.push(
+        `هذا الموعد هو في عيادة د. مؤمن ديرانية والموجودة في الطابق الثاني من مجمع عيادات النور التخصصية (بجوار طوارئ مستشفى ابن الهيثم). رابط الموقع على خرائط غوغل هنا: ${getCalendarLocationLink(params)}`
+      );
+    } else {
+      lines.push(
+        `هذه استشارة مع الطبيب مؤمن ديرانية عن طريق الفيديو٬ والرابط لهذه الاستشارة عن بعد هو: ${getCalendarLocationLink(params)}`
+      );
+    }
+
+    lines.push(
+      `إن طرأ طارئ ولم تستطيعوا الحضور فلا تترددوا بتغيير الحجز قبيل الموعد من موقعنا https://abuobaydatajjarrah.com/bookings \n وإن كانت عندكم تساؤلات أو رغبتم بالتواصل المباشر لوجدتم ما يلزمكم لذلك هنا: https://abuobaydatajjarrah.com/#location`
+    );
+
+    lines.push(`نتمنى لكم التوفيق في موعدكم معنا ونتطلع للقائكم.`);
+    lines.push(new Array(40).fill('-').join(''));
+    lines.push(`الخلاصة القصيرة (ت\u200Cل\u200Cد\u200Cر): ${getCalendarLocationLink(params)}`);
+
+    return lines.join('\n\n');
+  }
+
+  function generateGoogleCalendarUrl(params: BookingParams): string {
+    const startDate = formatCalendarDate(params.startTime);
+    const endDate = formatCalendarDate(params.endTime);
+    const title = composeCalendarEventTitle(params);
+    const description = buildCalendarDescription(params);
+    const location = getCalendarLocation(params);
+
+    let url = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
+    url += '&text=' + encodeURIComponent(title);
+    url += '&dates=' + startDate + '/' + endDate;
+    url += '&details=' + encodeURIComponent(description);
+    url += '&location=' + encodeURIComponent(location);
+
+    return url;
+  }
+
+  function generateOutlookCalendarUrl(params: BookingParams): string {
+    const startDate = new Date(params.startTime).toISOString();
+    const endDate = new Date(params.endTime).toISOString();
+    const title = composeCalendarEventTitle(params);
+    const description = buildCalendarDescription(params);
+    const location = getCalendarLocation(params);
+
+    let url = 'https://outlook.live.com/calendar/0/action/compose?allday=false';
+    url += '&subject=' + encodeURIComponent(title);
+    url += '&startdt=' + encodeURIComponent(startDate);
+    url += '&enddt=' + encodeURIComponent(endDate);
+    url += '&body=' + encodeURIComponent(description);
+    url += '&location=' + encodeURIComponent(location);
+
+    return url;
+  }
+
+  function generateIcsContent(params: BookingParams): string {
+    const startDate = formatCalendarDate(params.startTime);
+    const endDate = formatCalendarDate(params.endTime);
+    const title = composeCalendarEventTitle(params);
+    const description = buildCalendarDescription(params).replace(/\n/g, '\\n');
+    const location = getCalendarLocation(params);
+    const uid = params.uid || Date.now().toString();
+
+    return [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Dr. Mumen Clinic//Booking//AR',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      'UID:' + uid + '@abuobaydatajjarrah.com',
+      'DTSTAMP:' + formatCalendarDate(new Date().toISOString()),
+      'DTSTART:' + startDate,
+      'DTEND:' + endDate,
+      'SUMMARY:' + title,
+      'DESCRIPTION:' + description,
+      'LOCATION:' + location,
+      'STATUS:CONFIRMED',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+  }
+
+  function generateIcsDataUrl(params: BookingParams): string {
+    const icsContent = generateIcsContent(params);
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    return URL.createObjectURL(blob);
+  }
+
+  interface Booking {
+    uid: string;
+    start: string;
+    end: string;
+    eventType: { slug: string };
+    meetingUrl?: string;
+    attendees?: Array<{ timeZone?: string }>;
+  }
+
+  interface InitBookingCardOptions {
+    onLocationClick?: (isClinic: boolean, meetingUrl?: string) => void;
+  }
+
+  /**
+   * Initialize a booking card with data
+   */
+  function initBookingCard(cardId: string, booking: Booking, options: InitBookingCardOptions = {}): void {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+
+    const isClinic = booking.eventType.slug === 'clinic';
+    const attendeeTimezone = booking.attendees?.[0]?.timeZone;
+
+    const params: BookingParams = {
+      uid: booking.uid,
+      eventTypeSlug: booking.eventType.slug,
+      startTime: booking.start,
+      endTime: booking.end,
+      meetingUrl: booking.meetingUrl
+    };
+
+    // Set booking type
+    const typeEl = card.querySelector('.booking-card-type');
+    if (typeEl) {
+      typeEl.textContent = isClinic ? 'موعد في العيادة' : 'استشارة عن بعد';
+    }
+
+    // Set date
+    const dateEl = card.querySelector('.booking-card-date');
+    if (dateEl) {
+      dateEl.textContent = 'يوم ' + formatArabicDate(booking.start);
+    }
+
+    // Set time
+    const timeEl = card.querySelector('.booking-card-time');
+    if (timeEl) {
+      const timezoneLabel = attendeeTimezone ? getArabicTimezoneName(attendeeTimezone) : 'توقيتك';
+      timeEl.textContent = formatArabicTime(booking.start) + ' ب' + timezoneLabel;
+    }
+
+    // Set location link
+    const linkRow = card.querySelector('.booking-card-link-row');
+    const linkBtn = card.querySelector('.booking-card-link') as HTMLButtonElement;
+    if (linkRow && linkBtn) {
+      linkBtn.textContent = isClinic ? 'موقع العيادة' : 'رابط الاستشارة';
+      linkBtn.onclick = (e) => {
+        e.preventDefault();
+        if (options.onLocationClick) {
+          options.onLocationClick(isClinic, booking.meetingUrl);
+        } else if (isClinic) {
+          window.open('https://maps.app.goo.gl/RE3yv34U16Ssdezj7', '_blank');
+        } else {
+          window.open(booking.meetingUrl || `https://app.cal.com/video/${booking.uid}`, '_blank');
+        }
+      };
+      linkRow.classList.remove('hidden');
+    }
+
+    // Setup calendar dropdown
+    const calendarBtn = card.querySelector('.booking-card-calendar-btn');
+    const calendarDropdown = card.querySelector('.booking-card-calendar-dropdown');
+
+    if (calendarBtn && calendarDropdown) {
+      calendarBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        calendarDropdown.classList.toggle('hidden');
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!calendarDropdown.contains(e.target as Node) && e.target !== calendarBtn) {
+          calendarDropdown.classList.add('hidden');
+        }
+      });
+
+      // Close dropdown when clicking a link
+      calendarDropdown.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          calendarDropdown.classList.add('hidden');
+        });
+      });
+    }
+
+    // Set calendar links
+    const googleLink = card.querySelector('.booking-card-google-link') as HTMLAnchorElement;
+    const appleLink = card.querySelector('.booking-card-apple-link') as HTMLAnchorElement;
+    const outlookLink = card.querySelector('.booking-card-outlook-link') as HTMLAnchorElement;
+
+    if (googleLink) googleLink.href = generateGoogleCalendarUrl(params);
+    if (appleLink) appleLink.href = generateIcsDataUrl(params);
+    if (outlookLink) outlookLink.href = generateOutlookCalendarUrl(params);
+  }
+
+  // Expose utilities globally
+  declare global {
+    interface Window {
+      BookingCardUtils: {
+        initBookingCard: typeof initBookingCard;
+        formatArabicDate: typeof formatArabicDate;
+        formatArabicTime: typeof formatArabicTime;
+        getArabicTimezoneName: typeof getArabicTimezoneName;
+      };
+    }
+  }
+
+  window.BookingCardUtils = {
+    initBookingCard,
+    formatArabicDate,
+    formatArabicTime,
+    getArabicTimezoneName
+  };
+</script>

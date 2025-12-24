@@ -4,23 +4,23 @@ export const headerData = {
   links: [
     {
       text: 'عن العيادة',
-      href: getPermalink('/#hero-section'),
+      href: '/#hero-section',
       links: [
         {
           text: 'من نحن',
-          href: getPermalink('/#hero-section'),
+          href: '/#hero-section',
         },
         {
           text: 'ماذا نعالج',
-          href: getPermalink('/#features'),
+          href: '/#features',
         },
         {
           text: 'أسئلة شائعة',
-          href: getPermalink('/#faq'),
+          href: '/#faq',
         },
         {
           text: 'قالوا عنا',
-          href: getPermalink('/#testimonials'),
+          href: '/#testimonials',
         },
       ],
     },
@@ -41,7 +41,7 @@ export const headerData = {
     },
     {
       text: 'أين تجدنا',
-      href: getPermalink('/#location'),
+      href: '/#location',
     },
   ],
 };

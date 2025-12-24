@@ -1,27 +1,455 @@
 ---
-import Layout from '~/layouts/Layout.astro';
-import { getHomePermalink } from '~/utils/permalinks';
+import Layout from '~/layouts/PageLayout.astro';
+import PhoneVerification from '~/components/booking/PhoneVerification.astro';
+import BookingCard from '~/components/booking/BookingCard.astro';
+import { Icon } from 'astro-icon/components';
 
-const title = `حجوزاتي`;
+const metadata = {
+  title: 'حجوزاتي',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+// API endpoints
+const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da-7711f0006da1';
 ---
 
-<Layout metadata={{ title }}>
-  <section class="flex items-center h-full p-16">
-    <div class="container flex flex-col items-center justify-center px-5 mx-auto my-8">
-      <div class="max-w-md text-center">
-        <h2 class="mb-8 font-bold text-6xl md:text-7xl">
-          <span class="text-primary">حجوزاتي</span>
-        </h2>
-        <div class="mb-6 p-4 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg border border-yellow-300 dark:border-yellow-700">
-          <p class="text-xl font-semibold text-yellow-800 dark:text-yellow-200">
-            هذه الميزة قيد التطوير
-          </p>
-        </div>
-        <p class="mt-4 mb-8 text-lg text-muted dark:text-slate-400">
-          نعمل على إتاحة هذه الخدمة قريباً. شكراً لصبركم.
+<Layout metadata={metadata}>
+  <section class="py-8 md:py-12">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-2xl md:text-3xl font-bold mb-2 font-heading dark:text-gray-200">
+          حجوزاتي
+        </h1>
+        <p class="text-muted dark:text-slate-400">
+          استعرض مواعيدك القادمة
         </p>
-        <a rel="noopener noreferrer" href={getHomePermalink()} class="btn">العودة للصفحة الرئيسية</a>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading-state" class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+        <p class="mt-4 text-muted dark:text-slate-400">جارٍ التحميل...</p>
+      </div>
+
+      <!-- Phone Verification (shown when no token or changing phone) -->
+      <div id="verification-container" class="hidden">
+        <p id="verification-message" class="text-center text-muted dark:text-slate-400 mb-6">
+          للاطلاع على حجوزاتك، يرجى التحقق من رقم هاتفك أولاً
+        </p>
+        <PhoneVerification id="phone-verification" />
+        <!-- Cancel button (only shown when changing phone, not for new users) -->
+        <div id="cancel-change-container" class="hidden mt-4 text-center">
+          <button id="cancel-change-btn" type="button" class="text-sm text-muted dark:text-slate-400 hover:text-primary">
+            إلغاء والعودة للحجوزات
+          </button>
+        </div>
+      </div>
+
+      <!-- Bookings List (shown when authenticated) -->
+      <div id="bookings-container" class="hidden">
+        <!-- Phone display -->
+        <div id="phone-display" class="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <!-- Normal state -->
+          <div id="phone-normal-state" class="flex flex-row-reverse flex-wrap-reverse items-center justify-between gap-x-4 gap-y-2">
+            <div class="flex flex-row-reverse items-center gap-1 flex-shrink-0">
+              <span id="verified-phone" dir="ltr" class="verified-phone-display text-gray-700 dark:text-gray-300 whitespace-nowrap"></span>
+              <button id="change-phone-btn" type="button" class="inline-flex items-center gap-1 p-1.5 text-muted hover:text-primary transition-colors" title="تغيير الرقم">
+                <Icon name="tabler:pencil" class="w-3.5 h-3.5" />
+                <span class="hidden min-[340px]:inline text-xs">تعديل</span>
+              </button>
+              <button id="delete-phone-btn" type="button" class="inline-flex items-center gap-1 p-1.5 text-muted hover:text-red-500 transition-colors" title="نسيان الرقم">
+                <Icon name="tabler:x" class="w-3.5 h-3.5" />
+                <span class="hidden min-[340px]:inline text-xs">نسيان</span>
+              </button>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <Icon name="tabler:phone" class="w-5 h-5 text-primary -scale-x-100" />
+              <p class="text-secondary whitespace-nowrap">رقم الهاتف المحفوظ</p>
+            </div>
+          </div>
+          <!-- Confirmation state (hidden by default) -->
+          <div id="phone-confirm-state" class="hidden flex items-center justify-between">
+            <span class="text-sm text-red-600 dark:text-red-400">هل تريد نسيان الرقم <span id="confirm-phone-number" dir="ltr" class="verified-phone-display"></span> من على هذا الجهاز؟</span>
+            <div class="flex items-center gap-3">
+              <button id="cancel-delete-btn" type="button" class="text-sm text-muted hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+                لا
+              </button>
+              <button id="confirm-delete-btn" type="button" class="text-sm text-red-500 hover:text-red-600 transition-colors">
+                نعم
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div id="empty-state" class="hidden text-center py-12">
+          <Icon name="tabler:calendar-off" class="w-16 h-16 mx-auto text-muted mb-4" />
+          <p class="text-xl text-muted dark:text-slate-400 mb-4">لا توجد حجوزات قادمة</p>
+          <a href="/book?type=clinic" class="btn-primary inline-flex items-center gap-2">
+            <Icon name="tabler:calendar-plus" class="w-5 h-5" />
+            <span>احجز موعدًا جديدًا</span>
+          </a>
+        </div>
+
+        <!-- Bookings list -->
+        <div id="bookings-list" class="space-y-4">
+          <!-- BookingCard components will be inserted here dynamically -->
+        </div>
+
+        <!-- New booking button (shown when there are bookings) -->
+        <div id="new-booking-container" class="hidden mt-8 text-center">
+          <a href="/book?type=clinic" class="btn-secondary inline-flex items-center gap-2">
+            <Icon name="tabler:calendar-plus" class="w-5 h-5" />
+            <span>حجز موعد جديد</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-state" class="hidden text-center py-12">
+        <Icon name="tabler:alert-circle" class="w-16 h-16 mx-auto text-red-500 mb-4" />
+        <p class="text-xl text-muted dark:text-slate-400 mb-4">حدث خطأ في تحميل الحجوزات</p>
+        <button id="retry-btn" type="button" class="btn-primary">
+          إعادة المحاولة
+        </button>
+      </div>
+
+      <!-- Back to Home Link -->
+      <div class="text-center mt-8">
+        <a href="/" class="text-sm text-muted dark:text-slate-400 hover:text-primary inline-flex items-center gap-1">
+          <Icon name="tabler:arrow-right" class="w-4 h-4" />
+          <span>العودة للصفحة الرئيسية</span>
+        </a>
       </div>
     </div>
   </section>
+
+  <!-- Booking Card Template (hidden, cloned for each booking) -->
+  <template id="booking-card-template">
+    <BookingCard id="booking-card-template-inner" />
+  </template>
+
+  <!-- Phone utilities -->
+  <script src="/scripts/phone-utils.js" is:inline></script>
+
+  <style>
+    .verified-phone-display {
+      font-family: 'New Rail Alphabet', monospace !important;
+      letter-spacing: 0.05em;
+    }
+  </style>
+
+  <script is:inline define:vars={{ BOOKINGS_ENDPOINT }}>
+    /* eslint-disable no-var, no-undef */
+    var STORAGE_KEY = 'phone_verification_token';
+
+    // UI State management
+    function showLoading() {
+      document.getElementById('loading-state')?.classList.remove('hidden');
+      document.getElementById('verification-container')?.classList.add('hidden');
+      document.getElementById('bookings-container')?.classList.add('hidden');
+      document.getElementById('error-state')?.classList.add('hidden');
+    }
+
+    function showVerification() {
+      document.getElementById('loading-state')?.classList.add('hidden');
+      document.getElementById('verification-container')?.classList.remove('hidden');
+      document.getElementById('bookings-container')?.classList.add('hidden');
+      document.getElementById('error-state')?.classList.add('hidden');
+    }
+
+    function showBookings() {
+      document.getElementById('loading-state')?.classList.add('hidden');
+      document.getElementById('verification-container')?.classList.add('hidden');
+      document.getElementById('bookings-container')?.classList.remove('hidden');
+      document.getElementById('error-state')?.classList.add('hidden');
+    }
+
+    function showError() {
+      document.getElementById('loading-state')?.classList.add('hidden');
+      document.getElementById('verification-container')?.classList.add('hidden');
+      document.getElementById('bookings-container')?.classList.add('hidden');
+      document.getElementById('error-state')?.classList.remove('hidden');
+    }
+
+    // Fetch bookings from API
+    // Returns: { status: 'success'|'error', data, networkError: boolean }
+    async function fetchBookings(token) {
+      try {
+        var response = await fetch(BOOKINGS_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ token: token }),
+        });
+        var data = await response.json();
+        data.networkError = false;
+        return data;
+      } catch {
+        return { status: 'error', data: null, networkError: true };
+      }
+    }
+
+    // Render bookings list
+    function renderBookings(bookings, phone) {
+      var bookingsList = document.getElementById('bookings-list');
+      var emptyState = document.getElementById('empty-state');
+      var newBookingContainer = document.getElementById('new-booking-container');
+      var phoneDisplay = document.getElementById('verified-phone');
+      var template = document.getElementById('booking-card-template');
+
+      // Display phone number
+      if (phoneDisplay && window.formatPhoneDisplay) {
+        phoneDisplay.textContent = window.formatPhoneDisplay(phone);
+      }
+
+      // Clear existing bookings
+      if (bookingsList) {
+        bookingsList.innerHTML = '';
+      }
+
+      if (!bookings || bookings.length === 0) {
+        // Show empty state
+        emptyState?.classList.remove('hidden');
+        newBookingContainer?.classList.add('hidden');
+        return;
+      }
+
+      // Hide empty state, show new booking button
+      emptyState?.classList.add('hidden');
+      newBookingContainer?.classList.remove('hidden');
+
+      // Render each booking
+      var cardsToInit = [];
+      bookings.forEach(function(booking, index) {
+        var cardId = 'booking-card-' + index;
+
+        // Clone template
+        var templateContent = template?.content;
+        if (!templateContent) return;
+
+        var clone = templateContent.cloneNode(true);
+        var card = clone.querySelector('[data-booking-card]');
+
+        if (card) {
+          card.id = cardId;
+          bookingsList?.appendChild(clone);
+          cardsToInit.push({ cardId: cardId, booking: booking });
+        }
+      });
+
+      // Initialize cards after all are in the DOM
+      // Wait for BookingCardUtils to be available (script may load async)
+      function initCards() {
+        cardsToInit.forEach(function(item) {
+          window.BookingCardUtils.initBookingCard(item.cardId, item.booking, {
+            onLocationClick: function(isClinic, meetingUrl) {
+              if (isClinic) {
+                window.open('https://maps.app.goo.gl/RE3yv34U16Ssdezj7', '_blank');
+              } else {
+                window.open(meetingUrl || ('https://app.cal.com/video/' + item.booking.uid), '_blank');
+              }
+            }
+          });
+        });
+      }
+
+      // Use requestAnimationFrame to ensure DOM is updated, then check for utils
+      requestAnimationFrame(function() {
+        if (window.BookingCardUtils) {
+          initCards();
+        } else {
+          // BookingCardUtils not ready yet, wait for it
+          var checkInterval = setInterval(function() {
+            if (window.BookingCardUtils) {
+              clearInterval(checkInterval);
+              initCards();
+            }
+          }, 50);
+          // Timeout after 5 seconds
+          setTimeout(function() { clearInterval(checkInterval); }, 5000);
+        }
+      });
+    }
+
+    // Main initialization
+    async function initBookingsPage() {
+      showLoading();
+
+      var token = localStorage.getItem(STORAGE_KEY);
+
+      if (!token) {
+        showVerification();
+        return;
+      }
+
+      // Fetch bookings with token
+      var result = await fetchBookings(token);
+
+      if (result.networkError) {
+        // Network error - show error state with retry button (keep token)
+        showError();
+        return;
+      }
+
+      if (result.status === 'error' || result.status !== 'success') {
+        // Token invalid - clear and show verification
+        localStorage.removeItem(STORAGE_KEY);
+        showVerification();
+        return;
+      }
+
+      // Extract phone from first booking's attendee data
+      var phone = '';
+      if (result.data && result.data.length > 0) {
+        var attendee = result.data[0].attendees?.[0];
+        if (attendee?.phoneNumber) {
+          phone = attendee.phoneNumber.replace('+', '');
+        }
+      }
+
+      // Cache bookings for returning after phone change cancel
+      cachedBookingsData = result.data;
+      cachedPhone = phone;
+
+      // Render bookings
+      renderBookings(result.data, phone);
+      showBookings();
+    }
+
+    // Track if we're in "change phone" mode (has existing token but wants to change)
+    var isChangingPhone = false;
+    var cachedBookingsData = null;
+    var cachedPhone = '';
+
+    // Show verification form for changing phone (keeps token, shows cancel option)
+    function showVerificationForChange() {
+      isChangingPhone = true;
+      var messageEl = document.getElementById('verification-message');
+      var cancelContainer = document.getElementById('cancel-change-container');
+
+      if (messageEl) {
+        messageEl.textContent = 'أدخل رقم الهاتف الجديد للتحقق';
+      }
+      if (cancelContainer) {
+        cancelContainer.classList.remove('hidden');
+      }
+      showVerification();
+    }
+
+    // Return to bookings view (used when canceling phone change)
+    function returnToBookings() {
+      isChangingPhone = false;
+      var cancelContainer = document.getElementById('cancel-change-container');
+      if (cancelContainer) {
+        cancelContainer.classList.add('hidden');
+      }
+
+      // Re-render cached bookings if available
+      if (cachedBookingsData) {
+        renderBookings(cachedBookingsData, cachedPhone);
+      }
+      showBookings();
+    }
+
+    // Event handlers
+    function setupEventHandlers() {
+      // Phone verified event - saves new token (replaces old one)
+      document.addEventListener('phone-verified', function(e) {
+        var token = e.detail.token;
+        localStorage.setItem(STORAGE_KEY, token);
+        isChangingPhone = false;
+        // Reload page to fetch bookings with new token
+        window.location.reload();
+      });
+
+      // Change phone button - shows verification without removing token
+      var changePhoneBtn = document.getElementById('change-phone-btn');
+      if (changePhoneBtn) {
+        changePhoneBtn.addEventListener('click', function() {
+          // Don't remove token! Just show verification form with cancel option
+          showVerificationForChange();
+        });
+      }
+
+      // Delete phone button - shows inline confirmation
+      var deletePhoneBtn = document.getElementById('delete-phone-btn');
+      if (deletePhoneBtn) {
+        deletePhoneBtn.addEventListener('click', function() {
+          // Copy phone number to confirmation message
+          var confirmPhoneEl = document.getElementById('confirm-phone-number');
+          if (confirmPhoneEl && cachedPhone && window.formatPhoneDisplay) {
+            confirmPhoneEl.textContent = window.formatPhoneDisplay(cachedPhone);
+          }
+          // Show confirmation state, hide normal state
+          document.getElementById('phone-normal-state')?.classList.add('hidden');
+          document.getElementById('phone-confirm-state')?.classList.remove('hidden');
+        });
+      }
+
+      // Confirm delete button - actually removes token
+      var confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+      if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function() {
+          localStorage.removeItem(STORAGE_KEY);
+          cachedBookingsData = null;
+          cachedPhone = '';
+          // Reset verification message to default
+          var messageEl = document.getElementById('verification-message');
+          if (messageEl) {
+            messageEl.textContent = 'للاطلاع على حجوزاتك، يرجى التحقق من رقم هاتفك أولاً';
+          }
+          // Hide cancel button since there's nothing to return to
+          var cancelContainer = document.getElementById('cancel-change-container');
+          if (cancelContainer) {
+            cancelContainer.classList.add('hidden');
+          }
+          // Reset phone display states
+          document.getElementById('phone-normal-state')?.classList.remove('hidden');
+          document.getElementById('phone-confirm-state')?.classList.add('hidden');
+          showVerification();
+        });
+      }
+
+      // Cancel delete button - returns to normal state
+      var cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+      if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', function() {
+          document.getElementById('phone-normal-state')?.classList.remove('hidden');
+          document.getElementById('phone-confirm-state')?.classList.add('hidden');
+        });
+      }
+
+      // Cancel change button - returns to bookings view
+      var cancelChangeBtn = document.getElementById('cancel-change-btn');
+      if (cancelChangeBtn) {
+        cancelChangeBtn.addEventListener('click', function() {
+          returnToBookings();
+        });
+      }
+
+      // Retry button
+      var retryBtn = document.getElementById('retry-btn');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', function() {
+          initBookingsPage();
+        });
+      }
+    }
+
+    // Run on initial load
+    setupEventHandlers();
+    initBookingsPage();
+
+    // Re-run on View Transitions navigation
+    document.addEventListener('astro:page-load', function() {
+      if (window.location.pathname.startsWith('/bookings')) {
+        setupEventHandlers();
+        initBookingsPage();
+      }
+    });
+  </script>
 </Layout>

@@ -13,7 +13,8 @@ The booking system integrates phone verification with Cal.com scheduling. Users 
 ```
 src/components/booking/
 ├── PhoneVerification.astro  # Phone input + OTP verification flow
-└── PhoneSelector.astro      # Shows verified phone with proceed/change options
+├── PhoneSelector.astro      # Shows verified phone with proceed/change options
+└── BookingCard.astro        # Displays booking details with calendar actions
 ```
 
 ### Pages
@@ -21,6 +22,7 @@ src/components/booking/
 ```
 src/pages/
 ├── book.astro               # Full booking page with verification flow
+├── bookings.astro           # Booking management dashboard (view upcoming appointments)
 ├── popup/
 │   └── book.astro           # Minimal popup for quick booking (iframe)
 └── landing/
@@ -138,6 +140,51 @@ API endpoints:
 - "ليس رقمك؟" link dispatches `change-phone` event
 - Reads `dataset.phone` fresh at click time (not at init)
 
+### `/src/components/booking/BookingCard.astro`
+- Reusable card component for displaying booking details
+- Shows: appointment type, date, time (with timezone), location/video link
+- "Add to Calendar" dropdown (Google, Apple, Outlook)
+- Exposes `window.BookingCardUtils` with:
+  - `initBookingCard(cardId, booking, options)` - Initialize card with booking data
+  - `formatArabicDate(dateStr)` - Format date in Arabic
+  - `formatArabicTime(dateStr)` - Format time in Arabic (12-hour)
+  - `getArabicTimezoneName(timeZone)` - Get Arabic timezone name
+
+### `/src/pages/bookings.astro`
+- Booking management dashboard
+- Requires phone verification (uses stored token)
+- Fetches upcoming bookings from API
+- Displays bookings as cards using `BookingCard` component (cloned from template)
+- Shows phone number with "تغيير الرقم" option (LTR, New Rail font)
+- Empty state when no upcoming bookings
+- "حجز موعد جديد" button to create new booking
+
+States:
+- Loading: Shows spinner while fetching
+- No token: Shows PhoneVerification form
+- Token invalid: Clears token, shows verification
+- Network error: Shows error state with retry button (keeps token)
+- Success with bookings: Shows list of BookingCard components
+- Success without bookings: Shows empty state
+
+**Phone number change flow (token preservation):**
+- User clicks "تغيير الرقم" → verification form shows with cancel button
+- Token is NOT removed until new verification completes
+- Cancel button returns to bookings view using cached data
+- Only when new phone is verified, the new token replaces the old one
+
+**Script initialization:**
+- Runs immediately on script load (no DOMContentLoaded wait needed)
+- Also listens for `astro:page-load` for View Transitions navigation
+- `setupEventHandlers()` runs on both initial load AND View Transitions (DOM elements are replaced)
+- `initBookingsPage()` runs on both initial load and View Transitions
+- Note: Document-level event listeners (like `phone-verified`) may be added multiple times; this is acceptable since the handler reloads the page
+
+**BookingCard template cloning:**
+- Uses `<template id="booking-card-template">` containing `<BookingCard />`
+- Cards are cloned and initialized via `window.BookingCardUtils.initBookingCard()`
+- Polling waits for `BookingCardUtils` to be available (async script loading)
+
 ### `/src/pages/landing/booking-complete.astro`
 - Shows booking confirmation after Cal.com redirect
 - **Polls Cal.com API** (`/v2/bookings/{uid}`) to verify booking status
@@ -153,12 +200,54 @@ API endpoints:
 - Status states: `pending` → `accepted` | `rejected` | `cancelled` | `error`
 - Uses `cal-api-version: 2024-08-13` header
 
+## API Endpoints
+
+All endpoints use POST with `Content-Type: application/x-www-form-urlencoded`.
+
+### Phone Verification
+
+**Send code:**
+```
+POST https://n8n.orwa.tech/webhook/c6c748c4-6c9d-4b13-a395-e014cbaf6e05
+Body: phone=<normalized>&method=<sms|whatsapp>
+Response: { success: true, method: "sms" }
+```
+
+**Verify code:**
+```
+POST https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9b1e-e1db3c4f1b11
+Body: phone=<normalized>&code=<4-digit>
+Response: { success: true, token: "jwt..." }
+```
+
+### Token & Bookings
+
+**Validate token:**
+```
+POST https://n8n.orwa.tech/webhook/b1ac96a5-c166-4ec0-9a3a-37198d210e46
+Body: token=<jwt>
+Response: { success: true, payload: { phone, method, iat }, age: <days> }
+```
+
+**Fetch bookings:**
+```
+POST https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da-7711f0006da1
+Body: token=<jwt>
+Response: { status: "success", data: [...bookings], pagination: {...} }
+         or { status: "error" } if token invalid
+```
+
+The bookings endpoint returns only upcoming, accepted appointments. Each booking includes:
+- `uid` - Booking unique identifier
+- `start`, `end` - ISO datetime strings
+- `eventType.slug` - "clinic" or "remote"
+- `meetingUrl` - Video link for remote, location for clinic
+- `attendees[0].timeZone` - Attendee's timezone
+
 ## localStorage
 
 Key: `phone_verification_token`
 Value: JWT token from verification endpoint
-
-Token validation endpoint: `https://n8n.orwa.tech/webhook/b1ac96a5-c166-4ec0-9a3a-37198d210e46`
 
 ## Cal.com Integration
 
@@ -193,26 +282,44 @@ Custom events (bubble up through DOM):
 
 ## Initialization Patterns
 
-Both pages and components use dual initialization for compatibility, with a guard to prevent double-firing (which causes issues like Cal.com modal opening twice):
+### Simple Pattern (bookings.astro)
+For pages with `is:inline` scripts that need View Transitions support:
+
+```javascript
+// Run immediately on script load
+setupEventHandlers();
+initBookingsPage();
+
+// Re-run initialization on View Transitions navigation
+document.addEventListener('astro:page-load', function() {
+  if (window.location.pathname.startsWith('/bookings')) {
+    initBookingsPage();
+  }
+});
+```
+
+**Key points:**
+- `is:inline` scripts run synchronously when the DOM parser reaches them
+- No need for DOMContentLoaded since script is after the elements it references
+- `astro:page-load` fires on View Transitions navigation to the page
+- Check pathname to avoid running on unrelated pages
+
+### Guarded Pattern (book.astro, popup/book.astro)
+For pages where initialization should only happen once per page load:
 
 ```javascript
 var initialized = false;
 function init() {
-  // Prevent double initialization (DOMContentLoaded + astro:page-load can both fire)
   if (initialized) return;
   initialized = true;
-
   // ... initialization code
 }
 
-// Fallback for direct navigation / iframes
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
   init();
 }
-
-// For pages with View Transitions
 document.addEventListener('astro:page-load', init);
 ```
 
@@ -221,8 +328,8 @@ document.addEventListener('astro:page-load', init);
 ## Future Enhancements
 
 Planned features for the booking system:
-- Booking management dashboard
-- View/cancel upcoming appointments
-- Booking history
+- Cancel appointments from /bookings page
+- Reschedule appointments (Cal.com supports via `config.rescheduleUid`)
+- Booking history (past appointments)
 - SMS reminders integration
 - Multiple phone numbers per user

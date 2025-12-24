@@ -18,7 +18,8 @@
       "WebFetch(domain:developers.google.com)",
       "WebFetch(domain:nutbread.github.io)",
       "mcp__ide__getDiagnostics",
-      "WebFetch(domain:api.cal.com)"
+      "WebFetch(domain:api.cal.com)",
+      "mcp__chrome-devtools__fill"
     ],
     "deny": [],
     "ask": []
