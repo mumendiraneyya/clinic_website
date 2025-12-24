@@ -11,11 +11,11 @@ const {
 
   address,
   phones,
-  email,
   hours,
   directions,
   mapEmbedUrl,
   mapLink,
+  tokenEndpoint,
 
   id,
   isDark = false,
@@ -118,7 +118,7 @@ const {
                       <span class="text-gray-600 dark:text-gray-400">{label}:</span>
                       <a
                         href={`tel:${number.replace(/\s/g, '')}`}
-                        class="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+                        class="font-rail text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
                         dir="ltr"
                       >
                         {number}
@@ -131,21 +131,21 @@ const {
           )
         }
 
-        <!-- Email -->
+        <!-- Email (dynamically loaded if tokenEndpoint is provided) -->
         {
-          email && (
-            <div class="flex items-start gap-4">
+          tokenEndpoint && (
+            <div id="location-email-container" class="flex items-start gap-4 hidden">
               <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-primary/10 text-primary">
                 <Icon name="tabler:mail" class="w-6 h-6" />
               </div>
               <div>
                 <h3 class="font-semibold text-lg text-gray-900 dark:text-white">البريد الإلكتروني</h3>
                 <a
-                  href={`mailto:${email}`}
-                  class="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors mt-1 block"
+                  id="location-email-link"
+                  href=""
+                  class="font-rail text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors mt-1 block"
                   dir="ltr"
                 >
-                  {email}
                 </a>
               </div>
             </div>
@@ -170,3 +170,47 @@ const {
     </div>
   </div>
 </WidgetWrapper>
+
+{tokenEndpoint && (
+  <script is:inline define:vars={{ tokenEndpoint }}>
+    /* eslint-disable no-var */
+    (function() {
+      var STORAGE_KEY = 'phone_verification_token';
+
+      function init() {
+        var token = localStorage.getItem(STORAGE_KEY);
+        if (!token) return;
+
+        fetch(tokenEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ token: token }),
+        })
+          .then(function(response) { return response.json(); })
+          .then(function(data) {
+            if (data.success && data.global && data.global.site && data.global.site.email) {
+              var email = data.global.site.email;
+              var container = document.getElementById('location-email-container');
+              var link = document.getElementById('location-email-link');
+              if (container && link) {
+                link.href = 'mailto:' + email;
+                link.textContent = email;
+                container.classList.remove('hidden');
+              }
+            }
+          })
+          .catch(function() {
+            // Silently fail - email just won't be shown
+          });
+      }
+
+      // Run on page load and View Transitions
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+      document.addEventListener('astro:page-load', init);
+    })();
+  </script>
+)}

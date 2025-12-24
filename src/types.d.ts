@@ -299,8 +299,6 @@ export interface Location extends Omit<Headline, 'classes'>, Widget {
   address?: string;
   /** Phone numbers with labels */
   phones?: Array<{ label: string; number: string }>;
-  /** Email address */
-  email?: string;
   /** Working hours */
   hours?: string;
   /** Verbal directions to reach the location */
@@ -309,4 +307,6 @@ export interface Location extends Omit<Headline, 'classes'>, Widget {
   mapEmbedUrl?: string;
   /** Link to open in Google Maps */
   mapLink?: string;
+  /** Token validation endpoint to fetch protected info (like email) */
+  tokenEndpoint?: string;
 }
