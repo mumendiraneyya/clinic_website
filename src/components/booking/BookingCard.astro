@@ -58,8 +58,20 @@ const { id, class: className = '' } = Astro.props;
       </div>
     </div>
 
-    <!-- Actions - centered -->
+    <!-- Actions - centered, naturally responsive -->
     <div class="mt-6 flex flex-wrap justify-center gap-2">
+      <!-- Reschedule button (hidden by default) -->
+      <button type="button" class="booking-card-reschedule-btn hidden btn-secondary text-sm inline-flex items-center gap-2">
+        <Icon name="tabler:calendar-repeat" class="w-4 h-4" />
+        <span>تغيير الموعد</span>
+      </button>
+
+      <!-- Cancel button (hidden by default) -->
+      <button type="button" class="booking-card-cancel-btn hidden btn-secondary text-sm inline-flex items-center gap-2 !text-red-600 hover:!text-red-700 dark:!text-red-400 dark:hover:!text-red-300">
+        <Icon name="tabler:calendar-x" class="w-4 h-4" />
+        <span>إلغاء</span>
+      </button>
+
       <!-- Add to Calendar -->
       <div class="booking-card-calendar-container relative">
         <button
@@ -106,18 +118,6 @@ const { id, class: className = '' } = Astro.props;
           </div>
         </div>
       </div>
-
-      <!-- Reschedule button (hidden by default) -->
-      <button type="button" class="booking-card-reschedule-btn hidden btn-secondary text-sm inline-flex items-center gap-2">
-        <Icon name="tabler:calendar-repeat" class="w-4 h-4" />
-        <span>تغيير الموعد</span>
-      </button>
-
-      <!-- Cancel button (hidden by default) -->
-      <button type="button" class="booking-card-cancel-btn hidden btn-secondary text-sm inline-flex items-center gap-2 !text-red-600 hover:!text-red-700 dark:!text-red-400 dark:hover:!text-red-300">
-        <Icon name="tabler:calendar-x" class="w-4 h-4" />
-        <span>إلغاء</span>
-      </button>
     </div>
 
     <!-- Cancel confirmation overlay (hidden by default) -->
