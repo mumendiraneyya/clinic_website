@@ -1,27 +1,565 @@
 ---
-import Layout from '~/layouts/Layout.astro';
-import { getHomePermalink } from '~/utils/permalinks';
+import Layout from '~/layouts/PageLayout.astro';
+import PhoneVerification from '~/components/booking/PhoneVerification.astro';
+import PhoneDisplayBar from '~/components/booking/PhoneDisplayBar.astro';
+import { Icon } from 'astro-icon/components';
 
-const title = `استشارة مرئية عن بعد`;
+const metadata = {
+  title: 'استشارة مرئية عن بعد',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+// API endpoint for bookings
+const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da-7711f0006da1';
+
+// Meeting duration in milliseconds (20 minutes) - used to include ongoing meetings
+const MEETING_DURATION_MS = 20 * 60 * 1000;
+
+// Timing constants (in seconds)
+const BUTTON_ENABLE_TIME = 5 * 60;    // Button enabled 5 minutes before
+const REDIRECT_WARNING_TIME = 3 * 60; // Show redirect warning 3 minutes before
+const AUTO_REDIRECT_TIME = 1 * 60;    // Auto-redirect 1 minute before
 ---
 
-<Layout metadata={{ title }}>
-  <section class="flex items-center h-full p-16">
-    <div class="container flex flex-col items-center justify-center px-5 mx-auto my-8">
-      <div class="max-w-md text-center">
-        <h2 class="mb-8 font-bold text-6xl md:text-7xl">
-          <span class="text-primary">استشارة عن بعد</span>
-        </h2>
-        <div class="mb-6 p-4 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg border border-yellow-300 dark:border-yellow-700">
-          <p class="text-xl font-semibold text-yellow-800 dark:text-yellow-200">
-            هذه الميزة قيد التطوير
-          </p>
-        </div>
-        <p class="mt-4 mb-8 text-lg text-muted dark:text-slate-400">
-          نعمل على إتاحة هذه الخدمة قريباً. شكراً لصبركم.
+<Layout metadata={metadata}>
+  <section class="py-8 md:py-12">
+    <div class="max-w-xl mx-auto px-4 sm:px-6">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h1 id="page-title" class="text-2xl md:text-3xl font-bold mb-2 font-heading dark:text-gray-200">
+          استشارة مرئية عن بعد
+        </h1>
+        <p id="page-subtitle" class="text-muted dark:text-slate-400">
+          انضم إلى استشارتك المرئية
         </p>
-        <a rel="noopener noreferrer" href={getHomePermalink()} class="btn">العودة للصفحة الرئيسية</a>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading-state" class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+        <p class="mt-4 text-muted dark:text-slate-400">جارٍ التحميل...</p>
+      </div>
+
+      <!-- Phone Verification (shown when no token and no UID) -->
+      <div id="verification-container" class="hidden">
+        <p id="verification-message" class="text-center text-muted dark:text-slate-400 mb-6">
+          للانضمام إلى استشارتك، يرجى التحقق من رقم هاتفك أولاً
+        </p>
+        <PhoneVerification id="phone-verification" />
+        <!-- Cancel button (only shown when changing phone) -->
+        <div id="cancel-change-container" class="hidden mt-4 text-center">
+          <button id="cancel-change-btn" type="button" class="text-sm text-muted dark:text-slate-400 hover:text-primary">
+            إلغاء والعودة
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content (shown when authenticated) -->
+      <div id="main-container" class="hidden">
+        <!-- Phone display -->
+        <div class="mb-6">
+          <PhoneDisplayBar id="phone-display" label="رقم الهاتف المستخدم" />
+        </div>
+
+        <!-- Countdown State -->
+        <div id="countdown-state" class="hidden">
+          <div class="text-center py-4">
+            <div class="mb-4">
+              <Icon name="tabler:video" class="w-16 h-16 mx-auto text-primary" />
+            </div>
+            <p class="text-lg text-muted dark:text-slate-400 mb-2">
+              موعد استشارتك عن بعد سيحين
+            </p>
+            <p id="countdown-text" class="text-2xl md:text-3xl font-bold text-primary mb-4">
+              <!-- Will be filled by JS -->
+            </p>
+            <!-- Normal hint (hidden when redirect warning shows) -->
+            <p id="countdown-hint" class="text-sm text-muted dark:text-slate-500 mb-6">
+              سيتم فتح رابط الاستشارة تلقائيًا عند حلول الموعد
+            </p>
+            <!-- Redirect warning (hidden by default, shown 3 min before) -->
+            <p id="redirect-warning" class="hidden text-sm text-amber-600 dark:text-amber-400 mb-6 animate-pulse">
+              سيتم تحويلك تلقائيًا إلى غرفة الاستشارة خلال لحظات...
+            </p>
+            <button id="join-now-btn" type="button" disabled class="btn-primary inline-flex items-center gap-2 opacity-50 cursor-not-allowed">
+              <Icon name="tabler:video" class="w-5 h-5" />
+              <span>انضم الآن</span>
+            </button>
+            <p id="button-hint" class="text-xs text-muted dark:text-slate-500 mt-2">
+              سيتم تفعيل الزر قبل ٥ دقائق من الموعد
+            </p>
+          </div>
+        </div>
+
+        <!-- Meeting Ready State (shown when it's time) -->
+        <div id="ready-state" class="hidden">
+          <div class="text-center py-8">
+            <div class="mb-6">
+              <Icon name="tabler:video" class="w-16 h-16 mx-auto text-green-500" />
+            </div>
+            <p class="text-xl font-bold text-green-600 dark:text-green-400 mb-4">
+              حان موعد استشارتك!
+            </p>
+            <p class="text-muted dark:text-slate-400 mb-6">
+              جارٍ فتح رابط الاستشارة...
+            </p>
+            <a id="meeting-link" href="#" target="_blank" rel="noopener" class="btn-primary inline-flex items-center gap-2">
+              <Icon name="tabler:external-link" class="w-5 h-5" />
+              <span>انضم إلى الاستشارة</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- No Remote Bookings State -->
+        <div id="no-bookings-state" class="hidden">
+          <div class="text-center py-8">
+            <div class="mb-6">
+              <Icon name="tabler:video-off" class="w-16 h-16 mx-auto text-muted" />
+            </div>
+            <p class="text-lg text-muted dark:text-slate-400 mb-4">
+              لا توجد استشارات عن بعد قادمة
+            </p>
+            <p class="text-sm text-muted dark:text-slate-500 mb-6">
+              يمكنك حجز استشارة عن بعد من خلال صفحة الحجز
+            </p>
+            <a href="/book?type=remote" class="btn-primary inline-flex items-center gap-2">
+              <Icon name="tabler:calendar-plus" class="w-5 h-5" />
+              <span>احجز استشارة عن بعد</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Booking Not Found State (for UID mode) -->
+        <div id="not-found-state" class="hidden">
+          <div class="text-center py-8">
+            <div class="mb-6">
+              <Icon name="tabler:alert-circle" class="w-16 h-16 mx-auto text-yellow-500" />
+            </div>
+            <p class="text-lg text-muted dark:text-slate-400 mb-4">
+              لم نتمكن من العثور على موعدك
+            </p>
+            <p class="text-sm text-muted dark:text-slate-500 mb-6">
+              قد يكون الموعد قد انتهى أو تم إلغاؤه
+            </p>
+            <a href="/bookings" class="btn-secondary inline-flex items-center gap-2">
+              <Icon name="tabler:calendar" class="w-5 h-5" />
+              <span>عرض حجوزاتي</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-state" class="hidden text-center py-12">
+        <Icon name="tabler:alert-circle" class="w-16 h-16 mx-auto text-red-500 mb-4" />
+        <p class="text-xl text-muted dark:text-slate-400 mb-4">حدث خطأ في تحميل البيانات</p>
+        <button id="retry-btn" type="button" class="btn-primary">
+          إعادة المحاولة
+        </button>
+      </div>
+
+      <!-- Back to Home Link -->
+      <div class="text-center mt-8">
+        <a href="/" class="text-sm text-muted dark:text-slate-400 hover:text-primary inline-flex items-center gap-1">
+          <Icon name="tabler:arrow-right" class="w-4 h-4" />
+          <span>العودة للصفحة الرئيسية</span>
+        </a>
       </div>
     </div>
   </section>
+
+  <!-- Phone utilities -->
+  <script src="/scripts/phone-utils.js" is:inline></script>
+  <!-- Arabic utilities -->
+  <script src="/scripts/arabic-utils.js" is:inline></script>
+
+  <script is:inline define:vars={{ BOOKINGS_ENDPOINT, MEETING_DURATION_MS, BUTTON_ENABLE_TIME, REDIRECT_WARNING_TIME, AUTO_REDIRECT_TIME }}>
+    /* eslint-disable no-var, no-undef */
+    var STORAGE_KEY = 'phone_verification_token';
+    var countdownInterval = null;
+    var currentBooking = null;
+    var cachedPhone = '';
+    var isChangingPhone = false;
+
+    // Get UID from URL if present
+    function getUidFromUrl() {
+      var params = new URLSearchParams(window.location.search);
+      return params.get('uid');
+    }
+
+    // UI State management
+    function showLoading() {
+      document.getElementById('loading-state')?.classList.remove('hidden');
+      document.getElementById('verification-container')?.classList.add('hidden');
+      document.getElementById('main-container')?.classList.add('hidden');
+      document.getElementById('error-state')?.classList.add('hidden');
+    }
+
+    function showVerification() {
+      document.getElementById('loading-state')?.classList.add('hidden');
+      document.getElementById('verification-container')?.classList.remove('hidden');
+      document.getElementById('main-container')?.classList.add('hidden');
+      document.getElementById('error-state')?.classList.add('hidden');
+    }
+
+    function showMain() {
+      document.getElementById('loading-state')?.classList.add('hidden');
+      document.getElementById('verification-container')?.classList.add('hidden');
+      document.getElementById('main-container')?.classList.remove('hidden');
+      document.getElementById('error-state')?.classList.add('hidden');
+    }
+
+    function showError() {
+      document.getElementById('loading-state')?.classList.add('hidden');
+      document.getElementById('verification-container')?.classList.add('hidden');
+      document.getElementById('main-container')?.classList.add('hidden');
+      document.getElementById('error-state')?.classList.remove('hidden');
+    }
+
+    function showCountdownState() {
+      document.getElementById('countdown-state')?.classList.remove('hidden');
+      document.getElementById('ready-state')?.classList.add('hidden');
+      document.getElementById('no-bookings-state')?.classList.add('hidden');
+      document.getElementById('not-found-state')?.classList.add('hidden');
+    }
+
+    function showReadyState() {
+      document.getElementById('countdown-state')?.classList.add('hidden');
+      document.getElementById('ready-state')?.classList.remove('hidden');
+      document.getElementById('no-bookings-state')?.classList.add('hidden');
+      document.getElementById('not-found-state')?.classList.add('hidden');
+    }
+
+    function showNoBookingsState() {
+      document.getElementById('countdown-state')?.classList.add('hidden');
+      document.getElementById('ready-state')?.classList.add('hidden');
+      document.getElementById('no-bookings-state')?.classList.remove('hidden');
+      document.getElementById('not-found-state')?.classList.add('hidden');
+    }
+
+    function showNotFoundState() {
+      document.getElementById('countdown-state')?.classList.add('hidden');
+      document.getElementById('ready-state')?.classList.add('hidden');
+      document.getElementById('no-bookings-state')?.classList.add('hidden');
+      document.getElementById('not-found-state')?.classList.remove('hidden');
+    }
+
+    // Fetch bookings from API
+    async function fetchBookings(token) {
+      try {
+        var response = await fetch(BOOKINGS_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            token: token,
+            before_ms: String(MEETING_DURATION_MS) // Include ongoing meetings
+          }),
+        });
+        var data = await response.json();
+        data.networkError = false;
+        return data;
+      } catch {
+        return { status: 'error', data: null, networkError: true };
+      }
+    }
+
+    // Get meeting URL for a booking
+    function getMeetingUrl(booking) {
+      // Cal.com video URL format
+      return booking.meetingUrl || ('https://app.cal.com/video/' + booking.uid);
+    }
+
+    // Start countdown for a booking
+    function startCountdown(booking) {
+      currentBooking = booking;
+      var meetingUrl = getMeetingUrl(booking);
+
+      // Set meeting link
+      var meetingLink = document.getElementById('meeting-link');
+      if (meetingLink) {
+        meetingLink.href = meetingUrl;
+      }
+
+      // Get UI elements
+      var joinBtn = document.getElementById('join-now-btn');
+      var buttonHint = document.getElementById('button-hint');
+      var countdownHint = document.getElementById('countdown-hint');
+      var redirectWarning = document.getElementById('redirect-warning');
+
+      // Update countdown every second
+      function updateCountdown() {
+        var now = new Date();
+        var start = new Date(booking.start);
+        var secondsUntilStart = Math.floor((start.getTime() - now.getTime()) / 1000);
+
+        // Auto-redirect 1 minute before (or if meeting already started)
+        if (secondsUntilStart <= AUTO_REDIRECT_TIME) {
+          clearInterval(countdownInterval);
+          showReadyState();
+          // Auto-redirect after a brief delay
+          setTimeout(function() {
+            window.location.href = meetingUrl;
+          }, 1500);
+          return;
+        }
+
+        // Show redirect warning 3 minutes before
+        if (secondsUntilStart <= REDIRECT_WARNING_TIME) {
+          if (countdownHint) countdownHint.classList.add('hidden');
+          if (redirectWarning) redirectWarning.classList.remove('hidden');
+          if (buttonHint) buttonHint.classList.add('hidden');
+        }
+
+        // Enable button 5 minutes before
+        if (secondsUntilStart <= BUTTON_ENABLE_TIME) {
+          if (joinBtn) {
+            joinBtn.disabled = false;
+            joinBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          }
+          if (buttonHint) buttonHint.classList.add('hidden');
+        }
+
+        // Update countdown text
+        var countdownEl = document.getElementById('countdown-text');
+        if (countdownEl && window.describeRelativeTime) {
+          countdownEl.textContent = window.describeRelativeTime(start, now);
+        }
+      }
+
+      // Initial update
+      updateCountdown();
+      showCountdownState();
+
+      // Start interval
+      countdownInterval = setInterval(updateCountdown, 1000);
+    }
+
+    // Find earliest remote booking
+    function findEarliestRemoteBooking(bookings) {
+      if (!bookings || bookings.length === 0) return null;
+
+      // Filter to remote bookings only and sort by start time
+      var remoteBookings = bookings
+        .filter(function(b) {
+          return b.eventType && b.eventType.slug === 'remote';
+        })
+        .sort(function(a, b) {
+          return new Date(a.start).getTime() - new Date(b.start).getTime();
+        });
+
+      return remoteBookings.length > 0 ? remoteBookings[0] : null;
+    }
+
+    // Find booking by UID
+    function findBookingByUid(bookings, uid) {
+      if (!bookings || bookings.length === 0) return null;
+      return bookings.find(function(b) { return b.uid === uid; }) || null;
+    }
+
+    // Show verification form for changing phone
+    function showVerificationForChange() {
+      isChangingPhone = true;
+      var messageEl = document.getElementById('verification-message');
+      var cancelContainer = document.getElementById('cancel-change-container');
+
+      if (messageEl) {
+        messageEl.textContent = 'أدخل رقم الهاتف الجديد للتحقق';
+      }
+      if (cancelContainer) {
+        cancelContainer.classList.remove('hidden');
+      }
+      showVerification();
+    }
+
+    // Return to main view
+    function returnToMain() {
+      isChangingPhone = false;
+      var cancelContainer = document.getElementById('cancel-change-container');
+      if (cancelContainer) {
+        cancelContainer.classList.add('hidden');
+      }
+      showMain();
+    }
+
+    // Main initialization
+    async function initVideoPage() {
+      showLoading();
+
+      // Clear any existing countdown
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+
+      var uid = getUidFromUrl();
+      var token = localStorage.getItem(STORAGE_KEY);
+
+      // UID mode - trust the UID, still need token for phone display
+      if (uid) {
+        if (!token) {
+          // No token but have UID - show verification
+          showVerification();
+          return;
+        }
+
+        // Fetch bookings to find this UID
+        var result = await fetchBookings(token);
+
+        if (result.networkError) {
+          showError();
+          return;
+        }
+
+        if (result.status !== 'success') {
+          // Token invalid
+          localStorage.removeItem(STORAGE_KEY);
+          showVerification();
+          return;
+        }
+
+        cachedPhone = result.token_payload?.phone || '';
+
+        // Initialize phone display
+        if (window.PhoneDisplayBar) {
+          window.PhoneDisplayBar.init('phone-display', cachedPhone);
+        }
+
+        // Find booking by UID
+        var booking = findBookingByUid(result.data, uid);
+
+        if (!booking) {
+          showMain();
+          showNotFoundState();
+          return;
+        }
+
+        showMain();
+        startCountdown(booking);
+        return;
+      }
+
+      // No UID mode - need token to fetch bookings
+      if (!token) {
+        showVerification();
+        return;
+      }
+
+      // Fetch remote bookings
+      var result = await fetchBookings(token);
+
+      if (result.networkError) {
+        showError();
+        return;
+      }
+
+      if (result.status !== 'success') {
+        // Token invalid
+        localStorage.removeItem(STORAGE_KEY);
+        showVerification();
+        return;
+      }
+
+      cachedPhone = result.token_payload?.phone || '';
+
+      // Initialize phone display
+      if (window.PhoneDisplayBar) {
+        window.PhoneDisplayBar.init('phone-display', cachedPhone);
+      }
+
+      // Find earliest remote booking
+      var booking = findEarliestRemoteBooking(result.data);
+
+      if (!booking) {
+        showMain();
+        showNoBookingsState();
+        return;
+      }
+
+      showMain();
+      startCountdown(booking);
+    }
+
+    // Event handlers
+    function setupEventHandlers() {
+      // Phone verified event
+      document.addEventListener('phone-verified', function(e) {
+        var token = e.detail.token;
+        localStorage.setItem(STORAGE_KEY, token);
+        isChangingPhone = false;
+        // Reinitialize page
+        initVideoPage();
+      });
+
+      // PhoneDisplayBar events
+      var phoneDisplayBar = document.getElementById('phone-display');
+      if (phoneDisplayBar) {
+        phoneDisplayBar.addEventListener('phone-display-change', function() {
+          showVerificationForChange();
+        });
+
+        phoneDisplayBar.addEventListener('phone-display-delete', function() {
+          localStorage.removeItem(STORAGE_KEY);
+          cachedPhone = '';
+          var messageEl = document.getElementById('verification-message');
+          if (messageEl) {
+            messageEl.textContent = 'للانضمام إلى استشارتك، يرجى التحقق من رقم هاتفك أولاً';
+          }
+          var cancelContainer = document.getElementById('cancel-change-container');
+          if (cancelContainer) {
+            cancelContainer.classList.add('hidden');
+          }
+          showVerification();
+        });
+      }
+
+      // Cancel change button
+      var cancelChangeBtn = document.getElementById('cancel-change-btn');
+      if (cancelChangeBtn) {
+        cancelChangeBtn.addEventListener('click', function() {
+          returnToMain();
+        });
+      }
+
+      // Join now button
+      var joinNowBtn = document.getElementById('join-now-btn');
+      if (joinNowBtn) {
+        joinNowBtn.addEventListener('click', function() {
+          if (currentBooking) {
+            window.location.href = getMeetingUrl(currentBooking);
+          }
+        });
+      }
+
+      // Retry button
+      var retryBtn = document.getElementById('retry-btn');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', function() {
+          initVideoPage();
+        });
+      }
+    }
+
+    // Run on initial load
+    setupEventHandlers();
+    initVideoPage();
+
+    // Re-run on View Transitions navigation
+    document.addEventListener('astro:page-load', function() {
+      if (window.location.pathname.startsWith('/video')) {
+        setupEventHandlers();
+        initVideoPage();
+      }
+    });
+
+    // Cleanup on navigation away
+    document.addEventListener('astro:before-swap', function() {
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+    });
+  </script>
 </Layout>

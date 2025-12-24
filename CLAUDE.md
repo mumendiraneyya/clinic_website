@@ -389,6 +389,68 @@ The `/bookings` page displays a user's upcoming appointments after phone verific
 - Use `toArabicNumerals()` from BookingCardUtils for consistent Arabic numeral display
 - Card titles show position: "تفاصيل الحجز (١ من ٤)"
 
+### Video Consultation Page
+
+The `/video` page allows patients to join their remote video consultations with a countdown timer and auto-redirect.
+
+**Key files:**
+- `src/pages/video.astro` - Main video consultation page
+- `src/components/booking/PhoneDisplayBar.astro` - Reusable phone display component (shared with `/bookings`)
+
+**Features:**
+- Countdown timer using Arabic time formatting (`describeRelativeTime`)
+- Two modes: UID parameter (specific booking) or automatic (finds earliest remote booking)
+- Phone verification flow with PhoneDisplayBar
+- Timed button activation and auto-redirect
+
+**Timing thresholds:**
+- **5 minutes before**: "Join now" button becomes enabled
+- **3 minutes before**: Pulsing warning message appears
+- **1 minute before**: Auto-redirect to Cal.com video room
+
+**API parameters:**
+- `before_ms`: Include ongoing meetings (set to 20 min = 1,200,000 ms to catch meetings that already started)
+
+**Query parameters:**
+- `?uid=xxx` - Join a specific booking by its UID (linked from booking cards)
+
+### PhoneDisplayBar Component
+
+Reusable component for displaying verified phone numbers with change/forget functionality.
+
+**Location:** `src/components/booking/PhoneDisplayBar.astro`
+
+**Props:**
+- `id` - Unique ID prefix for the instance (default: `'phone-display'`)
+- `label` - Label text shown next to phone icon (default: `'رقم الهاتف المستخدم للحجز'`)
+
+**JavaScript API (`window.PhoneDisplayBar`):**
+- `init(containerId, phone)` - Initialize with a phone number
+- `reset(containerId)` - Reset to normal state
+
+**Events emitted:**
+- `phone-display-change` - User wants to change their phone number
+- `phone-display-delete` - User confirmed deletion of their phone number
+
+**Usage:**
+```astro
+<PhoneDisplayBar id="my-phone-display" label="رقم الهاتف" />
+
+<script is:inline>
+  // Initialize
+  window.PhoneDisplayBar.init('my-phone-display', '962791234567');
+
+  // Listen for events
+  document.getElementById('my-phone-display').addEventListener('phone-display-change', function() {
+    // Show verification form
+  });
+
+  document.getElementById('my-phone-display').addEventListener('phone-display-delete', function() {
+    // Clear token and show verification
+  });
+</script>
+```
+
 ### Cal.com Booking
 
 Appointment booking is integrated via Cal.com cloud embed. See [context/cal-com-embed.md](context/cal-com-embed.md) for detailed documentation.

@@ -33,7 +33,6 @@ export const headerData = {
       href: getPermalink('/bookings'),
       links: [
         {
-          hidden: true,
           text: 'استشارة عن بعد',
           href: getPermalink('/video'),
         },

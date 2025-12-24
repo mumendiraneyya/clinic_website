@@ -1,6 +1,7 @@
 ---
 import Layout from '~/layouts/PageLayout.astro';
 import PhoneVerification from '~/components/booking/PhoneVerification.astro';
+import PhoneDisplayBar from '~/components/booking/PhoneDisplayBar.astro';
 import BookingCard from '~/components/booking/BookingCard.astro';
 import { Icon } from 'astro-icon/components';
 
@@ -55,37 +56,8 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
       <!-- Bookings List (shown when authenticated) -->
       <div id="bookings-container" class="hidden">
         <!-- Phone display -->
-        <div id="phone-display" class="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <!-- Normal state -->
-          <div id="phone-normal-state" class="flex flex-row-reverse flex-wrap-reverse items-center justify-between gap-x-4 gap-y-2">
-            <div class="flex flex-row-reverse items-center gap-1 flex-shrink-0">
-              <span id="verified-phone" dir="ltr" class="verified-phone-display text-gray-700 dark:text-gray-300 whitespace-nowrap"></span>
-              <button id="change-phone-btn" type="button" class="inline-flex items-center gap-1 p-1.5 text-muted hover:text-primary transition-colors" title="تغيير الرقم">
-                <Icon name="tabler:arrows-right-left" class="w-3.5 h-3.5" />
-                <span class="hidden min-[340px]:inline text-xs">تغيير</span>
-              </button>
-              <button id="delete-phone-btn" type="button" class="inline-flex items-center gap-1 p-1.5 text-muted hover:text-red-500 transition-colors" title="نسيان الرقم">
-                <Icon name="tabler:x" class="w-3.5 h-3.5" />
-                <span class="hidden min-[340px]:inline text-xs">نسيان</span>
-              </button>
-            </div>
-            <div class="flex items-center gap-2 flex-shrink-0">
-              <Icon name="tabler:phone" class="w-5 h-5 text-primary -scale-x-100" />
-              <p class="text-secondary whitespace-nowrap">رقم الهاتف المستخدم للحجز</p>
-            </div>
-          </div>
-          <!-- Confirmation state (hidden by default) -->
-          <div id="phone-confirm-state" class="hidden flex items-center justify-between gap-4">
-            <span class="text-sm text-red-600 dark:text-red-400">هل تريد نسيان الرقم <span id="confirm-phone-number" dir="ltr" class="verified-phone-display"></span> من على هذا الجهاز؟</span>
-            <div class="flex items-center gap-3 flex-shrink-0">
-              <button id="cancel-delete-btn" type="button" class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" aria-label="لا">
-                <Icon name="tabler:x" class="w-6 h-6" />
-              </button>
-              <button id="confirm-delete-btn" type="button" class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-red-100 dark:bg-red-900/30 text-red-500 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors" aria-label="نعم">
-                <Icon name="tabler:check" class="w-6 h-6" />
-              </button>
-            </div>
-          </div>
+        <div class="mb-6">
+          <PhoneDisplayBar id="phone-display" />
         </div>
 
         <!-- Empty state -->
@@ -172,13 +144,6 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
   <script src="/scripts/phone-utils.js" is:inline></script>
   <!-- Arabic utilities -->
   <script src="/scripts/arabic-utils.js" is:inline></script>
-
-  <style>
-    .verified-phone-display {
-      font-family: 'New Rail Alphabet', monospace !important;
-      letter-spacing: 0.05em;
-    }
-  </style>
 
   <script is:inline define:vars={{ BOOKINGS_ENDPOINT }}>
     /* eslint-disable no-var, no-undef */
@@ -300,7 +265,6 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
       var bookingsList = document.getElementById('bookings-list');
       var emptyState = document.getElementById('empty-state');
       var newBookingContainer = document.getElementById('new-booking-container');
-      var phoneDisplay = document.getElementById('verified-phone');
       var template = document.getElementById('booking-card-template');
       var pageTitle = document.getElementById('page-title');
 
@@ -315,9 +279,9 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
         pageTitle.textContent = window.describeNumberOfBookings(bookingCount);
       }
 
-      // Display phone number
-      if (phoneDisplay && window.formatPhoneDisplay) {
-        phoneDisplay.textContent = window.formatPhoneDisplay(phone);
+      // Initialize phone display bar
+      if (window.PhoneDisplayBar) {
+        window.PhoneDisplayBar.init('phone-display', phone);
       }
 
       // Clear existing bookings
@@ -541,64 +505,30 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
         window.location.reload();
       });
 
-      // Change phone button - shows verification without removing token
-      var changePhoneBtn = document.getElementById('change-phone-btn');
-      if (changePhoneBtn) {
-        changePhoneBtn.addEventListener('click', function() {
-          // Don't remove token! Just show verification form with cancel option
+      // PhoneDisplayBar change event - shows verification without removing token
+      var phoneDisplayBar = document.getElementById('phone-display');
+      if (phoneDisplayBar) {
+        phoneDisplayBar.addEventListener('phone-display-change', function() {
           showVerificationForChange();
         });
-      }
 
-      // Delete phone button - shows inline confirmation
-      var deletePhoneBtn = document.getElementById('delete-phone-btn');
-      if (deletePhoneBtn) {
-        deletePhoneBtn.addEventListener('click', function() {
-          // Copy phone number to confirmation message
-          var confirmPhoneEl = document.getElementById('confirm-phone-number');
-          if (confirmPhoneEl && cachedPhone && window.formatPhoneDisplay) {
-            confirmPhoneEl.textContent = window.formatPhoneDisplay(cachedPhone);
+        phoneDisplayBar.addEventListener('phone-display-delete', function() {
+          localStorage.removeItem(STORAGE_KEY);
+          cachedBookingsData = null;
+          cachedPhone = '';
+          // Reset verification message to default
+          var messageEl = document.getElementById('verification-message');
+          if (messageEl) {
+            messageEl.textContent = 'للاطلاع على حجوزاتك، يرجى التحقق من رقم هاتفك أولاً';
           }
-          // Show confirmation state, hide normal state
-          document.getElementById('phone-normal-state')?.classList.add('hidden');
-          document.getElementById('phone-confirm-state')?.classList.remove('hidden');
+          // Hide cancel button since there's nothing to return to
+          var cancelContainer = document.getElementById('cancel-change-container');
+          if (cancelContainer) {
+            cancelContainer.classList.add('hidden');
+          }
+          showVerification();
         });
       }
-
-      // Confirm delete handler - actually removes token
-      function handleConfirmDelete() {
-        localStorage.removeItem(STORAGE_KEY);
-        cachedBookingsData = null;
-        cachedPhone = '';
-        // Reset verification message to default
-        var messageEl = document.getElementById('verification-message');
-        if (messageEl) {
-          messageEl.textContent = 'للاطلاع على حجوزاتك، يرجى التحقق من رقم هاتفك أولاً';
-        }
-        // Hide cancel button since there's nothing to return to
-        var cancelContainer = document.getElementById('cancel-change-container');
-        if (cancelContainer) {
-          cancelContainer.classList.add('hidden');
-        }
-        // Reset phone display states
-        document.getElementById('phone-normal-state')?.classList.remove('hidden');
-        document.getElementById('phone-confirm-state')?.classList.add('hidden');
-        showVerification();
-      }
-
-      // Cancel delete handler - returns to normal state
-      function handleCancelDelete() {
-        document.getElementById('phone-normal-state')?.classList.remove('hidden');
-        document.getElementById('phone-confirm-state')?.classList.add('hidden');
-      }
-
-      // Confirm delete button
-      var confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-      if (confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', handleConfirmDelete);
-
-      // Cancel delete button
-      var cancelDeleteBtn = document.getElementById('cancel-delete-btn');
-      if (cancelDeleteBtn) cancelDeleteBtn.addEventListener('click', handleCancelDelete);
 
       // Cancel change button - returns to bookings view
       var cancelChangeBtn = document.getElementById('cancel-change-btn');

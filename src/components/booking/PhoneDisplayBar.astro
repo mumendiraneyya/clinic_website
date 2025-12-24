@@ -1,0 +1,150 @@
+---
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  /** Unique ID prefix for this instance (for multiple instances on different pages) */
+  id?: string;
+  /** Label text shown next to the phone icon */
+  label?: string;
+}
+
+const { id = 'phone-display', label = 'رقم الهاتف المستخدم للحجز' } = Astro.props;
+---
+
+<div id={id} class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg" data-phone-display-bar>
+  <!-- Normal state -->
+  <div id={`${id}-normal-state`} class="flex flex-row-reverse flex-wrap-reverse items-center justify-between gap-x-4 gap-y-2" data-normal-state>
+    <div class="flex flex-row-reverse items-center gap-1 flex-shrink-0">
+      <span id={`${id}-phone`} dir="ltr" class="phone-display-number text-gray-700 dark:text-gray-300 whitespace-nowrap" data-phone-number></span>
+      <button type="button" class="inline-flex items-center gap-1 p-1.5 text-muted hover:text-primary transition-colors" title="تغيير الرقم" data-change-btn>
+        <Icon name="tabler:arrows-right-left" class="w-3.5 h-3.5" />
+        <span class="hidden min-[340px]:inline text-xs">تغيير</span>
+      </button>
+      <button type="button" class="inline-flex items-center gap-1 p-1.5 text-muted hover:text-red-500 transition-colors" title="نسيان الرقم" data-delete-btn>
+        <Icon name="tabler:x" class="w-3.5 h-3.5" />
+        <span class="hidden min-[340px]:inline text-xs">نسيان</span>
+      </button>
+    </div>
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <Icon name="tabler:phone" class="w-5 h-5 text-primary -scale-x-100" />
+      <p class="text-secondary whitespace-nowrap">{label}</p>
+    </div>
+  </div>
+  <!-- Confirmation state (hidden by default) -->
+  <div id={`${id}-confirm-state`} class="hidden flex items-center justify-between gap-4" data-confirm-state>
+    <span class="text-sm text-red-600 dark:text-red-400">هل تريد نسيان الرقم <span dir="ltr" class="phone-display-number" data-confirm-phone></span> من على هذا الجهاز؟</span>
+    <div class="flex items-center gap-3 flex-shrink-0">
+      <button type="button" class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" aria-label="لا" data-cancel-delete-btn>
+        <Icon name="tabler:x" class="w-6 h-6" />
+      </button>
+      <button type="button" class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-red-100 dark:bg-red-900/30 text-red-500 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors" aria-label="نعم" data-confirm-delete-btn>
+        <Icon name="tabler:check" class="w-6 h-6" />
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .phone-display-number {
+    font-family: 'New Rail Alphabet', monospace !important;
+    letter-spacing: 0.05em;
+  }
+</style>
+
+<script>
+  /**
+   * PhoneDisplayBar - A reusable component for displaying and managing verified phone numbers.
+   *
+   * Usage:
+   * 1. Include the component in your page
+   * 2. Call PhoneDisplayBar.init(containerId, phone) to initialize with a phone number
+   * 3. Listen for 'phone-display-change' and 'phone-display-delete' events on the container
+   *
+   * Events emitted:
+   * - 'phone-display-change': User wants to change their phone number
+   * - 'phone-display-delete': User confirmed deletion of their phone number
+   */
+  window.PhoneDisplayBar = {
+    /**
+     * Initialize the phone display bar with a phone number
+     * @param {string} containerId - The ID of the container element
+     * @param {string} phone - The phone number to display (raw format)
+     */
+    init: function(containerId, phone) {
+      var container = document.getElementById(containerId);
+      if (!container) return;
+
+      var phoneEl = container.querySelector('[data-phone-number]');
+      var confirmPhoneEl = container.querySelector('[data-confirm-phone]');
+      var normalState = container.querySelector('[data-normal-state]');
+      var confirmState = container.querySelector('[data-confirm-state]');
+      var changeBtn = container.querySelector('[data-change-btn]');
+      var deleteBtn = container.querySelector('[data-delete-btn]');
+      var cancelDeleteBtn = container.querySelector('[data-cancel-delete-btn]');
+      var confirmDeleteBtn = container.querySelector('[data-confirm-delete-btn]');
+
+      // Format and display phone number
+      var formattedPhone = window.formatPhoneDisplay ? window.formatPhoneDisplay(phone) : phone;
+      if (phoneEl) phoneEl.textContent = formattedPhone;
+      if (confirmPhoneEl) confirmPhoneEl.textContent = formattedPhone;
+
+      // Store phone for later use
+      container._phone = phone;
+
+      // Change button - emit event for parent to handle
+      if (changeBtn) {
+        changeBtn.onclick = function() {
+          container.dispatchEvent(new CustomEvent('phone-display-change', {
+            bubbles: true,
+            detail: { phone: phone }
+          }));
+        };
+      }
+
+      // Delete button - show confirmation
+      if (deleteBtn) {
+        deleteBtn.onclick = function() {
+          if (normalState) normalState.classList.add('hidden');
+          if (confirmState) confirmState.classList.remove('hidden');
+        };
+      }
+
+      // Cancel delete - return to normal state
+      if (cancelDeleteBtn) {
+        cancelDeleteBtn.onclick = function() {
+          if (normalState) normalState.classList.remove('hidden');
+          if (confirmState) confirmState.classList.add('hidden');
+        };
+      }
+
+      // Confirm delete - emit event for parent to handle
+      if (confirmDeleteBtn) {
+        confirmDeleteBtn.onclick = function() {
+          // Reset to normal state visually
+          if (normalState) normalState.classList.remove('hidden');
+          if (confirmState) confirmState.classList.add('hidden');
+          // Emit delete event
+          container.dispatchEvent(new CustomEvent('phone-display-delete', {
+            bubbles: true,
+            detail: { phone: phone }
+          }));
+        };
+      }
+    },
+
+    /**
+     * Reset the component to normal state (useful after canceling an action)
+     * @param {string} containerId - The ID of the container element
+     */
+    reset: function(containerId) {
+      var container = document.getElementById(containerId);
+      if (!container) return;
+
+      var normalState = container.querySelector('[data-normal-state]');
+      var confirmState = container.querySelector('[data-confirm-state]');
+
+      if (normalState) normalState.classList.remove('hidden');
+      if (confirmState) confirmState.classList.add('hidden');
+    }
+  };
+</script>
