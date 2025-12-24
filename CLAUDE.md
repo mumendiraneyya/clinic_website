@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Knowledge Transfer Documents
+
+Human-readable educational materials explaining complex topics encountered in this project:
+
+- **[Astro View Transitions and Scripts](knowledge_transfer/astro-view-transitions-and-scripts.md)** - Understanding how View Transitions affect script execution, and the bug we fixed with the infinite spinner on `/book`
+
 ## CRITICAL: Local Development & Testing
 
 **ALWAYS use `http://localhost:4321` for testing, NOT the production site.**
@@ -51,7 +57,9 @@ If images suddenly break during development with 404 errors on `/_image`, check 
 
 ### Astro View Transitions and Inline Scripts
 
-**Important:** When using `is:inline` scripts with Astro View Transitions (`ClientRouter`), the `astro:page-load` event may fire BEFORE the new page's script registers its listener. Use this pattern:
+**Why we use `is:inline`:** With View Transitions (`ClientRouter`), Astro's processed scripts have unpredictable timing—they may not re-run on navigation, or may run before the DOM is ready. `is:inline` scripts run exactly where placed in the HTML, giving us explicit control over execution timing.
+
+**Important:** When using `is:inline` scripts with View Transitions, the `astro:page-load` event may fire BEFORE the new page's script registers its listener. Use this pattern:
 
 ```javascript
 // Use a global key to track initialization (survives script re-runs)
