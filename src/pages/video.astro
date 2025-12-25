@@ -3,12 +3,24 @@ import Layout from '~/layouts/PageLayout.astro';
 import PhoneVerification from '~/components/booking/PhoneVerification.astro';
 import PhoneDisplayBar from '~/components/booking/PhoneDisplayBar.astro';
 import { Icon } from 'astro-icon/components';
+import { Image } from 'astro:assets';
+import calVideoEntryImage from '~/assets/images/cal-video-entry.png';
+import calVideoJoinImage from '~/assets/images/cal-video-join.png';
 
 const metadata = {
   title: 'استشارة مرئية عن بعد',
+  description: 'انضم إلى استشارتك المرئية مع د. مؤمن ديرانية عبر الإنترنت',
   robots: {
     index: false,
     follow: false,
+  },
+  openGraph: {
+    type: 'website',
+    images: [
+      {
+        url: '~/assets/images/og-video-consultation.png',
+      },
+    ],
   },
 };
 
@@ -25,8 +37,8 @@ const AUTO_REDIRECT_TIME = 1 * 60;    // Auto-redirect 1 minute before
 ---
 
 <Layout metadata={metadata}>
-  <section class="py-8 md:py-12">
-    <div class="max-w-xl mx-auto px-4 sm:px-6">
+  <section class="py-6 md:py-6">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6">
       <!-- Header -->
       <div class="text-center mb-8">
         <h1 id="page-title" class="text-2xl md:text-3xl font-bold mb-2 font-heading dark:text-gray-200">
@@ -44,7 +56,7 @@ const AUTO_REDIRECT_TIME = 1 * 60;    // Auto-redirect 1 minute before
       </div>
 
       <!-- Phone Verification (shown when no token and no UID) -->
-      <div id="verification-container" class="hidden">
+      <div id="verification-container" class="hidden max-w-xl mx-auto">
         <p id="verification-message" class="text-center text-muted dark:text-slate-400 mb-6">
           للانضمام إلى استشارتك، يرجى التحقق من رقم هاتفك أولاً
         </p>
@@ -60,37 +72,82 @@ const AUTO_REDIRECT_TIME = 1 * 60;    // Auto-redirect 1 minute before
       <!-- Main Content (shown when authenticated) -->
       <div id="main-container" class="hidden">
         <!-- Phone display -->
-        <div class="mb-4">
+        <div class="mb-4 max-w-xl mx-auto lg:max-w-none">
           <PhoneDisplayBar id="phone-display" label="رقم الهاتف المستخدم" />
         </div>
 
-        <!-- Countdown State -->
+        <!-- Countdown State - Two column layout on large screens -->
         <div id="countdown-state" class="hidden">
-          <div class="text-center pb-4">
-            <div class="mb-4">
-              <Icon name="tabler:video" class="w-16 h-16 mx-auto text-primary" />
+          <div class="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
+            <!-- Left column: Countdown -->
+            <div class="text-center pb-4 lg:pb-0">
+              <div class="mb-4">
+                <Icon name="tabler:video" class="w-16 h-16 mx-auto text-primary" />
+              </div>
+              <p class="text-lg text-muted dark:text-slate-400 mb-2">
+                موعد استشارتك عن بعد سيحين
+              </p>
+              <p id="countdown-text" class="text-2xl md:text-3xl font-bold text-primary mb-4">
+                <!-- Will be filled by JS -->
+              </p>
+              <!-- Normal hint (hidden when redirect warning shows) -->
+              <p id="countdown-hint" class="text-sm text-muted dark:text-slate-500 mb-6">
+                سيتم فتح رابط الاستشارة تلقائيًا عند حلول الموعد
+              </p>
+              <!-- Redirect warning (hidden by default, shown 3 min before) -->
+              <p id="redirect-warning" class="hidden text-sm text-amber-600 dark:text-amber-400 mb-6 animate-pulse">
+                سيتم تحويلك تلقائيًا إلى غرفة الاستشارة خلال لحظات...
+              </p>
+              <button id="join-now-btn" type="button" disabled class="btn-primary inline-flex items-center gap-2 opacity-50 cursor-not-allowed">
+                <Icon name="tabler:video" class="w-5 h-5" />
+                <span>انضم الآن</span>
+              </button>
+              <p id="button-hint" class="text-xs text-muted dark:text-slate-500 mt-2">
+                سيتم تفعيل الزر قبل ٥ دقائق من الموعد
+              </p>
             </div>
-            <p class="text-lg text-muted dark:text-slate-400 mb-2">
-              موعد استشارتك عن بعد سيحين
-            </p>
-            <p id="countdown-text" class="text-2xl md:text-3xl font-bold text-primary mb-4">
-              <!-- Will be filled by JS -->
-            </p>
-            <!-- Normal hint (hidden when redirect warning shows) -->
-            <p id="countdown-hint" class="text-sm text-muted dark:text-slate-500 mb-6">
-              سيتم فتح رابط الاستشارة تلقائيًا عند حلول الموعد
-            </p>
-            <!-- Redirect warning (hidden by default, shown 3 min before) -->
-            <p id="redirect-warning" class="hidden text-sm text-amber-600 dark:text-amber-400 mb-6 animate-pulse">
-              سيتم تحويلك تلقائيًا إلى غرفة الاستشارة خلال لحظات...
-            </p>
-            <button id="join-now-btn" type="button" disabled class="btn-primary inline-flex items-center gap-2 opacity-50 cursor-not-allowed">
-              <Icon name="tabler:video" class="w-5 h-5" />
-              <span>انضم الآن</span>
-            </button>
-            <p id="button-hint" class="text-xs text-muted dark:text-slate-500 mt-2">
-              سيتم تفعيل الزر قبل ٥ دقائق من الموعد
-            </p>
+
+            <!-- Right column: Instructions -->
+            <div class="mt-8 lg:mt-0 border-t lg:border-t-0 lg:border-r border-gray-200 dark:border-gray-700 pt-6 lg:pt-0 lg:pr-8">
+              <h3 class="text-lg font-semibold mb-3 dark:text-gray-200 lg:text-right">عند الانضمام للمكالمة</h3>
+
+              <div class="lg:flex lg:gap-4">
+                <!-- Step 1: Enter name -->
+                <div class="bg-gray-50 dark:bg-slate-800 rounded-lg p-3 mb-3 lg:mb-0 lg:flex-1">
+                  <p class="text-sm font-medium text-gray-900 dark:text-gray-200 mb-2 lg:text-right">
+                    ١. أدخل اسمك واضغط «<span class="font-bold mx-1 tracking-wide text-primary">متابعة</span>»
+                  </p>
+                  <div class="h-48 lg:h-44 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600 mx-auto max-w-[220px]">
+                    <Image
+                      src={calVideoEntryImage}
+                      alt="شاشة إدخال الاسم"
+                      class="w-full h-full object-cover object-top"
+                      width={220}
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+
+                <!-- Step 2: Join meeting -->
+                <div class="bg-gray-50 dark:bg-slate-800 rounded-lg p-3 lg:flex-1">
+                  <p class="text-sm font-medium text-gray-900 dark:text-gray-200 mb-2 lg:text-right">
+                    ٢. اضغط زر «<span class="font-sans font-bold mx-1 tracking-wide text-primary">Join</span>» للانضمام
+                  </p>
+                  <div class="h-48 lg:h-44 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600 mx-auto max-w-[220px]">
+                    <Image
+                      src={calVideoJoinImage}
+                      alt="شاشة الانضمام للمكالمة"
+                      class="w-full h-full object-cover object-top"
+                      width={220}
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs text-muted dark:text-slate-500 mt-2 text-center lg:text-right mb-6 lg:mb-0">
+                انتظر حتى ينضم الطبيب إلى المكالمة
+              </p>
+            </div>
           </div>
         </div>
 
@@ -162,7 +219,7 @@ const AUTO_REDIRECT_TIME = 1 * 60;    // Auto-redirect 1 minute before
       </div>
 
       <!-- Back to Home Link -->
-      <div class="text-center mt-4">
+      <div class="text-center mt-8">
         <a href="/" class="text-sm text-muted dark:text-slate-400 hover:text-primary inline-flex items-center gap-1">
           <Icon name="tabler:arrow-right" class="w-4 h-4" />
           <span>العودة للصفحة الرئيسية</span>
