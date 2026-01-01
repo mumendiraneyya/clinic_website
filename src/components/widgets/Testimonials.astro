@@ -67,7 +67,7 @@ const {
   </div>
   {
     callToAction && (
-      <div class="flex justify-center mx-auto w-fit mt-8 md:mt-12 font-medium gap-4">
+      <div class="flex flex-wrap justify-center mx-auto w-fit mt-8 md:mt-12 font-medium gap-4">
         {Array.isArray(callToAction) ? (
           callToAction.map((action) => <Button {...action} />)
         ) : (
