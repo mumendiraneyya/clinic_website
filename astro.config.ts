@@ -30,16 +30,23 @@ export default defineConfig({
     }),
     sitemap({
       filter: (page) => {
-        // Only include homepage and blog pages in sitemap
+        // Only include specific pages in sitemap
         const url = new URL(page);
         const path = url.pathname;
         return (
           path === '/' ||
           path.startsWith('/blog') ||
           path.startsWith('/privacy') ||
-          path.startsWith('/terms')
+          path.startsWith('/terms') ||
+          path.startsWith('/bookings') ||
+          path.startsWith('/video')
         );
       },
+      // Add pages with query parameters that aren't auto-discovered
+      customPages: [
+        'https://abuobaydatajjarrah.com/book?type=clinic',
+        'https://abuobaydatajjarrah.com/book?type=remote',
+      ],
     }),
     mdx(),
     icon({

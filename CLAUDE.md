@@ -123,13 +123,17 @@ The sitemap is filtered to only include active pages. Many template pages from A
 - `/blog/*` (all blog pages)
 - `/privacy`
 - `/terms`
+- `/bookings`
+- `/video`
+- `/book?type=clinic` (via customPages)
+- `/book?type=remote` (via customPages)
 
 **Excluded template pages** (still exist but not in sitemap):
 - `/about`, `/contact`, `/pricing`, `/services`
 - `/homes/*` (saas, startup, personal, mobile-app)
 - `/landing/*` (click-through, lead-generation, pre-launch, product, sales, subscription)
 
-To add a page to the sitemap when bringing it back into use, update the `filter` function in `astro.config.ts`:
+To add a page to the sitemap, update `astro.config.ts`. Use `filter` for regular pages and `customPages` for URLs with query parameters:
 
 ```typescript
 sitemap({
@@ -139,11 +143,14 @@ sitemap({
     return (
       path === '/' ||
       path.startsWith('/blog') ||
-      path.startsWith('/privacy') ||
-      path.startsWith('/terms') ||
       path.startsWith('/your-new-page')  // Add new pages here
     );
   },
+  // URLs with query parameters must be added manually
+  customPages: [
+    'https://abuobaydatajjarrah.com/book?type=clinic',
+    'https://abuobaydatajjarrah.com/book?type=remote',
+  ],
 }),
 ```
 
