@@ -1,0 +1,324 @@
+---
+import { APP_BLOG } from 'astrowind:config';
+import { Icon } from 'astro-icon/components';
+
+import { getPermalink } from '~/utils/permalinks';
+import { getPostsGroupedByCategory } from '~/utils/blog';
+import { blogCategoryOrder } from '~/navigation';
+import WidgetWrapper from '~/components/ui/WidgetWrapper.astro';
+import Button from '~/components/ui/Button.astro';
+import type { Widget } from '~/types';
+import Image from '~/components/common/Image.astro';
+import { findImage } from '~/utils/images';
+import { getYouTubeVideoId, getYouTubeThumbnail } from '~/utils/utils';
+
+export interface Props extends Widget {
+  title?: string;
+}
+
+const {
+  title = await Astro.slots.render('title'),
+  id,
+  isDark = false,
+  classes = {},
+  bg = await Astro.slots.render('bg'),
+} = Astro.props;
+
+const categoriesMap = APP_BLOG.isEnabled ? await getPostsGroupedByCategory() : new Map();
+
+// Sort categories according to blogCategoryOrder
+const sortedCategories = blogCategoryOrder
+  .map((categoryTitle) => {
+    // Find category by title in the map values
+    for (const [, category] of categoriesMap) {
+      if (category.title === categoryTitle) {
+        return category;
+      }
+    }
+    return null;
+  })
+  .filter((category): category is NonNullable<typeof category> => category !== null);
+
+// Pre-process images for all posts
+const processedCategories = await Promise.all(
+  sortedCategories.map(async (category) => ({
+    ...category,
+    posts: await Promise.all(
+      category.posts.map(async (post) => {
+        const videoId = post.videoUrl ? getYouTubeVideoId(post.videoUrl) : null;
+        const image = videoId ? null : await findImage(post.image);
+        const videoThumbnail = videoId ? getYouTubeThumbnail(videoId, 'hqdefault') : null;
+        const link = APP_BLOG?.post?.isEnabled ? getPermalink(post.permalink, 'post') : '';
+        return { ...post, _image: image, _videoId: videoId, _videoThumbnail: videoThumbnail, _link: link };
+      })
+    ),
+  }))
+);
+---
+
+{
+  APP_BLOG.isEnabled && sortedCategories.length > 0 ? (
+    <WidgetWrapper id={id} isDark={isDark} containerClass={classes?.container as string} bg={bg}>
+      {title && (
+        <h2
+          class="text-3xl font-bold tracking-tight sm:text-4xl sm:leading-none font-heading mb-8 text-center"
+          set:html={title}
+        />
+      )}
+
+      <div class="space-y-12">
+        {processedCategories.map((category, categoryIndex) => (
+          <div class="category-section">
+            {/* Category header */}
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-xl font-bold font-heading dark:text-slate-300">{category.title}</h3>
+              {APP_BLOG.category.isEnabled && (
+                <Button variant="link" href={getPermalink(category.slug, 'category')}>
+                  عرض الكل »
+                </Button>
+              )}
+            </div>
+
+            {/* Horizontal scrolling posts container */}
+            <div class="relative group">
+              {/* Left arrow (appears on right side in RTL, scrolls back to start) */}
+              <button
+                type="button"
+                class="scroll-arrow scroll-arrow-left absolute start-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-slate-800 rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-gray-100 dark:hover:bg-slate-700 -ms-5"
+                data-category-index={categoryIndex}
+                data-direction="left"
+                aria-label="التمرير لليسار"
+              >
+                <Icon name="tabler:chevron-right" class="w-6 h-6 text-gray-600 dark:text-slate-300" />
+              </button>
+
+              {/* Posts scroll container */}
+              <div
+                class="posts-scroll-container flex gap-4 overflow-x-auto scroll-smooth pb-4 scrollbar-hide"
+                data-category-index={categoryIndex}
+              >
+                {category.posts.map((post) => (
+                  <article class="flex-shrink-0 w-64 md:w-72">
+                    <div class="relative h-40 bg-gray-400 dark:bg-slate-700 rounded shadow-lg mb-3 overflow-hidden">
+                      {(post._image || post._videoThumbnail) &&
+                        (post._link ? (
+                          <a href={post._link} class="block relative group/card h-full">
+                            {post._image && (
+                              <Image
+                                src={post._image}
+                                class="w-full h-full rounded shadow-lg bg-gray-400 dark:bg-slate-700 object-cover"
+                                widths={[288, 576]}
+                                width={288}
+                                sizes="288px"
+                                alt={post.title}
+                                aspectRatio="16:9"
+                                layout="cover"
+                                loading="lazy"
+                                decoding="async"
+                              />
+                            )}
+                            {post._videoThumbnail && (
+                              <img
+                                src={post._videoThumbnail}
+                                class="w-full h-full rounded shadow-lg bg-gray-400 dark:bg-slate-700 object-cover"
+                                alt={post.title}
+                                loading="lazy"
+                                decoding="async"
+                              />
+                            )}
+                            {post._videoId && (
+                              <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center shadow-lg group-hover/card:bg-red-700 transition-colors">
+                                  <Icon name="tabler:player-play-filled" class="w-6 h-6 text-white ms-0.5" />
+                                </div>
+                              </div>
+                            )}
+                          </a>
+                        ) : (
+                          <div class="relative h-full">
+                            {post._image && (
+                              <Image
+                                src={post._image}
+                                class="w-full h-full rounded shadow-lg bg-gray-400 dark:bg-slate-700 object-cover"
+                                widths={[288, 576]}
+                                width={288}
+                                sizes="288px"
+                                alt={post.title}
+                                aspectRatio="16:9"
+                                layout="cover"
+                                loading="lazy"
+                                decoding="async"
+                              />
+                            )}
+                            {post._videoThumbnail && (
+                              <img
+                                src={post._videoThumbnail}
+                                class="w-full h-full rounded shadow-lg bg-gray-400 dark:bg-slate-700 object-cover"
+                                alt={post.title}
+                                loading="lazy"
+                                decoding="async"
+                              />
+                            )}
+                            {post._videoId && (
+                              <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center shadow-lg">
+                                  <Icon name="tabler:player-play-filled" class="w-6 h-6 text-white ms-0.5" />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                    </div>
+
+                    <h4 class="text-base font-bold leading-tight font-heading dark:text-slate-300 line-clamp-2">
+                      {post._link ? (
+                        <a
+                          class="hover:text-primary dark:hover:text-blue-700 transition ease-in duration-200"
+                          href={post._link}
+                        >
+                          {post.title}
+                        </a>
+                      ) : (
+                        post.title
+                      )}
+                    </h4>
+                  </article>
+                ))}
+              </div>
+
+              {/* Right arrow (appears on left side in RTL, scrolls forward to end) */}
+              <button
+                type="button"
+                class="scroll-arrow scroll-arrow-right absolute end-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-slate-800 rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-gray-100 dark:hover:bg-slate-700 -me-5"
+                data-category-index={categoryIndex}
+                data-direction="right"
+                aria-label="التمرير لليمين"
+              >
+                <Icon name="tabler:chevron-left" class="w-6 h-6 text-gray-600 dark:text-slate-300" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </WidgetWrapper>
+  ) : (
+    <Fragment />
+  )
+}
+
+<style>
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    function initScrollArrows() {
+      var containers = document.querySelectorAll('.posts-scroll-container');
+
+      // Update arrow visibility based on scroll position
+      function updateArrowVisibility(container) {
+        var index = container.dataset.categoryIndex;
+        var leftArrow = document.querySelector('.scroll-arrow-left[data-category-index="' + index + '"]');
+        var rightArrow = document.querySelector('.scroll-arrow-right[data-category-index="' + index + '"]');
+
+        if (!leftArrow || !rightArrow) return;
+
+        var isRTL = document.documentElement.dir === 'rtl';
+        var maxScroll = container.scrollWidth - container.clientWidth;
+
+        // No scrolling needed - hide both arrows
+        if (maxScroll <= 0) {
+          leftArrow.classList.add('invisible');
+          rightArrow.classList.add('invisible');
+          return;
+        }
+
+        var atStart, atEnd;
+
+        if (isRTL) {
+          // In RTL (Chrome): scrollLeft = 0 at START (right), negative when scrolled left
+          atStart = container.scrollLeft >= -1;
+          atEnd = container.scrollLeft <= -(maxScroll - 1);
+        } else {
+          // In LTR: scrollLeft = 0 at START (left), positive when scrolled right
+          atStart = container.scrollLeft <= 1;
+          atEnd = container.scrollLeft >= maxScroll - 1;
+        }
+
+        // Left arrow: hide when at start (in RTL, start is on the right side)
+        if (atStart) {
+          leftArrow.classList.add('invisible');
+        } else {
+          leftArrow.classList.remove('invisible');
+        }
+
+        // Right arrow: hide when at end (in RTL, end is on the left side)
+        if (atEnd) {
+          rightArrow.classList.add('invisible');
+        } else {
+          rightArrow.classList.remove('invisible');
+        }
+      }
+
+      // Handle arrow clicks - using event delegation for better reliability
+      document.querySelectorAll('.scroll-arrow').forEach(function (arrow) {
+        // Remove old listeners by cloning
+        var newArrow = arrow.cloneNode(true);
+        arrow.parentNode.replaceChild(newArrow, arrow);
+
+        newArrow.addEventListener('click', function (e) {
+          e.preventDefault();
+          var index = this.dataset.categoryIndex;
+          var direction = this.dataset.direction;
+          var container = document.querySelector('.posts-scroll-container[data-category-index="' + index + '"]');
+
+          if (!container) return;
+
+          var scrollAmount = 300;
+          var isRTL = document.documentElement.dir === 'rtl';
+
+          if (isRTL) {
+            // In RTL: scrolling "right" (to see more content on the left) = decrease scrollLeft
+            // scrolling "left" (back to start on the right) = increase scrollLeft towards 0
+            if (direction === 'right') {
+              container.scrollLeft = container.scrollLeft - scrollAmount;
+            } else {
+              container.scrollLeft = container.scrollLeft + scrollAmount;
+            }
+          } else {
+            if (direction === 'right') {
+              container.scrollLeft = container.scrollLeft + scrollAmount;
+            } else {
+              container.scrollLeft = container.scrollLeft - scrollAmount;
+            }
+          }
+        });
+      });
+
+      // Add scroll event listeners and initial visibility check
+      containers.forEach(function (container) {
+        updateArrowVisibility(container);
+        container.addEventListener('scroll', function () {
+          updateArrowVisibility(container);
+        });
+      });
+    }
+
+    // Initialize on page load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initScrollArrows);
+    } else {
+      initScrollArrows();
+    }
+
+    // Re-initialize on Astro page transitions
+    document.addEventListener('astro:page-load', initScrollArrows);
+  })();
+</script>

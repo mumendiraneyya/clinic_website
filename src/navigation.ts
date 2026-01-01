@@ -1,5 +1,13 @@
 import { getPermalink, getBlogPermalink, getAsset } from './utils/permalinks';
 
+/** Blog category order - single source of truth for category ordering across the site */
+export const blogCategoryOrder = [
+  'مقاطع تعريفية ومقابلات عامة',
+  'جراحة عامة',
+  'القناة الشرجية',
+  'فتوق جدار البطن',
+];
+
 export const headerData = {
   links: [
     {

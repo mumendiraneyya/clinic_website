@@ -250,6 +250,26 @@ export const getStaticPathsBlogTag = async ({ paginate }: { paginate: PaginateFu
 };
 
 /** */
+export async function getPostsGroupedByCategory(): Promise<
+  Map<string, { slug: string; title: string; posts: Post[] }>
+> {
+  const posts = await fetchPosts();
+  const grouped = new Map<string, { slug: string; title: string; posts: Post[] }>();
+
+  for (const post of posts) {
+    if (post.category) {
+      const { slug, title } = post.category;
+      if (!grouped.has(slug)) {
+        grouped.set(slug, { slug, title, posts: [] });
+      }
+      grouped.get(slug)!.posts.push(post);
+    }
+  }
+
+  return grouped;
+}
+
+/** */
 export async function getRelatedPosts(originalPost: Post, maxResults: number = 4): Promise<Post[]> {
   const allPosts = await fetchPosts();
   const originalTagsSet = new Set(originalPost.tags ? originalPost.tags.map((tag) => tag.slug) : []);

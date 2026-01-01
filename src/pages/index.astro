@@ -3,7 +3,7 @@ import Layout from '~/layouts/PageLayout.astro';
 
 import Hero from '~/components/widgets/Hero.astro';
 import Features from '~/components/widgets/Features.astro';
-import BlogLatestPosts from '~/components/widgets/BlogLatestPosts.astro';
+import BlogPostsByCategory from '~/components/widgets/BlogPostsByCategory.astro';
 import FAQs from '~/components/widgets/FAQs.astro';
 import Stats from '~/components/widgets/Stats.astro';
 import Location from '~/components/widgets/Location.astro';
@@ -471,9 +471,12 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
 
   <!-- HighlightedPosts Widget ******* -->
 
-  <BlogLatestPosts
-    title="المنشورات"
-  />
+  <BlogPostsByCategory>
+    <Fragment slot="title">
+      <span class="sm:hidden">المنشورات حسب الفئة</span>
+      <span class="hidden sm:inline">المنشورات مصنفة حسب الفئة</span>
+    </Fragment>
+  </BlogPostsByCategory>
 
   <!-- FAQs Widget ******************* -->
 

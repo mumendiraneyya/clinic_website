@@ -4,7 +4,7 @@ import Header from '~/components/widgets/Header.astro';
 import Footer from '~/components/widgets/Footer.astro';
 import Announcement from '~/components/widgets/Announcement.astro';
 
-import { headerData, footerData } from '~/navigation';
+import { headerData, footerData, blogCategoryOrder } from '~/navigation';
 import { fetchPosts } from '~/utils/blog';
 import { getBlogPermalink, getPermalink } from '~/utils/permalinks';
 import type { MetaData } from '~/types';
@@ -20,14 +20,6 @@ const showAnnouncement = UI?.showAnnouncement ?? true;
 
 // Build dynamic header with blog categories
 const posts = await fetchPosts();
-
-// Define category order
-const categoryOrder = [
-  'مقاطع تعريفية ومقابلات عامة',
-  'جراحة عامة',
-  'القناة الشرجية',
-  'فتوق جدار البطن',
-];
 
 // Group posts by category
 const postsByCategory: Record<string, { title: string; slug: string; posts: typeof posts }> = {};
@@ -47,7 +39,7 @@ posts.forEach((post) => {
 // Build category links with nested post links in specified order
 const blogLinks = [
   { text: 'جميع المنشورات', href: getBlogPermalink() },
-  ...categoryOrder
+  ...blogCategoryOrder
     .map((categoryTitle) => {
       const categoryData = Object.values(postsByCategory).find((c) => c.title === categoryTitle);
       if (!categoryData) return null;
