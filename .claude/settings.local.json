@@ -21,7 +21,8 @@
       "WebFetch(domain:api.cal.com)",
       "mcp__chrome-devtools__fill",
       "WebFetch(domain:docs.astro.build)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "mcp__chrome-devtools__hover"
     ],
     "deny": [],
     "ask": []
