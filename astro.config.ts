@@ -33,16 +33,20 @@ export default defineConfig({
         // Only include specific pages in sitemap
         const url = new URL(page);
         const path = url.pathname;
+        const hasBookingQuery = url.search.startsWith('?type=');
         return (
           path === '/' ||
           path.startsWith('/blog') ||
           path.startsWith('/privacy') ||
           path.startsWith('/terms') ||
           path.startsWith('/bookings') ||
-          path.startsWith('/video')
+          path.startsWith('/video') ||
+          // Allow /book only with type= query param (from customPages)
+          (path === '/book' && hasBookingQuery)
         );
       },
       // Add pages with query parameters that aren't auto-discovered
+      // TODO refactor the domain part (import from template config)
       customPages: [
         'https://abuobaydatajjarrah.com/book?type=clinic',
         'https://abuobaydatajjarrah.com/book?type=remote',
