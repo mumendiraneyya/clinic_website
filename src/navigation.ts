@@ -1,4 +1,4 @@
-import { getPermalink, getBlogPermalink, getAsset } from './utils/permalinks';
+import { getPermalink, getAsset } from './utils/permalinks';
 
 /** Blog category order - single source of truth for category ordering across the site */
 export const blogCategoryOrder = [
@@ -34,7 +34,7 @@ export const headerData = {
     },
     {
       text: 'المنشورات',
-      href: getBlogPermalink(),
+      href: '/#posts',
     },
     {
       text: 'حجوزاتي',

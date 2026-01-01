@@ -162,7 +162,7 @@ Blog posts are defined in `src/content/config.ts` using Astro's content collecti
 - Supports `.md` and `.mdx` files
 - Schema includes: title, publishDate, excerpt, image, category, tags, author, metadata
 - Image paths use the `~` alias: `image: ~/assets/images/posts/filename.jpg`
-- **Blog categories in header menu**: The "المنشورات" dropdown dynamically lists categories, but category names are hardcoded in `PageLayout.astro`. See [context/header-menu.md](context/header-menu.md) for details on adding/changing categories.
+- **Blog categories**: Category order is defined in `blogCategoryOrder` array in `src/navigation.ts` - this is the single source of truth used by both the header menu dropdown and the `BlogPostsByCategory` widget on the homepage.
 
 ### Component Structure
 

@@ -109,10 +109,10 @@ The "المنشورات" menu item dynamically generates dropdown sub-items from
 
 ### Category Order
 
-Categories appear in a specific order defined in `PageLayout.astro`:
+Categories appear in a specific order defined in `src/navigation.ts`:
 
-```javascript
-const categoryOrder = [
+```typescript
+export const blogCategoryOrder = [
   'مقاطع تعريفية ومقابلات عامة',
   'جراحة عامة',
   'القناة الشرجية',
@@ -120,18 +120,21 @@ const categoryOrder = [
 ];
 ```
 
+This array is the **single source of truth** for category order, used by:
+- Header menu dropdown (via `PageLayout.astro`)
+- `BlogPostsByCategory` widget on the homepage
+
 **Important:** Category names must match exactly between this array and the `category` field in post frontmatter. If a category doesn't match, it won't appear in the menu.
 
 ### Adding a New Category
 
 1. Add posts with the new category name in frontmatter
-2. Add the exact category name to `categoryOrder` in `PageLayout.astro`
-3. The menu will automatically show the category with its posts
+2. Add the exact category name to `blogCategoryOrder` in `src/navigation.ts`
+3. The menu and homepage widget will automatically show the category with its posts
 
 ### Menu Structure
 
-The generated "المنشورات" dropdown contains:
-- "جميع المنشورات" (link to all posts)
+The "المنشورات" menu item links to `/#posts` (anchor to the BlogPostsByCategory section on the homepage). Its dropdown contains only categories (no "جميع المنشورات" link):
 - Each category as a submenu item with:
   - A chevron icon indicating nested content
   - Hovering (desktop) or clicking (mobile) reveals individual post links

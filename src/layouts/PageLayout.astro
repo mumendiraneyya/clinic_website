@@ -6,7 +6,7 @@ import Announcement from '~/components/widgets/Announcement.astro';
 
 import { headerData, footerData, blogCategoryOrder } from '~/navigation';
 import { fetchPosts } from '~/utils/blog';
-import { getBlogPermalink, getPermalink } from '~/utils/permalinks';
+import { getPermalink } from '~/utils/permalinks';
 import type { MetaData } from '~/types';
 
 export interface Props {
@@ -38,7 +38,6 @@ posts.forEach((post) => {
 
 // Build category links with nested post links in specified order
 const blogLinks = [
-  { text: 'جميع المنشورات', href: getBlogPermalink() },
   ...blogCategoryOrder
     .map((categoryTitle) => {
       const categoryData = Object.values(postsByCategory).find((c) => c.title === categoryTitle);
