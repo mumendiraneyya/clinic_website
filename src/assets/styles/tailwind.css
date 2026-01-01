@@ -73,6 +73,28 @@ html.dark #header.expanded .nav-mobile {
   display: block;
 }
 
+/* Nested dropdown for desktop (third level) */
+.nested-dropdown:focus .nested-menu,
+.nested-dropdown:focus-within .nested-menu,
+.nested-dropdown:hover .nested-menu {
+  display: block;
+}
+
+.nested-menu {
+  top: 0;
+  right: 100%;
+  margin-right: 0.25rem;
+}
+
+/* Mobile nested dropdown toggle */
+.mobile-nested-dropdown.expanded .mobile-nested-menu {
+  display: block;
+}
+
+.mobile-nested-dropdown.expanded .mobile-nested-chevron {
+  transform: rotate(180deg);
+}
+
 [astro-icon].icon-light > * {
   stroke-width: 1.2;
 }

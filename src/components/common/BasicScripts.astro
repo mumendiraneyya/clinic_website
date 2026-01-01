@@ -44,13 +44,25 @@ import { UI } from 'astrowind:config';
     let lastKnownScrollPosition = window.scrollY;
     let ticking = true;
 
-    attachEvent('#header .nav-mobile', 'click', function () {
+    attachEvent('#header .nav-mobile', 'click', function (e) {
+      // Don't close menu if clicking on a nested dropdown toggle
+      if (e.target.closest('.mobile-nested-dropdown > a')) {
+        return;
+      }
       document.querySelector('[data-aw-toggle-menu]')?.classList.remove('expanded');
       document.body.classList.remove('overflow-hidden');
       document.getElementById('header')?.classList.remove('h-screen');
       document.getElementById('header')?.classList.remove('expanded');
       document.getElementById('header')?.classList.remove('bg-page');
       document.querySelector('#header .nav-mobile')?.classList.add('hidden');
+    });
+
+    // Mobile nested dropdown toggle
+    attachEvent('.mobile-nested-dropdown > a', 'click', function (e, elem) {
+      e.preventDefault();
+      e.stopPropagation();
+      var parent = elem.parentElement;
+      parent.classList.toggle('expanded');
     });
 
     attachEvent('[data-aw-toggle-menu]', 'click', function (_, elem) {

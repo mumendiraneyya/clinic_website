@@ -87,17 +87,47 @@ const enabledLinks = links.filter((link) => !link.hidden).map((link) => ({
                       <Icon name="tabler:chevron-down" class="w-3.5 h-3.5 ms-1" />
                     </a>
                     <ul class="dropdown-menu hidden backdrop-blur-md dark:bg-dark rounded absolute font-medium bg-white/90 min-w-[200px] drop-shadow-xl">
-                      {subLinks.map(({ text: text2, href: href2, description: desc2 }) => (
-                        <li>
-                          <a
-                            class:list={[
-                              'first:rounded-t last:rounded-b hover:bg-gray-100 hover:text-link dark:hover:text-white dark:hover:bg-gray-700 py-2 px-5 block whitespace-nowrap nav-link',
-                              { 'aw-link-active': href2 === currentPath },
-                            ]}
-                            href={href2}
-                          >
-                            {text2}{desc2 && <span class="font-normal text-muted"> ({desc2})</span>}
-                          </a>
+                      {subLinks.map(({ text: text2, href: href2, description: desc2, links: nestedLinks }) => (
+                        <li class={nestedLinks?.length ? 'nested-dropdown relative' : ''}>
+                          {nestedLinks?.length ? (
+                            <>
+                              <a
+                                class:list={[
+                                  'first:rounded-t last:rounded-b hover:bg-gray-100 hover:text-link dark:hover:text-white dark:hover:bg-gray-700 py-2 px-5 flex items-center justify-between whitespace-nowrap nav-link',
+                                  { 'aw-link-active': href2 === currentPath },
+                                ]}
+                                href={href2}
+                              >
+                                {text2}
+                                <Icon name="tabler:chevron-left" class="w-3.5 h-3.5 ms-2" />
+                              </a>
+                              <ul class="nested-menu hidden backdrop-blur-md dark:bg-dark rounded absolute font-medium bg-white/90 min-w-[200px] drop-shadow-xl">
+                                {nestedLinks.map(({ text: text3, href: href3 }) => (
+                                  <li>
+                                    <a
+                                      class:list={[
+                                        'first:rounded-t last:rounded-b hover:bg-gray-100 hover:text-link dark:hover:text-white dark:hover:bg-gray-700 py-2 px-5 block whitespace-nowrap nav-link',
+                                        { 'aw-link-active': href3 === currentPath },
+                                      ]}
+                                      href={href3}
+                                    >
+                                      {text3}
+                                    </a>
+                                  </li>
+                                ))}
+                              </ul>
+                            </>
+                          ) : (
+                            <a
+                              class:list={[
+                                'first:rounded-t last:rounded-b hover:bg-gray-100 hover:text-link dark:hover:text-white dark:hover:bg-gray-700 py-2 px-5 block whitespace-nowrap nav-link',
+                                { 'aw-link-active': href2 === currentPath },
+                              ]}
+                              href={href2}
+                            >
+                              {text2}{desc2 && <span class="font-normal text-muted"> ({desc2})</span>}
+                            </a>
+                          )}
                         </li>
                       ))}
                     </ul>
@@ -146,17 +176,35 @@ const enabledLinks = links.filter((link) => !link.hidden).map((link) => ({
                     {text}
                   </a>
                   <ul class="dropdown-menu">
-                    {subLinks.map(({ text: text2, href: href2, description: desc2 }) => (
-                      <li>
+                    {subLinks.map(({ text: text2, href: href2, description: desc2, links: nestedLinks }) => (
+                      <li class={nestedLinks?.length ? 'mobile-nested-dropdown' : ''}>
                         <a
                           class:list={[
-                            'hover:text-link dark:hover:text-white dark:hover:bg-gray-700 py-2 px-5 block whitespace-nowrap text-base ps-8',
+                            'hover:text-link dark:hover:text-white dark:hover:bg-gray-700 py-2 px-5 flex items-center whitespace-nowrap text-base ps-8',
                             { 'aw-link-active': href2 === currentPath },
                           ]}
                           href={href2}
                         >
                           {text2}{desc2 && <span class="font-normal text-muted"> ({desc2})</span>}
+                          {nestedLinks?.length && <Icon name="tabler:chevron-down" class="w-4 h-4 ms-2 mobile-nested-chevron transition-transform" />}
                         </a>
+                        {nestedLinks?.length && (
+                          <ul class="mobile-nested-menu hidden">
+                            {nestedLinks.map(({ text: text3, href: href3 }) => (
+                              <li>
+                                <a
+                                  class:list={[
+                                    'hover:text-link dark:hover:text-white dark:hover:bg-gray-700 py-2 px-5 block whitespace-nowrap text-sm ps-12',
+                                    { 'aw-link-active': href3 === currentPath },
+                                  ]}
+                                  href={href3}
+                                >
+                                  {text3}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </li>
                     ))}
                   </ul>

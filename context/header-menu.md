@@ -98,13 +98,13 @@ html.dark #header.expanded .nav-mobile {
 
 ## Dynamic Blog Categories Menu
 
-The "المنشورات" menu item dynamically generates dropdown sub-items from blog post categories. This is implemented in `src/layouts/PageLayout.astro`.
+The "المنشورات" menu item dynamically generates dropdown sub-items from blog post categories, with nested submenus showing individual posts. This is implemented in `src/layouts/PageLayout.astro`.
 
 ### How It Works
 
 1. Fetches all blog posts via `fetchPosts()`
-2. Counts posts per category
-3. Builds dropdown links with category names and post counts
+2. Groups posts by category
+3. Builds dropdown links with category names, each containing nested links to individual posts
 4. Injects these as sub-links under the "المنشورات" menu item
 
 ### Category Order
@@ -126,13 +126,35 @@ const categoryOrder = [
 
 1. Add posts with the new category name in frontmatter
 2. Add the exact category name to `categoryOrder` in `PageLayout.astro`
-3. The menu will automatically show the category with post count
+3. The menu will automatically show the category with its posts
 
 ### Menu Structure
 
 The generated "المنشورات" dropdown contains:
 - "جميع المنشورات" (link to all posts)
-- Each category with post count, e.g., "جراحة عامة (5 منشورات)"
+- Each category as a submenu item with:
+  - A chevron icon indicating nested content
+  - Hovering (desktop) or clicking (mobile) reveals individual post links
+  - Clicking the category name navigates to the category page
+
+### Nested Dropdown Implementation
+
+**Desktop (hover-based):**
+- Categories with posts show a left-pointing chevron (`tabler:chevron-left`)
+- Hovering over a category reveals the nested menu to the left (RTL layout)
+- CSS classes: `.nested-dropdown`, `.nested-menu`
+
+**Mobile (click-based):**
+- Categories with posts show a down chevron that rotates on expand
+- Clicking toggles the nested posts list
+- JavaScript in `BasicScripts.astro` handles the toggle
+- CSS classes: `.mobile-nested-dropdown`, `.mobile-nested-menu`
+
+**Key files:**
+- `src/layouts/PageLayout.astro` - Builds the nested data structure
+- `src/components/widgets/Header.astro` - Renders desktop and mobile menus
+- `src/components/common/BasicScripts.astro` - Mobile toggle JavaScript
+- `src/assets/styles/tailwind.css` - Nested dropdown styles
 
 ## Design Decisions
 

@@ -7,8 +7,6 @@ import Announcement from '~/components/widgets/Announcement.astro';
 import { headerData, footerData } from '~/navigation';
 import { fetchPosts } from '~/utils/blog';
 import { getBlogPermalink, getPermalink } from '~/utils/permalinks';
-import { describeNumberOfPosts } from '~/utils/arabic';
-
 import type { MetaData } from '~/types';
 
 export interface Props {
@@ -31,35 +29,38 @@ const categoryOrder = [
   'فتوق جدار البطن',
 ];
 
-// Count posts per category
-const categoryCounts: Record<string, { title: string; slug: string; count: number }> = {};
+// Group posts by category
+const postsByCategory: Record<string, { title: string; slug: string; posts: typeof posts }> = {};
 posts.forEach((post) => {
   if (post.category?.slug) {
-    if (!categoryCounts[post.category.slug]) {
-      categoryCounts[post.category.slug] = {
+    if (!postsByCategory[post.category.slug]) {
+      postsByCategory[post.category.slug] = {
         title: post.category.title,
         slug: post.category.slug,
-        count: 0,
+        posts: [],
       };
     }
-    categoryCounts[post.category.slug].count++;
+    postsByCategory[post.category.slug].posts.push(post);
   }
 });
 
-// Build category links in specified order
+// Build category links with nested post links in specified order
 const blogLinks = [
   { text: 'جميع المنشورات', href: getBlogPermalink() },
   ...categoryOrder
     .map((categoryTitle) => {
-      const categoryData = Object.values(categoryCounts).find((c) => c.title === categoryTitle);
+      const categoryData = Object.values(postsByCategory).find((c) => c.title === categoryTitle);
       if (!categoryData) return null;
       return {
         text: categoryData.title,
-        description: describeNumberOfPosts(categoryData.count),
         href: getPermalink(categoryData.slug, 'category'),
+        links: categoryData.posts.map((post) => ({
+          text: post.title,
+          href: `/${post.permalink}`,
+        })),
       };
     })
-    .filter((link): link is { text: string; description: string; href: string } => link !== null),
+    .filter((link): link is NonNullable<typeof link> => link !== null),
 ];
 
 const dynamicHeaderData = {
