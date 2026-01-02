@@ -71,9 +71,14 @@ export interface AppBlogConfig {
 }
 export interface AnalyticsConfig {
   vendors: {
-    googleAnalytics: {
-      id?: string;
-      partytown?: boolean;
+    googleAnalytics?: {
+      id: string;
+      partytown: boolean;
+    };
+    posthog?: {
+      id: string;
+      api_host: string;
+      defaults: string;
     };
   };
 }
@@ -187,10 +192,6 @@ const getUI = (config: Config) => {
 const getAnalytics = (config: Config) => {
   const _default = {
     vendors: {
-      googleAnalytics: {
-        id: undefined,
-        partytown: true,
-      },
     },
   };
 

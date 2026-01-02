@@ -1,13 +1,25 @@
 ---
 import { GoogleAnalytics } from '@astrolib/analytics';
+import PosthogAnalytics from '~/components/common/PosthogAnalytics.astro'
 import { ANALYTICS } from 'astrowind:config';
+
+const googleAnalytics = ANALYTICS?.vendors?.googleAnalytics;
+const posthog = ANALYTICS?.vendors?.posthog;
 ---
 
 {
-  ANALYTICS?.vendors?.googleAnalytics?.id ? (
-    <GoogleAnalytics
-      id={String(ANALYTICS.vendors.googleAnalytics.id)}
-      partytown={ANALYTICS?.vendors?.googleAnalytics?.partytown}
+  !googleAnalytics ? null : 
+    <GoogleAnalytics 
+      id={googleAnalytics.id} 
+      partytown={googleAnalytics.partytown} 
     />
-  ) : null
+}
+
+{
+  !posthog ? null :
+    <PosthogAnalytics
+      id={posthog.id}
+      api_host={posthog.api_host}
+      defaults={posthog.defaults}
+    />
 }
