@@ -1,0 +1,3 @@
+[submodule "n8n"]
+	path = n8n
+	url = ssh://git@git.orwa.tech/orwa.tech/dads-clinic-n8n.git
