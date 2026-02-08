@@ -4,13 +4,8 @@ User-agent: *
 Allow: /
 Disallow: /book
 Disallow: /bookings
-Disallow: /video
 Disallow: /popup/
-Disallow: /homes/
 Disallow: /landing/
-Disallow: /pricing
-Disallow: /contact
-Disallow: /services
 
 Sitemap: https://abuobaydatajjarrah.com/sitemap-index.xml
 
@@ -21,7 +16,6 @@ Allow: /llms.txt
 Allow: /llms-ar.txt
 Disallow: /book
 Disallow: /bookings
-Disallow: /video
 Disallow: /popup/
 
 User-agent: ChatGPT-User
@@ -30,7 +24,6 @@ Allow: /llms.txt
 Allow: /llms-ar.txt
 Disallow: /book
 Disallow: /bookings
-Disallow: /video
 Disallow: /popup/
 
 User-agent: anthropic-ai
@@ -39,7 +32,6 @@ Allow: /llms.txt
 Allow: /llms-ar.txt
 Disallow: /book
 Disallow: /bookings
-Disallow: /video
 Disallow: /popup/
 
 User-agent: Claude-Web
@@ -48,7 +40,6 @@ Allow: /llms.txt
 Allow: /llms-ar.txt
 Disallow: /book
 Disallow: /bookings
-Disallow: /video
 Disallow: /popup/
 
 User-agent: PerplexityBot
@@ -57,7 +48,6 @@ Allow: /llms.txt
 Allow: /llms-ar.txt
 Disallow: /book
 Disallow: /bookings
-Disallow: /video
 Disallow: /popup/
 
 User-agent: Google-Extended
@@ -66,5 +56,4 @@ Allow: /llms.txt
 Allow: /llms-ar.txt
 Disallow: /book
 Disallow: /bookings
-Disallow: /video
 Disallow: /popup/
