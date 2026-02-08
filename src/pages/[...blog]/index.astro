@@ -46,26 +46,46 @@ const metadata = merge(
 
 const SITE_URL = 'https://abuobaydatajjarrah.com';
 
-const articleSchema = {
-  '@context': 'https://schema.org',
-  '@type': post.videoUrl ? 'VideoObject' : 'MedicalWebPage',
-  headline: post.title,
-  description: post.excerpt || '',
-  ...(image ? { image: typeof image === 'string' ? image : image.src } : {}),
-  datePublished: post.publishDate ? new Date(post.publishDate).toISOString() : undefined,
-  author: {
-    '@type': 'Physician',
-    name: post.author || 'د. مؤمن ديرانية',
-    url: SITE_URL,
-  },
-  publisher: {
-    '@type': 'MedicalBusiness',
-    name: 'عيادة د. مؤمن ديرانية',
-    url: SITE_URL,
-  },
-  mainEntityOfPage: { '@type': 'WebPage', '@id': String(url) },
-  inLanguage: 'ar',
-};
+// Extract YouTube video ID from URL
+function getYouTubeId(url: string): string | null {
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/))([^&?/]+)/);
+  return m ? m[1] : null;
+}
+
+const videoId = post.videoUrl ? getYouTubeId(post.videoUrl) : null;
+
+const articleSchema = videoId
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'VideoObject',
+      name: post.title,
+      description: post.excerpt || post.title,
+      thumbnailUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+      uploadDate: post.publishDate ? new Date(post.publishDate).toISOString() : undefined,
+      contentUrl: `https://www.youtube.com/watch?v=${videoId}`,
+      embedUrl: `https://www.youtube.com/embed/${videoId}`,
+      inLanguage: 'ar',
+    }
+  : {
+      '@context': 'https://schema.org',
+      '@type': 'MedicalWebPage',
+      headline: post.title,
+      description: post.excerpt || '',
+      ...(image ? { image: typeof image === 'string' ? image : image.src } : {}),
+      datePublished: post.publishDate ? new Date(post.publishDate).toISOString() : undefined,
+      author: {
+        '@type': 'Physician',
+        name: post.author || 'د. مؤمن ديرانية',
+        url: SITE_URL,
+      },
+      publisher: {
+        '@type': 'MedicalBusiness',
+        name: 'عيادة د. مؤمن ديرانية',
+        url: SITE_URL,
+      },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': String(url) },
+      inLanguage: 'ar',
+    };
 
 const breadcrumbSchema = {
   '@context': 'https://schema.org',

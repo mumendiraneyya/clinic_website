@@ -20,6 +20,10 @@ metadata:
         width: 1200
         height: 628
     type: website
+  twitter:
+    handle: '@DrMumenDiraneya'
+    site: '@DrMumenDiraneya'
+    cardType: summary_large_image
 
 i18n:
   language: ar
