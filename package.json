@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@anthropic-ai/claude-code": "^2.0.58",
-    "@astrojs/check": "^0.9.4",
+    "@astrojs/check": "^0.9.6",
     "@astrojs/mdx": "^4.3.3",
     "@astrojs/partytown": "^2.1.4",
     "@astrojs/tailwind": "^5.1.5",
