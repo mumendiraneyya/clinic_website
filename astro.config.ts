@@ -34,7 +34,7 @@ export default defineConfig({
         const path = url.pathname;
         const hasBookingQuery = url.search.startsWith('?type=');
         // Exclude English placeholder pages and private booking pages
-        const excludedPaths = ['/services', '/contact', '/pricing', '/homes/', '/landing/', '/popup/'];
+        const excludedPaths = ['/landing/', '/popup/'];
         if (excludedPaths.some(p => path.startsWith(p))) return false;
         return (
           path === '/' ||
