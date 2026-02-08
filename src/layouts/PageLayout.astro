@@ -11,9 +11,10 @@ import type { MetaData } from '~/types';
 
 export interface Props {
   metadata?: MetaData;
+  schemas?: Record<string, unknown>[];
 }
 
-const { metadata } = Astro.props;
+const { metadata, schemas = [] } = Astro.props;
 
 import { UI } from 'astrowind:config';
 const showAnnouncement = UI?.showAnnouncement ?? true;
@@ -62,7 +63,7 @@ const dynamicHeaderData = {
 };
 ---
 
-<Layout metadata={metadata}>
+<Layout metadata={metadata} schemas={schemas}>
   { showAnnouncement &&
     <slot name="announcement">
       <Announcement />

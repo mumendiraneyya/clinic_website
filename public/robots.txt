@@ -1,2 +1,70 @@
+# https://abuobaydatajjarrah.com robots.txt
+
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /book
+Disallow: /bookings
+Disallow: /video
+Disallow: /popup/
+Disallow: /homes/
+Disallow: /landing/
+Disallow: /pricing
+Disallow: /contact
+Disallow: /services
+
+Sitemap: https://abuobaydatajjarrah.com/sitemap-index.xml
+
+# AI Crawlers
+User-agent: GPTBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-ar.txt
+Disallow: /book
+Disallow: /bookings
+Disallow: /video
+Disallow: /popup/
+
+User-agent: ChatGPT-User
+Allow: /
+Allow: /llms.txt
+Allow: /llms-ar.txt
+Disallow: /book
+Disallow: /bookings
+Disallow: /video
+Disallow: /popup/
+
+User-agent: anthropic-ai
+Allow: /
+Allow: /llms.txt
+Allow: /llms-ar.txt
+Disallow: /book
+Disallow: /bookings
+Disallow: /video
+Disallow: /popup/
+
+User-agent: Claude-Web
+Allow: /
+Allow: /llms.txt
+Allow: /llms-ar.txt
+Disallow: /book
+Disallow: /bookings
+Disallow: /video
+Disallow: /popup/
+
+User-agent: PerplexityBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-ar.txt
+Disallow: /book
+Disallow: /bookings
+Disallow: /video
+Disallow: /popup/
+
+User-agent: Google-Extended
+Allow: /
+Allow: /llms.txt
+Allow: /llms-ar.txt
+Disallow: /book
+Disallow: /bookings
+Disallow: /video
+Disallow: /popup/
