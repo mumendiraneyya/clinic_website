@@ -128,10 +128,8 @@ The sitemap is filtered to only include active pages. Many template pages from A
 - `/book?type=clinic` (via customPages)
 - `/book?type=remote` (via customPages)
 
-**Excluded template pages** (still exist but not in sitemap):
-- `/about`, `/contact`, `/pricing`, `/services`
-- `/homes/*` (saas, startup, personal, mobile-app)
-- `/landing/*` (click-through, lead-generation, pre-launch, product, sales, subscription)
+**Excluded template pages** (deleted — no longer exist):
+- These were removed: `/contact`, `/pricing`, `/services`, `/homes/*`
 
 To add a page to the sitemap, update `astro.config.ts`. Use `filter` for regular pages and `customPages` for URLs with query parameters:
 
