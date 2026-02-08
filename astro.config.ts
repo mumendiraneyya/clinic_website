@@ -30,23 +30,22 @@ export default defineConfig({
     }),
     sitemap({
       filter: (page) => {
-        // Only include specific pages in sitemap
         const url = new URL(page);
         const path = url.pathname;
         const hasBookingQuery = url.search.startsWith('?type=');
+        // Exclude English placeholder pages and private booking pages
+        const excludedPaths = ['/services', '/contact', '/pricing', '/homes/', '/landing/', '/popup/'];
+        if (excludedPaths.some(p => path.startsWith(p))) return false;
         return (
           path === '/' ||
           path.startsWith('/blog') ||
           path.startsWith('/privacy') ||
           path.startsWith('/terms') ||
-          path.startsWith('/bookings') ||
-          path.startsWith('/video') ||
-          // Allow /book only with type= query param (from customPages)
+          // Individual blog posts (they live at root level /%slug%)
+          (!path.startsWith('/book') && !path.startsWith('/bookings') && !path.startsWith('/video') && !path.startsWith('/tag') && path !== '/404') ||
           (path === '/book' && hasBookingQuery)
         );
       },
-      // Add pages with query parameters that aren't auto-discovered
-      // TODO refactor the domain part (import from template config)
       customPages: [
         'https://abuobaydatajjarrah.com/book?type=clinic',
         'https://abuobaydatajjarrah.com/book?type=remote',

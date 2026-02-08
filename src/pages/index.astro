@@ -13,16 +13,145 @@ import { footerData } from '~/navigation';
 import { UI } from 'astrowind:config';
 
 const metadata = {
-  title: 'أبو عبيدة الجرّاح - عيادة د. مؤمن ديرانية',
+  title: 'أبو عبيدة الجرّاح - عيادة د. مؤمن ديرانية | جراحة عامة وتنظيرية في عمّان',
   ignoreTitleTemplate: true,
+  description: 'عيادة د. مؤمن ديرانية (أبو عبيدة الجرّاح) - استشاري الجراحة العامة والتنظيرية في عمّان، الأردن. زميل الكلية الملكية للجراحين في إدنبرة بخبرة ٣٠ عامًا. جراحة الفتق، المرارة، البواسير، الناسور. احجز موعدك الآن.',
+  openGraph: {
+    type: 'website',
+  },
 };
+
+const SITE_URL = 'https://abuobaydatajjarrah.com';
+
+const physicianSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Physician',
+  '@id': `${SITE_URL}/#physician`,
+  name: 'د. مؤمن ديرانية',
+  alternateName: ["Dr. Mu'men Diraneyya", 'أبو عبيدة الجرّاح', 'Abu Obayda Al-Jarrah'],
+  jobTitle: 'استشاري الجراحة العامة والتنظيرية',
+  description: 'زميل الكلية الملكية للجراحين في إدنبرة، استشاري الجراحة العامة والتنظيرية بخبرة 30 عامًا',
+  url: SITE_URL,
+  telephone: '+962799133299',
+  image: `${SITE_URL}/images/hero-photo.webp`,
+  medicalSpecialty: ['GeneralSurgery', 'LaparoscopicSurgery'],
+  hasCredential: [{
+    '@type': 'EducationalOccupationalCredential',
+    credentialCategory: 'Fellowship',
+    name: 'Fellow of the Royal College of Surgeons of Edinburgh (FRCS)',
+    recognizedBy: { '@type': 'Organization', name: 'Royal College of Surgeons of Edinburgh' },
+  }],
+  alumniOf: { '@type': 'CollegeOrUniversity', name: 'Al-Balqa Applied University' },
+  knowsLanguage: ['ar', 'en'],
+  sameAs: [
+    'https://www.facebook.com/Abuobaydatajjarrah/',
+    'https://www.instagram.com/dr.mumen.diraneyya/',
+    'https://www.youtube.com/channel/UCe9xMNuVzNgEWvoui3nolRw',
+    'https://x.com/DrMumenDiraneya',
+    'https://tebcan.com/ar/Jordan/dr/دكتور-مؤمن-مأمون-ديرانية-جراحة-عامة_2822',
+  ],
+};
+
+const medicalBusinessSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'MedicalBusiness',
+  '@id': `${SITE_URL}/#clinic`,
+  name: 'عيادة د. مؤمن ديرانية',
+  alternateName: ['عيادة أبو عبيدة الجرّاح', "Dr. Mu'men Diraneyya Clinic"],
+  description: 'عيادة متخصصة في الجراحة العامة والتنظيرية في عمّان، الأردن. جراحة الفتق، المرارة، البواسير، الناسور الشرجي، والجراحات العامة.',
+  url: SITE_URL,
+  telephone: '+962798872899',
+  image: `${SITE_URL}/default.png`,
+  priceRange: '$$',
+  currenciesAccepted: 'JOD',
+  paymentAccepted: 'Cash',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: '13 شارع عبد الله بن جبير، مجمع عيادات النور التخصصية، الطابق الثاني',
+    addressLocality: 'عمّان',
+    addressRegion: 'Amman Governorate',
+    postalCode: '11191',
+    addressCountry: 'JO',
+  },
+  geo: { '@type': 'GeoCoordinates', latitude: 31.9975482, longitude: 35.8730927 },
+  openingHoursSpecification: [
+    { '@type': 'OpeningHoursSpecification', dayOfWeek: ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday'], opens: '10:00', closes: '16:00' },
+    { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Thursday', opens: '10:00', closes: '14:00' },
+  ],
+  areaServed: [
+    { '@type': 'City', name: 'Amman', alternateName: 'عمّان' },
+    { '@type': 'Country', name: 'Jordan', alternateName: 'الأردن' },
+  ],
+  medicalSpecialty: ['General Surgery', 'Laparoscopic Surgery', 'Colorectal Surgery'],
+  availableService: [
+    { '@type': 'MedicalProcedure', name: 'جراحة الفتق بالمنظار', alternateName: 'Laparoscopic Hernia Repair' },
+    { '@type': 'MedicalProcedure', name: 'استئصال المرارة بالمنظار', alternateName: 'Laparoscopic Cholecystectomy' },
+    { '@type': 'MedicalProcedure', name: 'علاج البواسير', alternateName: 'Hemorrhoid Treatment' },
+    { '@type': 'MedicalProcedure', name: 'جراحة الناسور الشرجي', alternateName: 'Anal Fistula Surgery' },
+    { '@type': 'MedicalProcedure', name: 'جراحة الشرخ الشرجي', alternateName: 'Anal Fissure Surgery' },
+    { '@type': 'MedicalProcedure', name: 'جراحة الجيب الشعري', alternateName: 'Pilonidal Sinus Surgery' },
+    { '@type': 'MedicalProcedure', name: 'جراحة الغدة الدرقية', alternateName: 'Thyroid Surgery' },
+    { '@type': 'MedicalProcedure', name: 'جراحة الثدي', alternateName: 'Breast Surgery' },
+  ],
+  hasMap: 'https://maps.app.goo.gl/RE3yv34U16Ssdezj7',
+  founder: { '@id': `${SITE_URL}/#physician` },
+  sameAs: [
+    'https://www.facebook.com/Abuobaydatajjarrah/',
+    'https://www.instagram.com/dr.mumen.diraneyya/',
+    'https://www.youtube.com/channel/UCe9xMNuVzNgEWvoui3nolRw',
+    'https://maps.app.goo.gl/RE3yv34U16Ssdezj7',
+  ],
+  knowsLanguage: ['ar', 'en'],
+};
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'ما هي أوقات العمل في الأيام العادية؟',
+      acceptedAnswer: { '@type': 'Answer', text: 'السبت إلى الأربعاء: ١٠ صباحًا – ٤ عصرًا. الخميس: ١٠ صباحًا – ٢ بعد الظهر. يوم الجمعة: عطلة.' },
+    },
+    {
+      '@type': 'Question',
+      name: 'ما هي أوقات العمل في رمضان؟',
+      acceptedAnswer: { '@type': 'Answer', text: 'السبت إلى الخميس: ١ ظهرًا – ٤ عصرًا. يوم الجمعة: عطلة.' },
+    },
+    {
+      '@type': 'Question',
+      name: 'ما سعر الكشفية؟',
+      acceptedAnswer: { '@type': 'Answer', text: '٢٥ دينارًا أردنيًا' },
+    },
+    {
+      '@type': 'Question',
+      name: 'هل يقبل الطبيب الاستشارات عن بعد؟',
+      acceptedAnswer: { '@type': 'Answer', text: 'نعم، يمكنكم الحجز للاستشارة عن بعد عن طريق الفيديو من الموقع الإلكتروني.' },
+    },
+    {
+      '@type': 'Question',
+      name: 'أين تقع العيادة؟',
+      acceptedAnswer: { '@type': 'Answer', text: 'مجمع عيادات النور التخصصية، الطابق الثاني، ١٣ شارع عبد الله بن جبير، عمّان، الأردن (بجوار طوارئ مستشفى ابن الهيثم)' },
+    },
+  ],
+};
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: SITE_URL },
+  ],
+};
+
+const schemas = [physicianSchema, medicalBusinessSchema, faqSchema, breadcrumbSchema];
 
 // Check if booking is disabled (via config or env variable)
 const bookingDisabled = UI.bookingDisabled || import.meta.env.PUBLIC_BOOKING_DISABLED === 'true';
 const bookingDisabledTitle = 'الحجز موقف للصيانة';
 ---
 
-<Layout metadata={metadata}>
+<Layout metadata={metadata} schemas={schemas}>
   <!-- Hero Widget ******************* -->
 
   <Hero

@@ -11,6 +11,7 @@ import Metadata from '~/components/common/Metadata.astro';
 import SiteVerification from '~/components/common/SiteVerification.astro';
 import Analytics from '~/components/common/Analytics.astro';
 import BasicScripts from '~/components/common/BasicScripts.astro';
+import SchemaOrg from '~/components/common/SchemaOrg.astro';
 
 // Comment the line below to disable View Transitions
 import { ClientRouter } from 'astro:transitions';
@@ -19,9 +20,10 @@ import type { MetaData as MetaDataType } from '~/types';
 
 export interface Props {
   metadata?: MetaDataType;
+  schemas?: Record<string, unknown>[];
 }
 
-const { metadata = {} } = Astro.props;
+const { metadata = {}, schemas = [] } = Astro.props;
 const { language, textDirection } = I18N;
 ---
 
@@ -35,6 +37,7 @@ const { language, textDirection } = I18N;
     <Metadata {...metadata} />
     <SiteVerification />
     <Analytics />
+    {schemas.length > 0 && <SchemaOrg schemas={schemas} />}
 
     <!-- Comment the line below to disable View Transitions -->
     <ClientRouter fallback="swap" />

@@ -43,9 +43,45 @@ const metadata = merge(
   },
   { ...(post?.metadata ? { ...post.metadata, canonical: post.metadata?.canonical || url } : {}) }
 ) as MetaData;
+
+const SITE_URL = 'https://abuobaydatajjarrah.com';
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': post.videoUrl ? 'VideoObject' : 'MedicalWebPage',
+  headline: post.title,
+  description: post.excerpt || '',
+  ...(image ? { image: typeof image === 'string' ? image : image.src } : {}),
+  datePublished: post.publishDate ? new Date(post.publishDate).toISOString() : undefined,
+  author: {
+    '@type': 'Physician',
+    name: post.author || 'د. مؤمن ديرانية',
+    url: SITE_URL,
+  },
+  publisher: {
+    '@type': 'MedicalBusiness',
+    name: 'عيادة د. مؤمن ديرانية',
+    url: SITE_URL,
+  },
+  mainEntityOfPage: { '@type': 'WebPage', '@id': String(url) },
+  inLanguage: 'ar',
+};
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'الرئيسية', item: SITE_URL },
+    { '@type': 'ListItem', position: 2, name: 'المدونة', item: `${SITE_URL}/blog` },
+    ...(post.category ? [{ '@type': 'ListItem', position: 3, name: post.category.title, item: `${SITE_URL}/category/${post.category.slug}` }] : []),
+    { '@type': 'ListItem', position: post.category ? 4 : 3, name: post.title, item: String(url) },
+  ],
+};
+
+const schemas = [articleSchema, breadcrumbSchema];
 ---
 
-<Layout metadata={metadata}>
+<Layout metadata={metadata} schemas={schemas}>
   <SinglePost post={{ ...post, image: image }} url={url}>
     {post.Content ? <post.Content /> : <Fragment set:html={post.content || ''} />}
   </SinglePost>
