@@ -22,7 +22,7 @@
     "fix:prettier": "prettier -w .",
     "icon": "node scripts/generate-favicons.mjs",
     "claude": "claude mcp add --transport stdio chrome-devtools -- npx -y chrome-devtools-mcp@latest 2>/dev/null; claude --continue",
-    "deploy": "npm run build && wrangler pages deploy --project-name abuobaydatajjarrah --commit-dirty=true ./dist",
+    "deploy": "npm run build && wrangler pages deploy --branch --project-name abuobaydatajjarrah --commit-dirty=true ./dist",
     "deploy:maintenance": "PUBLIC_BOOKING_DISABLED=true npm run deploy"
   },
   "dependencies": {
