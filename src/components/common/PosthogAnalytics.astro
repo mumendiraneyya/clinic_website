@@ -3,6 +3,7 @@ interface Props {
     id: string;
     api_host: string;
     defaults: string;
+    profiles: 'always';
 }
 
 const { id, ...posthogConfig } = Astro.props;

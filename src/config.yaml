@@ -66,6 +66,7 @@ analytics:
       id: "phc_1T8KB96VMG18cZtf9YUdbj0EW8AMRjCQ0q0wZEgMNXa"
       api_host: 'https://eu.i.posthog.com'
       defaults: '2025-11-30'
+      person_profiles: 'always'
 
 ui:
   theme: 'system' # Values: "system" | "light" | "dark" | "light:only" | "dark:only"

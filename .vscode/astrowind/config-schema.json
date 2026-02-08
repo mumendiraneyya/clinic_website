@@ -253,6 +253,7 @@
                   "default": true
                 }
               },
+              "additionalProperties": false,
               "required": ["id", "partytown"]
             },
             "posthog": {
@@ -269,8 +270,13 @@
                 "defaults": {
                   "type": "string",
                   "pattern": "^[12][0-9]{3}-[01][0-9]-[0123][0-9]$"
+                },
+                "person_profiles": {
+                  "type": "string",
+                  "enum": ["identified_only", "always"]
                 }
               },
+              "additionalProperties": false,
               "required": ["id", "api_host", "defaults"]
             }
           }
