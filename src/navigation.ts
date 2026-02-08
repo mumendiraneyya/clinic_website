@@ -19,6 +19,10 @@ export const headerData = {
           href: '/#hero-section',
         },
         {
+          text: 'عن الطبيب',
+          href: getPermalink('/about'),
+        },
+        {
           text: 'ماذا نعالج',
           href: '/#features',
         },
@@ -29,6 +33,36 @@ export const headerData = {
         {
           text: 'قالوا عنا',
           href: '/#testimonials',
+        },
+      ],
+    },
+    {
+      text: 'الخدمات',
+      href: '/#features',
+      links: [
+        {
+          text: 'البواسير الشرجية',
+          href: getPermalink('/hemorrhoids'),
+        },
+        {
+          text: 'الناسور الشرجي',
+          href: getPermalink('/anal-fistula'),
+        },
+        {
+          text: 'الشرخ الشرجي',
+          href: getPermalink('/anal-fissure'),
+        },
+        {
+          text: 'الجيب الشعري',
+          href: getPermalink('/pilonidal-sinus'),
+        },
+        {
+          text: 'فتوق جدار البطن',
+          href: getPermalink('/abdominal-hernia'),
+        },
+        {
+          text: 'استئصال المرارة بالمنظار',
+          href: getPermalink('/laparoscopic-cholecystectomy'),
         },
       ],
     },
@@ -114,5 +148,6 @@ export const footerData = {
     { ariaLabel: 'RSS', icon: 'tabler:rss', href: getAsset('/rss.xml') },
   ],
   footNote: `
+    <p class="text-xs text-muted/60 dark:text-muted/40 mb-3">المحتوى المنشور في هذا الموقع تعليمي وتثقيفي ولا يُغني عن مراجعة الطبيب. راجع طبيبك المختص لتشخيص حالتك ووصف العلاج المناسب.</p>
     قالب رياح أسترو والذي بني عليه هذا الموقع هو من صنع <a class="text-tertiary underline dark:text-muted" href="https://github.com/arthelokyo"> Arthelokyo</a>. أما الجهة المصممة لهذا الموقع فهي <a class="text-tertiary underline dark:text-muted" href='https://orwa.tech'>وكالة عروة التقنية</a>.`,
 };
