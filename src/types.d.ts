@@ -41,6 +41,9 @@ export interface Post {
   /**  */
   draft?: boolean;
 
+  /** Hidden from blog listing but page is still generated */
+  hidden?: boolean;
+
   /**  */
   Content?: AstroComponentFactory;
   content?: string;

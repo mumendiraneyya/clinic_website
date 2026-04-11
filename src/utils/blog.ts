@@ -56,6 +56,7 @@ const getNormalizedPost = async (post: CollectionEntry<'post'>): Promise<Post> =
     category: rawCategory,
     author,
     draft = false,
+    hidden = false,
     metadata = {},
   } = data;
 
@@ -94,6 +95,7 @@ const getNormalizedPost = async (post: CollectionEntry<'post'>): Promise<Post> =
     author: author,
 
     draft: draft,
+    hidden: hidden,
 
     metadata,
 
@@ -134,13 +136,18 @@ export const blogTagRobots = APP_BLOG.tag.robots;
 
 export const blogPostsPerPage = APP_BLOG?.postsPerPage;
 
-/** */
-export const fetchPosts = async (): Promise<Array<Post>> => {
+/** Fetch all posts including hidden (for page generation) */
+export const fetchAllPosts = async (): Promise<Array<Post>> => {
   if (!_posts) {
     _posts = await load();
   }
 
   return _posts;
+};
+
+/** Fetch visible posts only (excludes hidden, for listings) */
+export const fetchPosts = async (): Promise<Array<Post>> => {
+  return (await fetchAllPosts()).filter((post) => !post.hidden);
 };
 
 /** */
@@ -191,7 +198,7 @@ export const getStaticPathsBlogList = async ({ paginate }: { paginate: PaginateF
 /** */
 export const getStaticPathsBlogPost = async () => {
   if (!isBlogEnabled || !isBlogPostRouteEnabled) return [];
-  return (await fetchPosts()).flatMap((post) => ({
+  return (await fetchAllPosts()).flatMap((post) => ({
     params: {
       blog: post.permalink,
     },

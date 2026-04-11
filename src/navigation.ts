@@ -30,6 +30,10 @@ export const headerData = {
           text: 'قالوا عنا',
           href: '/#testimonials',
         },
+        {
+          text: 'مسيرتنا',
+          href: '/مسيرتنا',
+        },
       ],
     },
     {

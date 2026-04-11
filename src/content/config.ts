@@ -53,6 +53,9 @@ const postCollection = defineCollection({
     updateDate: z.date().optional(),
     draft: z.boolean().optional(),
 
+    /** Hide from blog listing while still generating the page */
+    hidden: z.boolean().optional(),
+
     title: z.string(),
     excerpt: z.string().optional(),
     image: z.string().optional(),
