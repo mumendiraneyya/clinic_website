@@ -158,7 +158,8 @@ Blog posts are defined in `src/content/config.ts` using Astro's content collecti
 - Posts located in `src/data/post/` (not `src/content/post/`)
 - Post images stored in `src/assets/images/posts/`
 - Supports `.md` and `.mdx` files
-- Schema includes: title, publishDate, excerpt, image, category, tags, author, metadata
+- Schema includes: title, publishDate, excerpt, image, videoUrl, category, tags, author, hidden, metadata
+- **`hidden: true`** generates the page but excludes it from blog listings (used for standalone pages like `/مسيرتنا`). Use `fetchPosts()` for listings (excludes hidden), `fetchAllPosts()` for page generation (includes hidden).
 - Image paths use the `~` alias: `image: ~/assets/images/posts/filename.jpg`
 - **Blog categories**: Category order is defined in `blogCategoryOrder` array in `src/navigation.ts` - this is the single source of truth used by both the header menu dropdown and the `BlogPostsByCategory` widget on the homepage.
 
@@ -490,3 +491,5 @@ href: '/#location'
 // WRONG - getPermalink adds trailing slash: /#location/
 href: getPermalink('/#location')
 ```
+
+**View Transitions and anchor links:** `BasicScripts.astro` forces `window.location.href` for `/#anchor` links when on a different page (View Transitions would otherwise only handle the hash). The hero snap scroll in `Hero.astro` skips snapping when `window.location.hash` is present to avoid fighting the anchor scroll.
