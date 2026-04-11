@@ -73,6 +73,16 @@ html.dark #header.expanded .nav-mobile {
   display: block;
 }
 
+/* Invisible padding bridge so mouse can travel from parent to submenu */
+.dropdown-menu::before {
+  content: '';
+  position: absolute;
+  top: -0.75rem;
+  left: 0;
+  right: 0;
+  height: 0.75rem;
+}
+
 /* Nested dropdown for desktop (third level) */
 .nested-dropdown:focus .nested-menu,
 .nested-dropdown:focus-within .nested-menu,
@@ -83,7 +93,16 @@ html.dark #header.expanded .nav-mobile {
 .nested-menu {
   top: 0;
   right: 100%;
-  margin-right: 0.25rem;
+}
+
+/* Invisible padding bridge for nested menu gap */
+.nested-menu::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 100%;
+  width: 0.75rem;
+  height: 100%;
 }
 
 /* Mobile nested dropdown toggle */

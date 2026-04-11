@@ -44,6 +44,14 @@ import { UI } from 'astrowind:config';
     let lastKnownScrollPosition = window.scrollY;
     let ticking = true;
 
+    // Close desktop dropdowns when any nav link is clicked (e.g. anchor links)
+    attachEvent('#header .nav-desktop a.nav-link', 'click', function () {
+      document.querySelectorAll('#header .dropdown-menu, #header .nested-menu').forEach(function (menu) {
+        menu.style.display = 'none';
+        setTimeout(function () { menu.style.display = ''; }, 100);
+      });
+    });
+
     attachEvent('#header .nav-mobile', 'click', function (e) {
       // Don't close menu if clicking on a nested dropdown toggle
       if (e.target.closest('.mobile-nested-dropdown > a')) {
