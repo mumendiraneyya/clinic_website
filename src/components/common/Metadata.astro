@@ -66,3 +66,6 @@ const seoProps: AstroSeoProps = merge(
 ---
 
 <AstroSeo {...{ ...seoProps, openGraph: await adaptOpenGraphImages(seoProps?.openGraph, Astro.site) }} />
+{seoProps.title && <meta name="twitter:title" content={String(seoProps.title)} />}
+{seoProps.description && <meta name="twitter:description" content={String(seoProps.description)} />}
+{seoProps.openGraph?.images?.[0]?.url && <meta name="twitter:image" content={String(seoProps.openGraph.images[0].url)} />}

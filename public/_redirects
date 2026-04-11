@@ -1,0 +1,59 @@
+# 301 Permanent Redirects: old transliterated URLs → new English URLs
+# Static rules (exact match) first, then dynamic rules (splat) per CF docs
+
+# Note: 
+# Don't try to be smart (like I did!) and merge these into a single /subpath*
+# rule. This is problematic cause because it would be greedy and match things
+# it shouldn't. For instance, adding a /liqa-aram-tv* rule would match:
+# - /liqa-aram-tv
+# - /liqa-aram-tv/
+# - /liqa-aram-tv/?bla=foo
+# - /liqa-aram-tv-2026 // <-- this is incorrect
+#
+# We probably don't have such cases here, but just in case
+
+# --- Static (exact match, no trailing slash) ---
+/bawasir-sharjiya /hemorrhoids/ 301
+/nasur-sharji /anal-fistula/ 301
+/sharkh-sharji /anal-fissure/ 301
+/fatq-jidar-batn /abdominal-hernia/ 301
+/afat-sharjiya /anorectal-conditions/ 301
+/istisal-bawasir-dabbasa /stapled-hemorrhoidectomy/ 301
+/rabt-qanat-nasur-lift /lift-fistula-surgery/ 301
+/futoq-jidar-batn-asbab-ilaj /hernia-causes-treatment/ 301
+/adwa-ansija-rakhwa /soft-tissue-infections/ 301
+/tashkhis-ilaj-mubakir /early-diagnosis/ 301
+/mudadat-hayawiya-zayda /appendectomy/ 301
+/rudooh-athiyat /trauma-surgery/ 301
+/liqa-aram-tv /aram-tv-interview/ 301
+/liqa-jordan-tv /jordan-tv-interview/ 301
+/taarif-bil-tabib /about-the-doctor/ 301
+/hadith-fil-jirahah /general-surgery-overview/ 301
+/futooq-jidar-albatn /abdominal-wall-hernias/ 301
+/istisal-marara-bil-minzar /laparoscopic-cholecystectomy/ 301
+/jayb-shaari /pilonidal-sinus/ 301
+/dalil-ilaj-bawasir-fil-urdun /hemorrhoid-treatment-guide-jordan/ 301
+/mata-tahtaj-amaliyat-fatq /when-hernia-needs-surgery/ 301
+
+# --- Dynamic (splat: catches trailing slash, sub-paths, fragments) ---
+/bawasir-sharjiya/* /hemorrhoids/ 301
+/nasur-sharji/* /anal-fistula/ 301
+/sharkh-sharji/* /anal-fissure/ 301
+/fatq-jidar-batn/* /abdominal-hernia/ 301
+/afat-sharjiya/* /anorectal-conditions/ 301
+/istisal-bawasir-dabbasa/* /stapled-hemorrhoidectomy/ 301
+/rabt-qanat-nasur-lift/* /lift-fistula-surgery/ 301
+/futoq-jidar-batn-asbab-ilaj/* /hernia-causes-treatment/ 301
+/adwa-ansija-rakhwa/* /soft-tissue-infections/ 301
+/tashkhis-ilaj-mubakir/* /early-diagnosis/ 301
+/mudadat-hayawiya-zayda/* /appendectomy/ 301
+/rudooh-athiyat/* /trauma-surgery/ 301
+/liqa-aram-tv/* /aram-tv-interview/ 301
+/liqa-jordan-tv/* /jordan-tv-interview/ 301
+/taarif-bil-tabib/* /about-the-doctor/ 301
+/hadith-fil-jirahah/* /general-surgery-overview/ 301
+/futooq-jidar-albatn/* /abdominal-wall-hernias/ 301
+/istisal-marara-bil-minzar/* /laparoscopic-cholecystectomy/ 301
+/jayb-shaari/* /pilonidal-sinus/ 301
+/dalil-ilaj-bawasir-fil-urdun/* /hemorrhoid-treatment-guide-jordan/ 301
+/mata-tahtaj-amaliyat-fatq/* /when-hernia-needs-surgery/ 301
