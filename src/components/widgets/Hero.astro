@@ -363,6 +363,8 @@ const {
       // Snap scroll handler for desktop
       function handleSnapScroll() {
         if (isSnapping) return;
+        // Don't snap when page loaded with an anchor hash (e.g. navigated from another page)
+        if (window.location.hash) return;
 
         const scrollY = window.scrollY;
         const isDesktop = window.matchMedia('(min-width: 768px)').matches;

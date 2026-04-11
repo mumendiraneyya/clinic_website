@@ -45,16 +45,43 @@ import { UI } from 'astrowind:config';
     let ticking = true;
 
     // Close desktop dropdowns when any nav link is clicked (e.g. anchor links)
-    attachEvent('#header .nav-desktop a.nav-link', 'click', function () {
+    // Also force full navigation for homepage anchor links when on a different page
+    attachEvent('#header a.nav-link', 'click', function (e, elem) {
       document.querySelectorAll('#header .dropdown-menu, #header .nested-menu').forEach(function (menu) {
         menu.style.display = 'none';
         setTimeout(function () { menu.style.display = ''; }, 100);
       });
+      var href = elem.getAttribute('href');
+      if (href && href.startsWith('/#') && window.location.pathname !== '/') {
+        e.preventDefault();
+        window.location.href = href;
+      }
     });
+
+    // After arriving on homepage via anchor link, scroll past hero snap zone
+    if (window.location.pathname === '/' && window.location.hash) {
+      var target = document.querySelector(window.location.hash);
+      if (target) {
+        var headerHeight = document.getElementById('header')?.offsetHeight || 0;
+        var top = target.getBoundingClientRect().top + window.scrollY - headerHeight;
+        if (top > 0 && top < 150) top = 150;
+        window.scrollTo({ top: top, behavior: 'instant' });
+        // Clear hash after scrolling so snap scroll re-enables for user interaction
+        history.replaceState(null, '', '/');
+      }
+    }
 
     attachEvent('#header .nav-mobile', 'click', function (e) {
       // Don't close menu if clicking on a nested dropdown toggle
       if (e.target.closest('.mobile-nested-dropdown > a')) {
+        return;
+      }
+      // Force full navigation for homepage anchor links when on a different page
+      var link = e.target.closest('a');
+      var href = link && link.getAttribute('href');
+      if (href && href.startsWith('/#') && window.location.pathname !== '/') {
+        e.preventDefault();
+        window.location.href = href;
         return;
       }
       document.querySelector('[data-aw-toggle-menu]')?.classList.remove('expanded');
