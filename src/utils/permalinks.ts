@@ -1,5 +1,3 @@
-import slugify from 'limax';
-
 import { SITE, APP_BLOG } from 'astrowind:config';
 
 import { trim } from '~/utils/utils';
@@ -14,6 +12,16 @@ const createPath = (...params: string[]) => {
 };
 
 const BASE_PATHNAME = SITE.base || '/';
+
+const slugify = (text: string) =>
+  text
+    .normalize('NFC')
+    .toLowerCase()
+    .trim()
+    .replace(/[\s_]+/g, '-')
+    .replace(/[^\p{L}\p{N}\-]/gu, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
 
 export const cleanSlug = (text = '') =>
   trimSlash(text)
