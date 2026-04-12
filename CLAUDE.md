@@ -158,6 +158,7 @@ Blog posts are defined in `src/content/config.ts` using Astro's content collecti
 - Posts located in `src/data/post/` (not `src/content/post/`)
 - Post images stored in `src/assets/images/posts/`
 - Supports `.md` and `.mdx` files
+- **Markdown line breaks:** A single newline between lines does NOT create a paragraph break — the lines merge into one paragraph. Use a **blank line** (double newline) between paragraphs. For a line break within a paragraph, add two trailing spaces before the newline.
 - Schema includes: title, publishDate, excerpt, image, videoUrl, category, tags, author, hidden, metadata
 - **`hidden: true`** generates the page but excludes it from blog listings (used for standalone pages like `/مسيرتنا`). Use `fetchPosts()` for listings (excludes hidden), `fetchAllPosts()` for page generation (includes hidden).
 - Image paths use the `~` alias: `image: ~/assets/images/posts/filename.jpg`
