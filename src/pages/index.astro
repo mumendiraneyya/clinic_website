@@ -8,6 +8,9 @@ import FAQs from '~/components/widgets/FAQs.astro';
 import Stats from '~/components/widgets/Stats.astro';
 import Location from '~/components/widgets/Location.astro';
 import Testimonials from '~/components/widgets/Testimonials.astro';
+import ReviewScroller from '~/components/widgets/ReviewScroller.astro';
+import ReviewTicker from '~/components/widgets/ReviewTicker.astro';
+import reviews from '~/data/reviews.json';
 import { Icon } from 'astro-icon/components';
 import { footerData } from '~/navigation';
 import { UI } from 'astrowind:config';
@@ -262,6 +265,12 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
       >
       <span class="mb-1 sm:hidden font-bold">استشاري الجراحة العامة والتنظيرية في عمّان</span>
       <br>محاضر غير متفرغ في كلية طب جامعة البلقاء التطبيقية، وناشط في العمل الطبي الإغاثي
+    </Fragment>
+    <Fragment slot="mobile-reviews">
+      <ReviewTicker reviews={reviews} />
+    </Fragment>
+    <Fragment slot="reviews">
+      <ReviewScroller reviews={reviews} />
     </Fragment>
   </Hero>
 

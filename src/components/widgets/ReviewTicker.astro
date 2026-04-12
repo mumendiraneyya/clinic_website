@@ -1,0 +1,48 @@
+---
+export interface Review {
+  text: string;
+  name: string;
+  date: string;
+}
+
+export interface Props {
+  reviews: Review[];
+}
+
+const { reviews } = Astro.props;
+const tickerReviews = [...reviews, ...reviews];
+// ~4 seconds per review for a calm pace
+const tickerDuration = reviews.length * 8;
+---
+
+<div class="review-ticker-container w-full overflow-hidden py-1 pointer-events-none" dir="rtl">
+  <div class="ticker-track flex gap-3" style={`animation-duration: ${tickerDuration}s;`}>
+    {tickerReviews.map((review) => (
+      <div class="review-card bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm flex-shrink-0">
+        <p class="text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">"{review.text}"</p>
+        <p class="text-[10px] text-muted whitespace-nowrap text-left mt-1">— {review.name}، {review.date}</p>
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .ticker-track {
+    animation: tickerScroll 35s linear infinite;
+    width: max-content;
+  }
+
+  @keyframes tickerScroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(50%);
+    }
+  }
+
+  .review-ticker-container {
+    mask-image: linear-gradient(to left, transparent 0%, black 15%, black 85%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to left, transparent 0%, black 15%, black 85%, transparent 100%);
+  }
+</style>
