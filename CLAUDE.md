@@ -287,10 +287,13 @@ The Hero widget (`src/components/widgets/Hero.astro`) has a custom `fullHeight` 
 **DOM structure for fullHeight mode:**
 - `#hero-fixed-overlay` - Fixed overlay containing hero image (fades 0→120px)
 - `#hero-bg-container` - Background within the overlay
-- `#hero-image-container` - Hero image container (fades and scales down)
+- `#hero-image-container` - Hero image container (fades and scales down), contains `reviews` slot
 - `#hero-actions-container` - Action buttons (desktop, becomes fixed)
 - `#hero-below-content` - Title/subtitle that appears after scrolling past hero
 - `#hero-mobile-actions` - Action buttons (mobile only)
+- Mobile hero image section contains `mobile-reviews` slot
+
+**Slots:** `content`, `actions`, `title`, `subtitle`, `bg`, `reviews` (desktop, inside fixed overlay), `mobile-reviews` (mobile, overlaid on hero image bottom)
 
 **Anchor links and scroll behavior:**
 When creating anchor links that should scroll past the hero image to show content:
@@ -304,6 +307,17 @@ When creating anchor links that should scroll past the hero image to show conten
 - `.is-hidden` - Hides pinned buttons when user scrolls near the footer (reveals social links)
 - Styles handle backdrop blur, safe area insets, and margin removal
 - Dark mode uses `html.dark` selector for styling pinned action bar
+
+### Patient Reviews (Trust Building)
+
+Animated patient reviews on the landing page hero — visible immediately without scrolling. Two components, one data source:
+
+- **Data:** `src/data/reviews.json` — all patient reviews (single source of truth)
+- **Desktop:** `ReviewScroller.astro` — vertical animated scroller, placed via `reviews` slot in Hero
+- **Mobile:** `ReviewTicker.astro` — horizontal ticker, placed via `mobile-reviews` slot in Hero
+- Both use semi-transparent backdrop-blur cards and edge fading (CSS mask-image)
+- Animation duration scales with review count (`reviews.length * N seconds`)
+- Separate from "قالوا عنا" section which holds longer personal messages
 
 ### Stats Widget
 
