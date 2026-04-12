@@ -1,5 +1,6 @@
 ---
 title: 'الشروط والأحكام'
+description: 'شروط وأحكام استخدام موقع عيادة د. مؤمن ديرانية.'
 layout: '~/layouts/MarkdownLayout.astro'
 ---
 
