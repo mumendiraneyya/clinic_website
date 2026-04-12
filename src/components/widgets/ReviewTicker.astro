@@ -2,7 +2,7 @@
 export interface Review {
   text: string;
   name: string;
-  date: string;
+  date: Date;
 }
 
 export interface Props {
@@ -11,19 +11,22 @@ export interface Props {
 
 const { reviews } = Astro.props;
 const tickerReviews = [...reviews, ...reviews];
-// ~4 seconds per review for a calm pace
+// ~8 seconds per review for a calm pace
 const tickerDuration = reviews.length * 8;
 ---
 
-<div class="review-ticker-container w-full overflow-hidden py-1 pointer-events-none" dir="rtl">
+<div class="w-full pointer-events-none" dir="rtl">
+<div class="review-ticker-container w-full overflow-hidden py-1">
   <div class="ticker-track flex gap-3" style={`animation-duration: ${tickerDuration}s;`}>
     {tickerReviews.map((review) => (
       <div class="review-card bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm flex-shrink-0">
         <p class="text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">"{review.text}"</p>
-        <p class="text-[10px] text-muted whitespace-nowrap text-left mt-1">— {review.name}، {review.date}</p>
+        <p class="text-[9px] text-muted whitespace-nowrap text-left mt-1">— {review.name}، {review.date.toLocaleDateString('ar-JO')}</p>
       </div>
     ))}
   </div>
+</div>
+<p class="text-[10px] text-muted/60 text-left px-2">كلمات المرضى منقولة كما هي — الأسماء بالأحرف الأولى حفاظاً على الخصوصية</p>
 </div>
 
 <style>

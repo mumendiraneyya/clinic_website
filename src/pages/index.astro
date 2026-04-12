@@ -10,10 +10,14 @@ import Location from '~/components/widgets/Location.astro';
 import Testimonials from '~/components/widgets/Testimonials.astro';
 import ReviewScroller from '~/components/widgets/ReviewScroller.astro';
 import ReviewTicker from '~/components/widgets/ReviewTicker.astro';
-import reviews from '~/data/reviews.json';
+import rawReviews from '~/data/reviews.json';
 import { Icon } from 'astro-icon/components';
 import { footerData } from '~/navigation';
 import { UI } from 'astrowind:config';
+
+// Parse dates in reviews, then sort them by dates from the most recent
+const reviews = rawReviews.map((review) => ({...review, date: new Date(review.date)}))
+reviews.sort((a, b) => b.date.valueOf() - a.date.valueOf());
 
 const metadata = {
   title: 'دكتور جراحة عامة وتنظيرية في عمّان | عيادة د. مؤمن ديرانية (أبو عبيدة الجرّاح)',
