@@ -9,6 +9,8 @@ import Stats from '~/components/widgets/Stats.astro';
 import Location from '~/components/widgets/Location.astro';
 import Testimonials from '~/components/widgets/Testimonials.astro';
 import ReviewScroller from '~/components/widgets/ReviewScroller.astro';
+import ReviewTicker from '~/components/widgets/ReviewTicker.astro';
+import reviews from '~/data/reviews.json';
 import { Icon } from 'astro-icon/components';
 import { footerData } from '~/navigation';
 import { UI } from 'astrowind:config';
@@ -264,17 +266,11 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
       <span class="mb-1 sm:hidden font-bold">استشاري الجراحة العامة والتنظيرية في عمّان</span>
       <br>محاضر غير متفرغ في كلية طب جامعة البلقاء التطبيقية، وناشط في العمل الطبي الإغاثي
     </Fragment>
+    <Fragment slot="mobile-reviews">
+      <ReviewTicker reviews={reviews} />
+    </Fragment>
     <Fragment slot="reviews">
-      <ReviewScroller reviews={[
-        { text: 'طبيب فهمان وراقي جداً، وقمة في الفهم والتعامل', name: 'م ه', date: '٢٠٢٤' },
-        { text: 'دكتور ممتاز وتعامله حسن وتقيمه للحالة ممتاز', name: 'ي ع', date: '٢٠٢١' },
-        { text: 'الرقي في التعامل والهدوء وإعطاء المريض حقه ووقته', name: 'م ا', date: '٢٠٢٢' },
-        { text: 'طبيب قدير محترم جداً، وماهر', name: 'ن ق', date: '٢٠٢٥' },
-        { text: 'دكتور محترم وخلوق الله يسعده', name: 'ن ش', date: '٢٠٢٣' },
-        { text: 'الدكتور قمة في الأخلاق وما شاء الله دقة التشخيص', name: 'ن ب', date: '٢٠٢٥' },
-        { text: 'بصراحة الدكتور مؤمن قامة علمية وقمة في التواضع وسعة الصدر', name: 'ف ع ا', date: '٢٠٢٥' },
-        { text: 'دكتور ممتاز وعيادة ممتازة بكل المقاييس', name: 'أ ع ر', date: '٢٠٢٤' },
-      ]} />
+      <ReviewScroller reviews={reviews} />
     </Fragment>
   </Hero>
 

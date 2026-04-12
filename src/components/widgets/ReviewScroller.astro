@@ -12,10 +12,12 @@ export interface Props {
 const { reviews } = Astro.props;
 // Double the reviews for seamless infinite scroll
 const scrollReviews = [...reviews, ...reviews];
+// ~3 seconds per review for a calm vertical pace
+const scrollDuration = reviews.length * 3;
 ---
 
 <div id="review-scroller" class="hidden sm:flex flex-col items-start max-w-[220px] md:max-w-[260px] lg:max-w-[300px] h-[280px] md:h-[320px] overflow-hidden pointer-events-none" dir="rtl">
-  <div class="review-track flex flex-col gap-3">
+  <div class="review-track flex flex-col gap-3" style={`animation-duration: ${scrollDuration}s;`}>
     {scrollReviews.map((review) => (
       <div class="review-card bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg px-4 py-3 shadow-sm">
         <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-1.5">"{review.text}"</p>
