@@ -14,7 +14,7 @@ const { reviews } = Astro.props;
 const scrollReviews = [...reviews, ...reviews];
 ---
 
-<div id="review-scroller" class="hidden sm:flex flex-col items-start fixed right-4 lg:right-8 top-1/2 -translate-y-1/2 z-30 max-w-[220px] md:max-w-[260px] lg:max-w-[300px] h-[280px] md:h-[320px] overflow-hidden pointer-events-none" dir="rtl">
+<div id="review-scroller" class="hidden sm:flex flex-col items-start max-w-[220px] md:max-w-[260px] lg:max-w-[300px] h-[280px] md:h-[320px] overflow-hidden pointer-events-none" dir="rtl">
   <div class="review-track flex flex-col gap-3">
     {scrollReviews.map((review) => (
       <div class="review-card bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg px-4 py-3 shadow-sm">
@@ -46,25 +46,5 @@ const scrollReviews = [...reviews, ...reviews];
   #review-scroller {
     mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
-    transition: opacity 0.3s;
   }
 </style>
-
-<script is:inline>
-  (function() {
-    var scroller = document.getElementById('review-scroller');
-    if (!scroller) return;
-    var fadeDistance = 120;
-    function onScroll() {
-      var progress = Math.min(1, window.scrollY / fadeDistance);
-      scroller.style.opacity = String(1 - progress);
-      if (progress >= 1) {
-        scroller.style.visibility = 'hidden';
-      } else {
-        scroller.style.visibility = 'visible';
-      }
-    }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-  })();
-</script>
