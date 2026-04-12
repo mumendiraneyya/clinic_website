@@ -313,12 +313,20 @@ When creating anchor links that should scroll past the hero image to show conten
 
 Animated patient reviews on the landing page hero — visible immediately without scrolling. Two components, one data source:
 
-- **Data:** `src/data/reviews.json` — all patient reviews (single source of truth)
+- **Data:** `src/data/reviews.json` — all patient reviews (single source of truth), imported in `index.astro` as `rawReviews`, parsed to `Date` objects, sorted newest first
 - **Desktop:** `ReviewScroller.astro` — vertical animated scroller, placed via `reviews` slot in Hero
 - **Mobile:** `ReviewTicker.astro` — horizontal ticker, placed via `mobile-reviews` slot in Hero
 - Both use semi-transparent backdrop-blur cards and edge fading (CSS mask-image)
 - Animation duration scales with review count (`reviews.length * N seconds`)
 - Separate from "قالوا عنا" section which holds longer personal messages
+
+**Responsive positioning of vertical scroller:**
+- **md–xl (768–1280px):** Left side of hero — avoids covering the doctor's face on the right
+- **xl+ (1280px+):** Right side of hero — enough space for both
+
+**Disclaimer text:** Both scrollers show "كلمات المرضى منقولة كما هي..." The ticker (mobile) breaks it into two lines below `sm` (640px) because on small screens the single-line text overlaps the doctor's coat. The scroller (desktop) uses `whitespace-nowrap` with responsive font sizing to fit the container width.
+
+**WhatsApp button edge case** (in `index.astro`): In landscape phone orientation (wide but very short screen), the vertical review scroller overlaps the WhatsApp CTA button. A CSS media query `@media (max-width: 1220px) and (max-height: 540px)` adds a white background to the button only in this scenario, preventing the semi-transparent reviews from blending into the transparent button and making both unreadable. On normal desktop/portrait orientations the button stays transparent.
 
 ### Stats Widget
 

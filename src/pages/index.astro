@@ -245,7 +245,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
           href="https://wa.me/962799133299"
           target="_blank"
           rel="noopener noreferrer"
-          class="btn-secondary dark:bg-gray-900/50"
+          class="btn-secondary whatsapp-btn dark:bg-gray-900/50"
         >
           <span>هل لديك تساؤل؟ تواصل معنا</span>
           <Icon name="tabler:brand-whatsapp" class="w-5 h-5 pr-1 text-[#25D366]" />
@@ -1091,4 +1091,14 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
       }
     });
   </script>
+
+  <style>
+    /* White background on WhatsApp button only in landscape phone orientation
+       (wide enough for vertical reviews to overlap, but too short) */
+    @media (max-width: 1220px) and (max-height: 540px) {
+      .whatsapp-btn {
+        background-color: white;
+      }
+    }
+  </style>
 </Layout>
