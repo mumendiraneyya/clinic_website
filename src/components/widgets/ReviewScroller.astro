@@ -1,0 +1,70 @@
+---
+export interface Review {
+  text: string;
+  name: string;
+  date: string;
+}
+
+export interface Props {
+  reviews: Review[];
+}
+
+const { reviews } = Astro.props;
+// Double the reviews for seamless infinite scroll
+const scrollReviews = [...reviews, ...reviews];
+---
+
+<div id="review-scroller" class="hidden sm:flex flex-col items-start fixed right-4 lg:right-8 top-1/2 -translate-y-1/2 z-30 max-w-[220px] md:max-w-[260px] lg:max-w-[300px] h-[280px] md:h-[320px] overflow-hidden pointer-events-none" dir="rtl">
+  <div class="review-track flex flex-col gap-3">
+    {scrollReviews.map((review) => (
+      <div class="review-card bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg px-4 py-3 shadow-sm">
+        <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-1.5">"{review.text}"</p>
+        <p class="text-xs text-muted">— {review.name}، {review.date}</p>
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .review-track {
+    animation: scrollUp 40s linear infinite;
+  }
+
+  .review-track:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes scrollUp {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-50%);
+    }
+  }
+
+  #review-scroller {
+    mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+    transition: opacity 0.3s;
+  }
+</style>
+
+<script is:inline>
+  (function() {
+    var scroller = document.getElementById('review-scroller');
+    if (!scroller) return;
+    var fadeDistance = 120;
+    function onScroll() {
+      var progress = Math.min(1, window.scrollY / fadeDistance);
+      scroller.style.opacity = String(1 - progress);
+      if (progress >= 1) {
+        scroller.style.visibility = 'hidden';
+      } else {
+        scroller.style.visibility = 'visible';
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
