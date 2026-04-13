@@ -15,20 +15,55 @@ import { Icon } from 'astro-icon/components';
 import { footerData } from '~/navigation';
 import { UI } from 'astrowind:config';
 
-// Weighted shuffle: higher-weight reviews appear more frequently
-function weightedShuffle<T extends { weight?: number }>(array: T[]): T[] {
-  const pool: T[] = [];
-  for (const item of array) {
-    const w = item.weight || 1;
-    for (let i = 0; i < w; i++) pool.push(item);
-  }
-  for (let i = pool.length - 1; i > 0; i--) {
+// Order reviews by weight-aware strategy:
+// w1 (generic): strict date desc — recency is their only differentiator
+// w2 (specific qualities): loose sort by 2-year buckets, random within
+// w3 (strong trust signals): fully random — content speaks for itself
+// Then interleave: more w3 picks per cycle
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
+    [a[i], a[j]] = [a[j], a[i]];
   }
-  return pool;
+  return a;
 }
-const reviews = weightedShuffle(rawReviews.map((review) => ({...review, date: new Date(review.date)})))
+
+function orderReviews(raw: typeof rawReviews) {
+  const parsed = raw.map((r) => ({ ...r, date: new Date(r.date) }));
+
+  const w1 = parsed.filter((r) => r.weight === 1).sort((a, b) => b.date.valueOf() - a.date.valueOf());
+
+  const w2Grouped = parsed.filter((r) => r.weight === 2);
+  const bucket = (d: Date) => Math.floor(d.getFullYear() / 2);
+  const buckets = new Map<number, typeof w2Grouped>();
+  for (const r of w2Grouped) {
+    const b = bucket(r.date);
+    if (!buckets.has(b)) buckets.set(b, []);
+    buckets.get(b)!.push(r);
+  }
+  const w2 = [...buckets.keys()].sort((a, b) => b - a).flatMap((k) => shuffle(buckets.get(k)!));
+
+  const w3 = shuffle(parsed.filter((r) => r.weight === 3));
+
+  // Interleave: pattern [3, 2, 3, 1] repeating — w3 appears 2x per cycle
+  const result: typeof parsed = [];
+  let i1 = 0, i2 = 0, i3 = 0;
+  const pattern = [3, 2, 3, 1];
+  let pi = 0;
+  while (i1 < w1.length || i2 < w2.length || i3 < w3.length) {
+    const pick = pattern[pi % pattern.length];
+    pi++;
+    if (pick === 3 && i3 < w3.length) { result.push(w3[i3++]); }
+    else if (pick === 2 && i2 < w2.length) { result.push(w2[i2++]); }
+    else if (pick === 1 && i1 < w1.length) { result.push(w1[i1++]); }
+    else if (i3 < w3.length) { result.push(w3[i3++]); }
+    else if (i2 < w2.length) { result.push(w2[i2++]); }
+    else if (i1 < w1.length) { result.push(w1[i1++]); }
+  }
+  return result;
+}
+const reviews = orderReviews(rawReviews);
 
 const metadata = {
   title: 'دكتور جراحة عامة وتنظيرية في عمّان | عيادة د. مؤمن ديرانية (أبو عبيدة الجرّاح)',

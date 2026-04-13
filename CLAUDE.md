@@ -313,12 +313,18 @@ When creating anchor links that should scroll past the hero image to show conten
 
 Animated patient reviews on the landing page hero — visible immediately without scrolling. Two components, one data source:
 
-- **Data:** `src/data/reviews.json` — all patient reviews (single source of truth), imported in `index.astro` as `rawReviews`, parsed to `Date` objects, sorted newest first
+- **Data:** `src/data/reviews.json` — all patient reviews with a `weight` field (1–3). Ordering logic in `index.astro` (`orderReviews`)
 - **Desktop:** `ReviewScroller.astro` — vertical animated scroller, placed via `reviews` slot in Hero
 - **Mobile:** `ReviewTicker.astro` — horizontal ticker, placed via `mobile-reviews` slot in Hero
 - Both use semi-transparent backdrop-blur cards and edge fading (CSS mask-image)
 - Animation duration scales with review count (`reviews.length * N seconds`)
 - Separate from "قالوا عنا" section which holds longer personal messages
+
+**Review weights and ordering:** Each review has a `weight` (1–3) based on trust-building specificity. The ordering algorithm treats each weight group differently because the value of a review shifts from date-dependent (generic praise) to content-dependent (specific trust signals):
+- **Weight 3** (specific experiences, strong emotional trust): fully random — the content is powerful regardless of when it was written
+- **Weight 2** (names specific qualities like "gives time", "accurate diagnosis"): loosely sorted by 2-year buckets, randomised within each bucket
+- **Weight 1** (generic praise like "دكتور ممتاز"): strict date descending — recency is the only differentiator
+- Groups are interleaved in a [3, 2, 3, 1] pattern so trust-heavy reviews appear most frequently
 
 **Responsive positioning of vertical scroller:**
 - **md–xl (768–1280px):** Left side of hero — avoids covering the doctor's face on the right
