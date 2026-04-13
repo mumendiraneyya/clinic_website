@@ -15,15 +15,20 @@ import { Icon } from 'astro-icon/components';
 import { footerData } from '~/navigation';
 import { UI } from 'astrowind:config';
 
-// Parse dates in reviews, then sort them by dates from the most recent
-function shuffleArray<T>(array: T[]): T[] {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+// Weighted shuffle: higher-weight reviews appear more frequently
+function weightedShuffle<T extends { weight?: number }>(array: T[]): T[] {
+  const pool: T[] = [];
+  for (const item of array) {
+    const w = item.weight || 1;
+    for (let i = 0; i < w; i++) pool.push(item);
   }
-  return array;
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool;
 }
-const reviews = shuffleArray(rawReviews.map((review) => ({...review, date: new Date(review.date)})))
+const reviews = weightedShuffle(rawReviews.map((review) => ({...review, date: new Date(review.date)})))
 
 const metadata = {
   title: 'دكتور جراحة عامة وتنظيرية في عمّان | عيادة د. مؤمن ديرانية (أبو عبيدة الجرّاح)',
