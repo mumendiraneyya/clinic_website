@@ -11,6 +11,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# claude mcp config (contains n8n secret token)
+.mcp.json
 
 # environment variables
 .env

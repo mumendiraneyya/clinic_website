@@ -10,7 +10,101 @@ const { id, ...posthogConfig } = Astro.props;
 ---
 
 <script is:inline define:vars={ { id, posthogConfig } }>
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-var, prefer-rest-params
-    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group identify setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags resetGroups onFeatureFlags addFeatureFlagsHandler onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-    posthog.init(id, posthogConfig)
+    // Skip PostHog on dev servers and staging deployments
+    var _ph_host = window.location.hostname;
+    if (_ph_host !== 'localhost' && !_ph_host.match(/^127\./) && !_ph_host.endsWith('.pages.dev')) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions, no-var, prefer-rest-params
+      !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group identify setPersonProperties setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags resetGroups onFeatureFlags addFeatureFlagsHandler onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+      posthog.init(id, posthogConfig);
+    }
+</script>
+
+<!-- Visit engagement tracker: detects ghost visits from ad fraud -->
+<script is:inline>
+    /* eslint-disable no-var */
+    (function() {
+      if (!window.posthog) return;
+
+      var params = new URLSearchParams(window.location.search);
+      var adAttribution = {
+        utm_source: params.get('utm_source'),
+        utm_medium: params.get('utm_medium'),
+        utm_campaign: params.get('utm_campaign'),
+        utm_term: params.get('utm_term'),
+        utm_content: params.get('utm_content'),
+        gclid: params.get('gclid'),
+        fbclid: params.get('fbclid'),
+        referrer: document.referrer || null,
+        referring_domain: document.referrer ? new URL(document.referrer).hostname : null,
+        landing_page: window.location.pathname,
+      };
+
+      // Only track engagement details for ad-attributed visits
+      var isAdVisit = !!(adAttribution.utm_source || adAttribution.gclid || adAttribution.fbclid);
+      if (!isAdVisit) return;
+
+      var startTime = Date.now();
+      var hasScrolled = false;
+      var hasClicked = false;
+      var maxScrollDepth = 0;
+      var fired = false;
+
+      function onScroll() {
+        hasScrolled = true;
+        var docHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight) - window.innerHeight;
+        if (docHeight > 0) {
+          var depth = Math.round((window.scrollY / docHeight) * 100);
+          if (depth > maxScrollDepth) maxScrollDepth = depth;
+        }
+      }
+
+      function onClick() {
+        hasClicked = true;
+      }
+
+      function fireEngagement() {
+        if (fired) return;
+        fired = true;
+        var timeOnPage = Math.round((Date.now() - startTime) / 1000);
+
+        window.posthog.capture('ad_visit_engagement', {
+          time_on_page_seconds: timeOnPage,
+          has_scrolled: hasScrolled,
+          has_clicked: hasClicked,
+          max_scroll_depth_pct: maxScrollDepth,
+          is_ghost_visit: timeOnPage <= 5 && !hasScrolled && !hasClicked,
+          utm_source: adAttribution.utm_source,
+          utm_medium: adAttribution.utm_medium,
+          utm_campaign: adAttribution.utm_campaign,
+          utm_term: adAttribution.utm_term,
+          utm_content: adAttribution.utm_content,
+          gclid: adAttribution.gclid,
+          fbclid: adAttribution.fbclid,
+          referrer: adAttribution.referrer,
+          referring_domain: adAttribution.referring_domain,
+          landing_page: adAttribution.landing_page,
+          screen_width: window.screen.width,
+          screen_height: window.screen.height,
+          device_pixel_ratio: window.devicePixelRatio,
+          is_touch_device: 'ontouchstart' in window,
+        });
+
+        window.removeEventListener('scroll', onScroll);
+        document.removeEventListener('click', onClick);
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      document.addEventListener('click', onClick);
+
+      // Fire on page leave
+      document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') fireEngagement();
+      });
+
+      // Fire on View Transitions navigation
+      document.addEventListener('astro:before-swap', fireEngagement);
+
+      // Fallback for browsers that don't fire visibilitychange reliably
+      window.addEventListener('pagehide', fireEngagement);
+    })();
 </script>

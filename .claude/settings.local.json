@@ -22,9 +22,16 @@
       "mcp__chrome-devtools__fill",
       "WebFetch(domain:docs.astro.build)",
       "Bash(find:*)",
-      "mcp__chrome-devtools__hover"
+      "mcp__chrome-devtools__hover",
+      "mcp__n8n-mcp__search_workflows",
+      "mcp__n8n-mcp__get_workflow_details",
+      "mcp__posthog__projects-get"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "chrome-devtools",
+    "n8n-mcp"
+  ]
 }

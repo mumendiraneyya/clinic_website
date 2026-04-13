@@ -129,7 +129,45 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
   declare global {
     interface Window {
       getFlagFromPhone?: (phone: string) => string;
+      posthog?: { capture: (event: string, properties?: Record<string, any>) => void };
     }
+  }
+
+  // Set to true to mask phone digits in PostHog events (replaces digits with X)
+  const MASK_PHONE_IN_ANALYTICS = false;
+
+  function getPhoneMetadata(rawInput: string, normalized: string) {
+    const trimmed = rawInput.trim();
+    return {
+      phone_raw: MASK_PHONE_IN_ANALYTICS ? trimmed.replace(/\d/g, 'X') : trimmed,
+      phone_normalized: MASK_PHONE_IN_ANALYTICS ? normalized.replace(/\d/g, 'X') : normalized,
+      phone_length_raw: trimmed.length,
+      phone_length_normalized: normalized.length,
+      starts_with_plus: trimmed.startsWith('+'),
+      starts_with_00: trimmed.startsWith('00'),
+      starts_with_0: /^0[^0]/.test(trimmed),
+      country_prefix: normalized.slice(0, 3),
+      is_jordan: normalized.startsWith('962'),
+    };
+  }
+
+  // Map Arabic n8n error messages to categorized failure reasons
+  function categorizeSendCodeResponse(data: any, isNetworkError = false): string {
+    if (isNetworkError) return 'network_error';
+    if (data.success) return 'success';
+    if (!data.message) return 'unknown';
+    const msg = data.message as string;
+    if (msg.includes('أرضي')) return 'landline';
+    if (msg.includes('غير صحيح')) return 'invalid_number';
+    if (msg.includes('لم نتمكن')) return 'validation_failed';
+    if (msg.includes('الكثير من طلبات')) return 'rate_limited';
+    if (msg.includes('متعطلة')) return 'service_down';
+    return 'backoff';
+  }
+
+  function getBookingType(): string {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('type') === 'remote' ? 'remote' : 'clinic';
   }
 
   function initPhoneVerification() {
@@ -229,10 +267,27 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
 
       // Send verification code
       async function sendCode() {
-        const phone = normalizePhone(phoneInput.value);
+        const rawInput = phoneInput.value;
+        const phone = normalizePhone(rawInput);
         const method = getSelectedMethod();
+        const metadata = getPhoneMetadata(rawInput, phone);
+        const bookingType = getBookingType();
+
+        // Track every submission attempt (before validation)
+        window.posthog?.capture('booking_phone_submitted', {
+          ...metadata,
+          method,
+          booking_type: bookingType,
+        });
 
         if (!phone || phone.length < 10) {
+          window.posthog?.capture('booking_phone_client_rejected', {
+            phone_raw: metadata.phone_raw,
+            phone_normalized: metadata.phone_normalized,
+            phone_length_normalized: metadata.phone_length_normalized,
+            country_prefix: metadata.country_prefix,
+            booking_type: bookingType,
+          });
           showStatus('الرجاء إدخال رقم هاتف صحيح', 'error');
           return;
         }
@@ -247,6 +302,15 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
           });
 
           const data = await response.json();
+
+          window.posthog?.capture('booking_code_request_result', {
+            success: !!data.success,
+            method,
+            failure_reason: categorizeSendCodeResponse(data),
+            http_status: response.status,
+            is_jordan: metadata.is_jordan,
+            booking_type: bookingType,
+          });
 
           if (data.success) {
             codeSentSuccessfully = true;
@@ -264,6 +328,13 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
             showStatus('حدث خطأ. الرجاء المحاولة مرة أخرى', 'error');
           }
         } catch {
+          window.posthog?.capture('booking_code_request_result', {
+            success: false,
+            method,
+            failure_reason: 'network_error',
+            is_jordan: metadata.is_jordan,
+            booking_type: bookingType,
+          });
           showStatus('حدث خطأ في الاتصال. الرجاء المحاولة مرة أخرى', 'error');
         } finally {
           setLoading(sendCodeBtn, false);
@@ -274,11 +345,14 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
       async function verifyCode() {
         const phone = normalizePhone(phoneInput.value);
         const code = codeInput.value.trim();
+        const bookingType = getBookingType();
 
         if (!code || code.length !== 4) {
           showStatus('الرجاء إدخال رمز التحقق المكون من 4 أرقام', 'error');
           return;
         }
+
+        window.posthog?.capture('booking_code_entered', { booking_type: bookingType });
 
         setLoading(verifyBtn, true);
 
@@ -292,6 +366,13 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
           const data = await response.json();
 
           if (data.success && data.token) {
+            const method = getSelectedMethod();
+            window.posthog?.capture('booking_code_result', { success: true, booking_type: bookingType });
+            window.posthog?.capture('booking_verified', {
+              method,
+              is_jordan: phone.startsWith('962'),
+              booking_type: bookingType,
+            });
             showStatus('تم التحقق بنجاح!', 'success');
 
             // Dispatch custom event with token and phone
@@ -300,11 +381,13 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
               detail: { token: data.token, phone: '+' + phone }
             }));
           } else {
+            window.posthog?.capture('booking_code_result', { success: false, booking_type: bookingType });
             showStatus('رمز التحقق غير صحيح. الرجاء المحاولة مرة أخرى', 'error');
             codeInput.value = '';
             codeInput.focus();
           }
         } catch {
+          window.posthog?.capture('booking_code_result', { success: false, failure_reason: 'network_error', booking_type: bookingType });
           showStatus('حدث خطأ في الاتصال. الرجاء المحاولة مرة أخرى', 'error');
         } finally {
           setLoading(verifyBtn, false);

@@ -362,6 +362,14 @@ A Chrome DevTools MCP server is available for browser automation and testing:
 
 The dev server runs at `localhost:4321` - navigate there to test changes visually.
 
+### PostHog MCP
+
+PostHog analytics MCP (`mcp__posthog__*`) for querying data, creating insights, and managing dashboards. Project ID: `116305`. Use `query-run` to test queries, `insight-create-from-query` to save them.
+
+### n8n MCP
+
+n8n workflow automation MCP (`mcp__n8n-mcp__*`) for inspecting and modifying backend workflows. The phone verification workflow ID is `dwv7rpf8uHxyum02`. Use `search_workflows` to find workflows, `get_workflow_details` to inspect them.
+
 ## Integrations
 
 ### Phone Verification & Booking System
@@ -522,3 +530,14 @@ href: getPermalink('/#location')
 ```
 
 **View Transitions and anchor links:** `BasicScripts.astro` forces `window.location.href` for `/#anchor` links when on a different page (View Transitions would otherwise only handle the hash). The hero snap scroll in `Hero.astro` skips snapping when `window.location.hash` is present to avoid fighting the anchor scroll.
+
+### Analytics & Tracking
+
+PostHog custom events instrument the booking funnel and detect ad fraud. See [context/analytics-and-tracking.md](context/analytics-and-tracking.md) for complete documentation including all event names, properties, PostHog insight URLs, and the ad fraud detection system.
+
+**Quick reference:**
+- PostHog init: `src/components/common/PosthogAnalytics.astro` (production only — skips localhost and `*.pages.dev`)
+- Booking funnel events: `PhoneVerification.astro` (6 events), `book.astro` (2 events), `index.astro` (2 events)
+- Ad fraud detection: `ad_visit_engagement` event with `is_ghost_visit` flag (only fires for ad-attributed visits)
+- Phone privacy: `MASK_PHONE_IN_ANALYTICS` flag in `PhoneVerification.astro` (currently `false`)
+- All `posthog.capture()` calls use `window.posthog?.capture()` — safe to call even if PostHog isn't loaded

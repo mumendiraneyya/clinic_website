@@ -252,6 +252,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
           rel="noopener noreferrer"
           class="btn-secondary dark:bg-gray-900/50"
           aria-label="تواصل معنا عبر واتساب"
+          data-whatsapp-cta="mobile"
         >
           <span class="hidden min-[400px]:inline min-[500px]:hidden">استفسر</span>
           <span class="hidden min-[500px]:inline">تواصل معنا</span>
@@ -292,6 +293,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
           target="_blank"
           rel="noopener noreferrer"
           class="btn-secondary whatsapp-btn dark:bg-gray-900/50"
+          data-whatsapp-cta="desktop"
         >
           <span>هل لديك تساؤل؟ تواصل معنا</span>
           <Icon name="tabler:brand-whatsapp" class="w-5 h-5 pr-1 text-[#25D366]" />
@@ -927,6 +929,13 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
     function openCalModal(phone, token, bookingType) {
       var calLink = CAL_BASE_LINK + '/' + bookingType;
 
+      if (window.posthog) {
+        window.posthog.capture('booking_cal_opened', {
+          booking_type: bookingType,
+          entry_point: 'homepage',
+        });
+      }
+
       var config = {
         layout: 'month_view',
         theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
@@ -1134,6 +1143,20 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape' && bookingModal) {
         closeBookingPopup();
+      }
+    });
+  </script>
+
+  <!-- Track WhatsApp CTA clicks -->
+  <script is:inline>
+    /* eslint-disable no-var */
+    document.addEventListener('click', function(e) {
+      var link = e.target.closest('[data-whatsapp-cta]');
+      if (!link) return;
+      if (window.posthog) {
+        window.posthog.capture('whatsapp_cta_clicked', {
+          layout: link.getAttribute('data-whatsapp-cta'),
+        });
       }
     });
   </script>

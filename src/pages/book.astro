@@ -124,6 +124,13 @@ const CAL_NAMESPACE = 'booking';
       var bookingType = getBookingType();
       var calLink = CAL_LINKS[bookingType];
 
+      if (window.posthog) {
+        window.posthog.capture('booking_cal_opened', {
+          booking_type: bookingType,
+          entry_point: 'book_page',
+        });
+      }
+
       var config = {
         layout: 'month_view',
         theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
@@ -199,6 +206,13 @@ const CAL_NAMESPACE = 'booking';
       if (token) {
         // Validate token
         var result = await validateToken(token);
+
+        if (window.posthog) {
+          window.posthog.capture('booking_token_validated', {
+            token_valid: !!(result.success && result.payload),
+            booking_type: bookingType,
+          });
+        }
 
         if (result.success && result.payload) {
           // Token is valid, show selector with phone
