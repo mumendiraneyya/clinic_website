@@ -107,6 +107,7 @@ export const footerData = {
   secondaryLinks: [
     { text: 'سياسة الخصوصية', href: getPermalink('/privacy') },
     { text: 'الشروط', href: getPermalink('/terms') },
+    { text: 'حفظ البيانات', href: getPermalink('/data') },
   ],
   socialLinks: [
     { ariaLabel: 'Facebook', icon: 'tabler:brand-facebook', href: 'https://www.facebook.com/Abuobaydatajjarrah/' },
