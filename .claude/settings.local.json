@@ -25,7 +25,12 @@
       "mcp__chrome-devtools__hover",
       "mcp__n8n-mcp__search_workflows",
       "mcp__n8n-mcp__get_workflow_details",
-      "mcp__posthog__projects-get"
+      "mcp__posthog__projects-get",
+      "mcp__n8n-mcp__search_nodes",
+      "mcp__n8n-mcp__get_sdk_reference",
+      "mcp__posthog__insight-update",
+      "mcp__posthog__insight-create-from-query",
+      "mcp__posthog__insight-create"
     ],
     "deny": [],
     "ask": []

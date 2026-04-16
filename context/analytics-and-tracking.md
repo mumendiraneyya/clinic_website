@@ -10,6 +10,7 @@ Additionally, Google display ads were generating fraudulent traffic: accidental 
 1. Instrument the entire booking funnel to diagnose where and why users drop off
 2. Detect and quantify fraudulent/low-quality ad traffic
 3. Track WhatsApp CTA usage as a fallback engagement signal
+4. Correlate frontend sessions with backend booking completions via phone number identity
 
 ## Architecture
 
@@ -19,18 +20,28 @@ Additionally, Google display ads were generating fraudulent traffic: accidental 
 - **Production only:** PostHog is skipped on `localhost`, `127.x.x.x`, and `*.pages.dev` (staging)
 - **Config:** `src/config.yaml` under `analytics.vendors.posthog` — project ID, EU API host
 - **Global access:** `window.posthog` is available on all pages (production); `window.posthog?.capture()` is safe everywhere since it no-ops if PostHog isn't loaded
+- **CSP:** The `public/_headers` file must whitelist `*.posthog.com`, `*.i.posthog.com`, `*.google-analytics.com`, and `*.cal.com` in `connect-src` and `frame-src` — otherwise the browser blocks analytics and Cal.com embed requests
 
 ### MCP Tools
 
 - **PostHog MCP** (`mcp__posthog__*`): Query data, create/update insights, manage dashboards. Use for creating funnels, trends, and alerts. Project ID: `116305`.
-- **n8n MCP** (`mcp__n8n-mcp__*`): Inspect and modify backend workflows. The phone verification workflow ID is `dwv7rpf8uHxyum02`. Use `get_workflow_details` to inspect webhook responses and validation logic.
+- **n8n MCP** (`mcp__n8n-mcp__*`): Inspect and modify backend workflows. The phone verification workflow ID is `dwv7rpf8uHxyum02`. Use `get_workflow_details` to inspect webhook responses and validation logic. **Limitation:** `update_workflow` replaces the entire workflow via SDK code — too risky for large workflows. For targeted node changes, guide the user to edit in the n8n UI instead.
 - **Chrome DevTools MCP** (`mcp__chrome-devtools__*`): Test events locally by checking browser console for `posthog.capture` calls.
+
+### User Identity Correlation
+
+Frontend and backend events are linked via phone number:
+1. **Frontend:** After phone verification succeeds, `posthog.identify('+' + phone)` links the anonymous browser session to the phone number
+2. **Backend:** n8n fires `booking_completed` via PostHog's server-side capture API (`POST https://eu.i.posthog.com/i/v0/e/`) with `distinct_id` set to the same phone number (e.g., `+962791234567`)
+3. **PostHog** merges both into one user journey, enabling end-to-end funnel analysis from first page visit to confirmed booking
 
 ## Booking Funnel Events
 
-All booking events are in 3 files. Helper functions live in `PhoneVerification.astro`'s `<script>` block.
+### Frontend Events (3 files)
 
-### Events in `src/components/booking/PhoneVerification.astro`
+Helper functions live in `PhoneVerification.astro`'s `<script>` block.
+
+#### Events in `src/components/booking/PhoneVerification.astro`
 
 | Event | When | Key Properties |
 |-------|------|----------------|
@@ -41,23 +52,33 @@ All booking events are in 3 files. Helper functions live in `PhoneVerification.a
 | `booking_code_result` | After verify-code API response | `success`, `booking_type` |
 | `booking_verified` | Verification complete, token received | `method`, `is_jordan`, `booking_type` |
 
-### Events in `src/pages/book.astro`
+After `booking_verified`, `posthog.identify('+' + phone)` is called to link the session.
+
+#### Events in `src/pages/book.astro`
 
 | Event | When | Key Properties |
 |-------|------|----------------|
 | `booking_token_validated` | After stored JWT validation | `token_valid`, `booking_type` |
 | `booking_cal_opened` | Cal.com embed modal opens | `booking_type`, `entry_point: "book_page"` |
 
-### Events in `src/pages/index.astro`
+#### Events in `src/pages/index.astro`
 
 | Event | When | Key Properties |
 |-------|------|----------------|
 | `booking_cal_opened` | Cal.com opens from homepage popup | `booking_type`, `entry_point: "homepage"` |
 | `whatsapp_cta_clicked` | WhatsApp button clicked | `layout: "mobile" \| "desktop"` |
 
+### Backend Event (n8n workflow)
+
+| Event | When | Key Properties |
+|-------|------|----------------|
+| `booking_completed` | n8n confirms booking on Cal.com | `distinct_id: phone` (fired via PostHog server-side API using n8n's PostHog node) |
+
+This fires after the "Confirm Booking on Cal.com" → "Invoke Booking Creation Webhook" chain in the verification workflow. The `distinct_id` is `+{phone}` from the JWT payload, matching what the frontend used in `posthog.identify()`.
+
 ### Helper Functions (PhoneVerification.astro)
 
-- `getPhoneMetadata(rawInput, normalized)` — Returns privacy-safe (or full) phone properties for events
+- `getPhoneMetadata(rawInput, normalized)` — Returns phone properties for events (full or masked depending on flag)
 - `categorizeSendCodeResponse(data, isNetworkError)` — Maps Arabic n8n error messages to enum: `success`, `invalid_number`, `landline`, `validation_failed`, `rate_limited`, `service_down`, `network_error`, `backoff`, `unknown`
 - `getBookingType()` — Reads `?type=` from URL
 
@@ -110,7 +131,7 @@ A lightweight script that **only activates for ad-attributed visits** (URL conta
 All insights are favorited and tagged for easy access:
 
 ### Booking (tag: `booking`)
-1. **[Booking Funnel](https://eu.posthog.com/project/116305/insights/BI92mAFU)** — 5-step funnel: Phone Submitted → Code Sent (success) → Code Entered → Verified → Cal.com Opened
+1. **[Booking Funnel (Full)](https://eu.posthog.com/project/116305/insights/LGUWwM9U)** — 5-step funnel: Phone Submitted → Code Sent (success) → Phone Verified → Cal.com Opened → Booking Completed
 2. **[Phone Rejection Patterns](https://eu.posthog.com/project/116305/insights/37DxZVg8)** — Client-side rejections broken down by `phone_raw`
 3. **[Backend Phone Rejection Reasons](https://eu.posthog.com/project/116305/insights/AoncriXj)** — Backend failures broken down by `failure_reason`
 
@@ -118,11 +139,93 @@ All insights are favorited and tagged for easy access:
 4. **[Ad Fraud: Ghost Visits by Source](https://eu.posthog.com/project/116305/insights/0wbhRUXg)** — Ghost visits vs total ad visits by `utm_source`
 5. **[Ad Campaign Quality: Avg Time on Page](https://eu.posthog.com/project/116305/insights/5R9uGT1W)** — Avg time on page per `utm_campaign`
 
+## n8n Backend Services
+
+### Local Services (systemd unit on n8n server)
+
+After n8n 2.15.1 removed `n8n-nodes-base.executeCommand` and `n8n-nodes-base.localFileTrigger`, a standalone Node.js HTTP service was created to handle operations that require shell access or external libraries.
+
+**Location:** `/root/dads-clinic-backup/service/` on the n8n server
+**Managed by:** systemd service `clinic-service.service`
+**Listens on:** `127.0.0.1:3847` (localhost only, not exposed externally)
+
+#### Endpoints
+
+**POST `/validate`** — Phone number validation using `google-libphonenumber`
+- Input: `{ "phone": "962791234567" }` (no leading `+`)
+- Output: `{ "success": true, "phone": "+962791234567", "isValid": true, "isMobile": true, "message": 1 }`
+- Detects mobile vs landline, validates international number formats
+- Called by the n8n verification workflow's "Validate Phone Number" HTTP Request node
+- **Why standalone:** `google-libphonenumber` can't be installed inside n8n (dependency conflicts, removed on n8n updates)
+
+**POST `/send-sms`** — Async SMS sending via SSH to Termux phones
+- Input: `{ "phone": "+962791234567", "message": "Your code is 1234" }`
+- Output: `{ "success": true, "queued": true }` (returns immediately)
+- In the background: tries all 3 phones in parallel (`doctor.termux`, `assistant.termux`, `doctor2.termux`) with 10-second timeouts via SSH
+- Logs results to `/root/dads-clinic-queues/sms.log`
+- Called by the n8n verification workflow's "Send SMS Using Service" HTTP Request node
+- **Why async:** Sequential SSH with 30s timeouts per phone was blocking the n8n workflow for up to 90 seconds
+
+#### Setup & Maintenance
+
+```bash
+# On the n8n server:
+cd /root/dads-clinic-backup/service
+bash setup.sh    # npm install, install/restart systemd service
+systemctl status service   # check status
+journalctl -u service -f   # view logs
+```
+
+### n8n Workflow Changes (post-2.15.1 upgrade)
+
+**Removed node types and replacements:**
+- `n8n-nodes-base.executeCommand` → HTTP Request to `localhost:3847` or Code nodes
+- `n8n-nodes-base.localFileTrigger` → No longer needed (queues moved to n8n data tables)
+
+**Verification workflow** (`dwv7rpf8uHxyum02`):
+- Phone validation: 3-node executeCommand chain → single HTTP Request to `/validate` + Set node
+- SMS sending: executeCommand with SSH → HTTP Request to `/send-sms` (async)
+- Telegram notifications: executeCommand writing to CSV → Execute Workflow calling "Dads Clinic-Send Telegram Messages" subflow (`C2F9UQOSqoWTqCg8`)
+- Message queues: CSV files → n8n data tables (table `message_queue`, ID: `iPhhvNECkVRm88Ia`)
+- Booking completion: PostHog node fires `booking_completed` with phone as `distinct_id`
+
+**Telegram subflow** (`C2F9UQOSqoWTqCg8`):
+- Receives `telegram_recepients` (array) + `notification_message` (string)
+- Maps phone numbers to Telegram chat IDs via a Code node
+- Sends via Telegram node with `appendAttribution: false`
+- Created via n8n MCP `update_workflow` (small enough to safely replace via SDK)
+
+### SMS Gateway Architecture
+
+Android phones running Termux act as SMS gateways. They connect to the n8n server via reverse SSH tunnels through a VPS (`213.165.86.237`).
+
+| SSH Name | Phone Number | Tunnel Port | Status |
+|----------|-------------|-------------|--------|
+| `doctor.termux` | +962799133299 | 8024 | Active |
+| `assistant.termux` | +962798872899 | 8023 | Active |
+| `doctor2.termux` | +962799486661 | — | Active |
+
+Setup script: `sms-gateway/setup.sh` in the parent `dads-clinic` repo.
+SMS sending script on each phone: `~/send_sms.sh` (handles Arabic/non-Arabic segmentation, SIM selection, multi-part messages).
+
+## Content Security Policy
+
+The `public/_headers` file defines CSP headers for Cloudflare Pages. When external services add new subdomains (e.g., Google Analytics regional endpoints, Cal.com embed subdomains), the CSP must be updated or browsers will block requests silently.
+
+**Current allowlist includes:**
+- `*.google-analytics.com` (covers regional endpoints like `region1.`)
+- `*.posthog.com`, `*.i.posthog.com`
+- `*.cal.com` (covers embed subdomains)
+- `n8n.orwa.tech`
+
+If Cal.com or analytics suddenly break with "This content is blocked" errors, check `public/_headers` CSP first.
+
 ## Files Modified
 
 | File | What was added |
 |------|---------------|
 | `src/components/common/PosthogAnalytics.astro` | Production-only gate, ad engagement tracker |
-| `src/components/booking/PhoneVerification.astro` | 6 booking funnel events + helper functions |
+| `src/components/booking/PhoneVerification.astro` | 6 booking funnel events, helper functions, `posthog.identify(phone)` |
 | `src/pages/book.astro` | Token validation + Cal.com opened events |
-| `src/pages/index.astro` | Cal.com opened event + WhatsApp CTA tracking |
+| `src/pages/index.astro` | Cal.com opened event, WhatsApp CTA tracking |
+| `public/_headers` | CSP wildcards for Google Analytics, Cal.com subdomains |

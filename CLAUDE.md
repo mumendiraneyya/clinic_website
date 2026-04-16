@@ -537,7 +537,24 @@ PostHog custom events instrument the booking funnel and detect ad fraud. See [co
 
 **Quick reference:**
 - PostHog init: `src/components/common/PosthogAnalytics.astro` (production only — skips localhost and `*.pages.dev`)
-- Booking funnel events: `PhoneVerification.astro` (6 events), `book.astro` (2 events), `index.astro` (2 events)
+- Booking funnel events: `PhoneVerification.astro` (6 events + `posthog.identify`), `book.astro` (2 events), `index.astro` (2 events)
+- Backend event: `booking_completed` fired from n8n via PostHog server-side API, correlated by phone number
 - Ad fraud detection: `ad_visit_engagement` event with `is_ghost_visit` flag (only fires for ad-attributed visits)
 - Phone privacy: `MASK_PHONE_IN_ANALYTICS` flag in `PhoneVerification.astro` (currently `false`)
 - All `posthog.capture()` calls use `window.posthog?.capture()` — safe to call even if PostHog isn't loaded
+- CSP: `public/_headers` must whitelist external analytics/embed domains — check here first if things break silently
+
+### n8n Backend & Local Services
+
+The n8n server runs a standalone Node.js HTTP service (`service`) alongside n8n to handle operations that n8n can no longer do natively (after `executeCommand` and `localFileTrigger` were removed in n8n 2.15.1).
+
+**Quick reference:**
+- Service location: `/root/dads-clinic-backup/service/` on the n8n server
+- systemd unit: `clinic-service.service`, listens on `127.0.0.1:3847`
+- `POST /validate` — phone number validation via `google-libphonenumber`
+- `POST /send-sms` — async SMS sending via SSH to Termux phones (returns immediately, sends in background)
+- Setup: `bash setup.sh` in the service directory (idempotent)
+- SMS gateway phones: `doctor.termux`, `assistant.termux`, `doctor2.termux` (connected via reverse SSH tunnels through VPS)
+- Telegram subflow: `Dads Clinic-Send Telegram Messages` (workflow ID: `C2F9UQOSqoWTqCg8`)
+- n8n MCP limitation: `update_workflow` replaces entire workflows — too risky for large ones (40+ nodes). For targeted changes, guide user through the n8n UI instead.
+- See [context/analytics-and-tracking.md](context/analytics-and-tracking.md) for full architecture details

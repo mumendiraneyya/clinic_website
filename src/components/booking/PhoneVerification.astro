@@ -129,7 +129,7 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
   declare global {
     interface Window {
       getFlagFromPhone?: (phone: string) => string;
-      posthog?: { capture: (event: string, properties?: Record<string, any>) => void };
+      posthog?: { capture: (event: string, properties?: Record<string, any>) => void; identify: (distinctId: string, properties?: Record<string, any>) => void };
     }
   }
 
@@ -373,6 +373,8 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
               is_jordan: phone.startsWith('962'),
               booking_type: bookingType,
             });
+            // Identify user by phone so backend booking_completed event correlates
+            window.posthog?.identify('+' + phone);
             showStatus('تم التحقق بنجاح!', 'success');
 
             // Dispatch custom event with token and phone
