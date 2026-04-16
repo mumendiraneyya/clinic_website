@@ -134,6 +134,8 @@ All insights are favorited and tagged for easy access:
 1. **[Booking Funnel (Full)](https://eu.posthog.com/project/116305/insights/LGUWwM9U)** — 5-step funnel: Phone Submitted → Code Sent (success) → Phone Verified → Cal.com Opened → Booking Completed
 2. **[Phone Rejection Patterns](https://eu.posthog.com/project/116305/insights/37DxZVg8)** — Client-side rejections broken down by `phone_raw`
 3. **[Backend Phone Rejection Reasons](https://eu.posthog.com/project/116305/insights/AoncriXj)** — Backend failures broken down by `failure_reason`
+4. **[Booking Fallback: WhatsApp After Phone Attempt](https://eu.posthog.com/project/116305/insights/0elBhZDK)** — Users who tried booking then clicked WhatsApp instead ("gave up and called" rate)
+5. **[WhatsApp CTA: All Clicks by Layout](https://eu.posthog.com/project/116305/insights/BQio88Xu)** — Total WhatsApp clicks by mobile/desktop, compare with #4 to see straight-to-WhatsApp vs fallback
 
 ### Ad Fraud (tags: `ads`, `fraud`)
 4. **[Ad Fraud: Ghost Visits by Source](https://eu.posthog.com/project/116305/insights/0wbhRUXg)** — Ghost visits vs total ad visits by `utm_source`
