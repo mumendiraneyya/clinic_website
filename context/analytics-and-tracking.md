@@ -195,6 +195,11 @@ journalctl -u service -f   # view logs
 - Sends via Telegram node with `appendAttribution: false`
 - Created via n8n MCP `update_workflow` (small enough to safely replace via SDK)
 
+**WhatsApp Webhook** (`XlYzvScd6xm3xlBI`):
+- Receives incoming WhatsApp messages via `n8n-nodes-base.whatsAppTrigger`
+- Currently echoes raw payload to Telegram (tech support chat `211021550`)
+- **Important:** The WhatsApp Trigger node auto-registers its production webhook URL with Meta via the API when the workflow is activated. You never need to manually configure the webhook URL in Meta's dashboard. The "test URL" feature in the n8n editor is for development only — to return to production mode, deactivate and reactivate the workflow.
+
 ### SMS Gateway Architecture
 
 Android phones running Termux act as SMS gateways. They connect to the n8n server via reverse SSH tunnels through a VPS (`213.165.86.237`).
