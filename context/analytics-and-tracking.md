@@ -197,10 +197,39 @@ journalctl -u service -f   # view logs
 - Sends via Telegram node with `appendAttribution: false`
 - Created via n8n MCP `update_workflow` (small enough to safely replace via SDK)
 
-**WhatsApp Webhook** (`XlYzvScd6xm3xlBI`):
-- Receives incoming WhatsApp messages via `n8n-nodes-base.whatsAppTrigger`
-- Currently echoes raw payload to Telegram (tech support chat `211021550`)
-- **Important:** The WhatsApp Trigger node auto-registers its production webhook URL with Meta via the API when the workflow is activated. You never need to manually configure the webhook URL in Meta's dashboard. The "test URL" feature in the n8n editor is for development only — to return to production mode, deactivate and reactivate the workflow.
+**WhatsApp AI Assistant** (`XlYzvScd6xm3xlBI`, "Dads Clinic-WhatsApp AI Assistant"):
+
+An AI-powered WhatsApp assistant that handles incoming patient messages. Built with Claude Haiku 4.5 via the Anthropic API.
+
+**Flow:**
+1. WhatsApp Trigger receives message → Filter (text messages only) → Extract phone, text, sender name
+2. Build prompt context (currently no history — see "Planned" below)
+3. AI Agent (Claude Haiku 4.5, temperature 0.3) classifies intent and generates Arabic reply
+4. Structured Output Parser extracts `{ intent, reply }` from the AI response
+5. Send WhatsApp reply to patient + Log to Telegram (tech support chat `211021550`)
+
+**Intent classification:**
+- `info` — clinic information or general questions → AI answers directly from embedded clinic data
+- `medical` — medical question needing the doctor → directs to doctor's number (+962799133299)
+- `administrative` — billing, reports, insurance → directs to secretary's number (+962798872899)
+- `booking` — appointment changes → directs to https://abuobaydatajjarrah.com/bookings/
+
+**System prompt** contains full clinic info (hours, location, specialties, fees, phone numbers) sourced from https://abuobaydatajjarrah.com/llms-ar.txt. The AI is instructed to respond in 2-3 sentences max, never give medical advice, and never pretend to be a doctor.
+
+**Cost:** ~$0.001 per message (Haiku 4.5). At 100 messages/day, roughly $3/month.
+
+**Credentials (auto-assigned):**
+- Anthropic API → Claude Haiku 4.5
+- WhatsApp Business → clinic phone number (ID: `943723358817193`)
+- Telegram → Dads Clinic Appointments Bot
+
+**Planned enhancements:**
+- **Conversation history:** Create a `chat_history` data table (columns: `phone`, `history` as JSON array, `updated_at`). Load before AI call, save after. Keep last 10-20 exchanges per phone number to maintain context across messages.
+- **Booking via bot:** Use Cal.com API to check available slots and handle rescheduling directly in the WhatsApp conversation, without redirecting to the website.
+- **Media messages:** Handle images (e.g., patient sending a photo of a referral or test result) by forwarding to the doctor's Telegram with context.
+- **PostHog tracking:** Fire a `whatsapp_ai_reply` event with `intent` property to track what patients ask about and measure AI vs human handling ratio.
+
+**Important:** The WhatsApp Trigger node auto-registers its production webhook URL with Meta via the API when the workflow is activated. You never need to manually configure the webhook URL in Meta's dashboard. The "test URL" feature in the n8n editor is for development only — to return to production mode, deactivate and reactivate the workflow.
 
 ### SMS Gateway Architecture
 
