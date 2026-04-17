@@ -3,6 +3,7 @@ export interface Review {
   text: string;
   name: string;
   date: Date;
+  source?: string;
 }
 
 export interface Props {
@@ -22,12 +23,12 @@ const scrollDuration = reviews.length * 3;
     {scrollReviews.map((review) => (
       <div class="review-card bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg px-4 py-3 shadow-sm">
         <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-1.5">"{review.text}"</p>
-        <p class="text-xs text-muted text-left">— {review.name}، {review.date.toLocaleDateString('ar-JO')}</p>
+        <p class="text-xs text-muted text-left">— {review.name}، {review.date.toLocaleDateString('ar-JO')}{review.source ? ` (${review.source})` : ''}</p>
       </div>
     ))}
   </div>
 </div>
-<p class="lg:text-[10px] md:text-[9px] text-muted/60 mt-1 text-center pointer-events-none whitespace-nowrap">كلمات المرضى منقولة كما هي — الأسماء بالأحرف الأولى حفاظاً على الخصوصية</p>
+<p class="lg:text-[10px] md:text-[9px] text-muted/60 mt-1 text-center pointer-events-none whitespace-nowrap">هذه كلمات المراجعين كما خطوها بأنفسهم في مواقع طبكان وغوغل، وعلى الخاص</p>
 </div>
 
 <style>
