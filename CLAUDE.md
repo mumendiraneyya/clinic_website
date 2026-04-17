@@ -556,5 +556,8 @@ The n8n server runs a standalone Node.js HTTP service (`service`) alongside n8n 
 - Setup: `bash setup.sh` in the service directory (idempotent)
 - SMS gateway phones: `doctor.termux`, `assistant.termux`, `doctor2.termux` (connected via reverse SSH tunnels through VPS)
 - Telegram subflow: `Dads Clinic-Send Telegram Messages` (workflow ID: `C2F9UQOSqoWTqCg8`)
+- User-initiated verification V2: workflow `Dads Clinic-Verify Phone Number 2` (`wpSDqlKO2iMoUZZ7`) — generates 6-char codes, user sends code via WhatsApp to verify phone number
+- WhatsApp AI Assistant: workflow `Dads Clinic-WhatsApp AI Assistant` (`XlYzvScd6xm3xlBI`) — Claude Haiku 4.5 powered, intercepts verification codes before AI
 - n8n MCP limitation: `update_workflow` replaces entire workflows — too risky for large ones (40+ nodes). For targeted changes, guide user through the n8n UI instead.
+- **n8n SDK tips:** Data table nodes must have `alwaysOutputData: true` or flows terminate silently when a delete/get returns no rows. Reference data tables via `mode: 'list'` (not `mode: 'id'`) for human-readable workflow editing.
 - See [context/analytics-and-tracking.md](context/analytics-and-tracking.md) for full architecture details

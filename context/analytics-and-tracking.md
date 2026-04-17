@@ -197,15 +197,25 @@ journalctl -u service -f   # view logs
 - Sends via Telegram node with `appendAttribution: false`
 - Created via n8n MCP `update_workflow` (small enough to safely replace via SDK)
 
+**User-Initiated Verification V2** (`wpSDqlKO2iMoUZZ7`, "Dads Clinic-Verify Phone Number 2"):
+
+A zero-cost phone verification system where the user sends a code TO the clinic instead of the clinic sending a code to the user. Eliminates SMS costs, abuse risk, and phone number input errors.
+
+**Endpoints:**
+- `POST /webhook/verify-v2-generate` — Creates a 6-char alphanumeric code (charset: `ABCDEFGHJKMNPQRSTUVWXYZ23456789`) + session ID, stores in `user_initiated_verification_codes` data table, returns `{ code, session_id }`
+- `POST /webhook/verify-v2-status` — Input: `{ session_id, code }`. Returns `{ verified: false }` (waiting), `{ verified: false, expired: true }` (>5 min), or `{ verified: true, phone, token }` (JWT)
+
+**Data table:** `user_initiated_verification_codes` (ID: `YF3BFLASWMIxuPgu`) — columns: `code`, `session_id`, `phone` (null until claimed). Uses built-in `createdAt` for expiry (5 min). Expired rows flushed inline on each generate call.
+
 **WhatsApp AI Assistant** (`XlYzvScd6xm3xlBI`, "Dads Clinic-WhatsApp AI Assistant"):
 
-An AI-powered WhatsApp assistant that handles incoming patient messages. Built with Claude Haiku 4.5 via the Anthropic API.
+An AI-powered WhatsApp assistant that handles incoming patient messages and verification code interception. Built with Claude Haiku 4.5 via the Anthropic API.
 
 **Flow:**
 1. WhatsApp Trigger receives message → Filter (text messages only) → Extract phone, text, sender name
-2. Build prompt context (currently no history — see "Planned" below)
-3. AI Agent (Claude Haiku 4.5, temperature 0.3) classifies intent and generates Arabic reply
-4. Structured Output Parser extracts `{ intent, reply }` from the AI response
+2. Check if message matches 6-char verification code pattern (case-insensitive, spaces ignored)
+3. **If code:** Look up in `user_initiated_verification_codes` table → set phone on match → reply with confirmation ("تم التحقق بنجاح!") or unknown code message ("هذا ليس رمز تحقق نعرفه.") → skip AI entirely
+4. **If not code:** Build prompt context → AI Agent (Claude Haiku 4.5, temperature 0.3) classifies intent → Structured Output Parser extracts `{ intent, reply }`
 5. Send WhatsApp reply to patient + Log to Telegram (tech support chat `211021550`)
 
 **Intent classification:**
@@ -224,10 +234,16 @@ An AI-powered WhatsApp assistant that handles incoming patient messages. Built w
 - Telegram → Dads Clinic Appointments Bot
 
 **Planned enhancements:**
+- **Frontend component (`PhoneVerificationV2.astro`):** In progress — calls V2 generate/poll endpoints, shows code + WhatsApp link, polls every 2s, falls back to V1 on expiry. Offered as "لا تعرف رقمك؟" link under existing phone input.
 - **Conversation history:** Create a `chat_history` data table (columns: `phone`, `history` as JSON array, `updated_at`). Load before AI call, save after. Keep last 10-20 exchanges per phone number to maintain context across messages.
 - **Booking via bot:** Use Cal.com API to check available slots and handle rescheduling directly in the WhatsApp conversation, without redirecting to the website.
 - **Media messages:** Handle images (e.g., patient sending a photo of a referral or test result) by forwarding to the doctor's Telegram with context.
 - **PostHog tracking:** Fire a `whatsapp_ai_reply` event with `intent` property to track what patients ask about and measure AI vs human handling ratio.
+- **SMS-based user-initiated verification:** Same V2 code pattern but user sends code via SMS instead of WhatsApp — extends V2 to users without WhatsApp.
+
+**n8n SDK learnings:**
+- Data table nodes **must** have `alwaysOutputData: true` enabled, otherwise flows terminate silently when a delete/get operation returns no rows.
+- Reference data tables via `mode: 'list'` (selecting from dropdown) rather than `mode: 'id'` — more human-readable when editing in the n8n UI.
 
 **Important:** The WhatsApp Trigger node auto-registers its production webhook URL with Meta via the API when the workflow is activated. You never need to manually configure the webhook URL in Meta's dashboard. The "test URL" feature in the n8n editor is for development only — to return to production mode, deactivate and reactivate the workflow.
 
