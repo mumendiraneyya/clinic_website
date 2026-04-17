@@ -12,10 +12,13 @@ The booking system integrates phone verification with Cal.com scheduling. Users 
 
 ```
 src/components/booking/
-├── PhoneVerification.astro  # Phone input + OTP verification flow
-├── PhoneSelector.astro      # Shows verified phone with proceed/change options
-└── BookingCard.astro        # Displays booking details with calendar actions
+├── PhoneVerification.astro    # V1: Phone input + OTP verification flow
+├── PhoneVerificationV2.astro  # V2: User-initiated verification via WhatsApp code
+├── PhoneSelector.astro        # Shows verified phone with proceed/change options
+└── BookingCard.astro          # Displays booking details with calendar actions
 ```
+
+**V2 Verification** (user-initiated): User sends a 6-char code to the clinic's WhatsApp. Zero cost, no phone input needed. Offered as "لا تعرف رقمك؟" link under V1 on `/book`. Falls back to V1 on expiry (5 min). See [context/n8n-backend.md](n8n-backend.md) for backend details.
 
 ### Pages
 

@@ -279,6 +279,10 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
           method,
           booking_type: bookingType,
         });
+        window.posthog?.capture('booking_verification_started', {
+          verification_method: 'v1',
+          booking_type: bookingType,
+        });
 
         if (!phone || phone.length < 10) {
           window.posthog?.capture('booking_phone_client_rejected', {
@@ -371,6 +375,10 @@ const VERIFY_CODE_ENDPOINT = 'https://n8n.orwa.tech/webhook/9298e44c-0a64-49ea-9
             window.posthog?.capture('booking_verified', {
               method,
               is_jordan: phone.startsWith('962'),
+              booking_type: bookingType,
+            });
+            window.posthog?.capture('booking_verification_completed', {
+              verification_method: 'v1',
               booking_type: bookingType,
             });
             // Identify user by phone so backend booking_completed event correlates

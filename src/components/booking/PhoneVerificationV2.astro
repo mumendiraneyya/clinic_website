@@ -1,0 +1,283 @@
+---
+/**
+ * PhoneVerificationV2 Component
+ *
+ * User-initiated phone verification: the user sends a code to the clinic's
+ * WhatsApp number instead of the clinic sending a code to the user.
+ * Zero cost, abuse-proof, no phone number input needed.
+ *
+ * Dispatches custom events:
+ * - 'phone-verified': When verification succeeds, includes { token, phone } in detail
+ * - 'verification-expired': When the 5-minute window expires
+ *
+ * Usage:
+ * <PhoneVerificationV2 id="my-verification-v2" />
+ */
+
+interface Props {
+  id?: string;
+  class?: string;
+}
+
+const { id = 'phone-verification-v2', class: className = '' } = Astro.props;
+
+const GENERATE_ENDPOINT = 'https://n8n.orwa.tech/webhook/verify-v2-generate';
+const STATUS_ENDPOINT = 'https://n8n.orwa.tech/webhook/verify-v2-status';
+const WHATSAPP_PHONE = '962782760965';
+---
+
+<div id={id} class={`phone-verification-v2 ${className}`}
+  data-generate-endpoint={GENERATE_ENDPOINT}
+  data-status-endpoint={STATUS_ENDPOINT}
+  data-whatsapp-phone={WHATSAPP_PHONE}
+>
+  <!-- Loading State -->
+  <div class="v2-loading text-center py-8">
+    <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+    <p class="mt-4 text-muted dark:text-slate-400">جارٍ إنشاء رمز التحقق...</p>
+  </div>
+
+  <!-- Code Display Section (hidden until code is generated) -->
+  <div class="v2-code-section hidden">
+    <div class="text-center mb-6">
+      <p class="text-sm text-muted dark:text-slate-400 mb-3">
+        أرسل هذا الرمز عبر واتساب للتحقق من رقمك
+      </p>
+
+      <!-- The Code -->
+      <div class="v2-code-display text-4xl font-bold tracking-[0.3em] font-mono py-4 px-6 bg-gray-100 dark:bg-gray-800 rounded-xl select-all" dir="ltr">
+        ------
+      </div>
+
+      <!-- Countdown Timer -->
+      <div class="v2-timer mt-3 text-sm text-muted dark:text-slate-400">
+        <span class="v2-timer-text">صالح لمدة ٥ دقائق</span>
+      </div>
+    </div>
+
+    <!-- WhatsApp Link/Button -->
+    <a
+      class="v2-whatsapp-link btn-primary w-full py-3 flex flex-col items-center justify-center gap-1 text-white no-underline"
+      href="#"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <span class="flex items-center gap-2">
+        <span>أرسل الرمز عبر واتساب</span>
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+      </span>
+      <span class="v2-phone-display text-sm opacity-80" dir="ltr" style="font-family: 'New Rail Alphabet', monospace;">
+        <!-- Phone number filled by JS -->
+      </span>
+    </a>
+
+    <!-- Waiting indicator -->
+    <div class="v2-waiting mt-6 text-center">
+      <div class="inline-flex items-center gap-2 text-sm text-muted dark:text-slate-400">
+        <div class="animate-pulse w-2 h-2 rounded-full bg-primary"></div>
+        <span>في انتظار استلام الرمز...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success State -->
+  <div class="v2-success hidden text-center py-4">
+    <div class="text-green-600 dark:text-green-400 mb-2">
+      <svg class="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    </div>
+    <p class="text-green-700 dark:text-green-300 font-medium">تم التحقق بنجاح!</p>
+  </div>
+
+  <!-- Expired State -->
+  <div class="v2-expired hidden text-center py-4">
+    <p class="text-red-600 dark:text-red-400 text-sm mb-3">انتهت صلاحية الرمز</p>
+  </div>
+</div>
+
+<script is:inline>
+  /* eslint-disable no-var */
+  (function() {
+    var POLL_INTERVAL = 2000;
+    var CODE_LIFETIME = 5 * 60 * 1000;
+
+    function initPhoneVerificationV2() {
+      document.querySelectorAll('.phone-verification-v2').forEach(function(container) {
+        if (container.dataset.initialized === 'true') return;
+        container.dataset.initialized = 'true';
+
+        var generateEndpoint = container.dataset.generateEndpoint;
+        var statusEndpoint = container.dataset.statusEndpoint;
+        var whatsappPhone = container.dataset.whatsappPhone;
+
+        var loadingEl = container.querySelector('.v2-loading');
+        var codeSectionEl = container.querySelector('.v2-code-section');
+        var codeDisplayEl = container.querySelector('.v2-code-display');
+        var timerTextEl = container.querySelector('.v2-timer-text');
+        var whatsappLinkEl = container.querySelector('.v2-whatsapp-link');
+        var phoneDisplayEl = whatsappLinkEl.querySelector('.v2-phone-display');
+        var waitingEl = container.querySelector('.v2-waiting');
+        var successEl = container.querySelector('.v2-success');
+        var expiredEl = container.querySelector('.v2-expired');
+
+        var sessionId = null;
+        var code = null;
+        var pollTimer = null;
+        var countdownTimer = null;
+        var expiresAt = null;
+
+        function formatPhone(digits) {
+          return '+' + digits.replace(/(\d{3})(\d{1})(\d{4})(\d{4})/, '$1 $2 $3 $4');
+        }
+
+        function showSection(section) {
+          loadingEl.classList.add('hidden');
+          codeSectionEl.classList.add('hidden');
+          successEl.classList.add('hidden');
+          expiredEl.classList.add('hidden');
+          section.classList.remove('hidden');
+        }
+
+        function updateCountdown() {
+          if (!expiresAt) return;
+          var remaining = Math.max(0, expiresAt - Date.now());
+          var minutes = Math.floor(remaining / 60000);
+          var seconds = Math.floor((remaining % 60000) / 1000);
+
+          // Convert to Arabic numerals
+          var arabicNums = function(n) {
+            return String(n).replace(/[0-9]/g, function(d) {
+              return String.fromCharCode(0x0660 + parseInt(d));
+            });
+          };
+
+          if (remaining <= 0) {
+            handleExpired();
+            return;
+          }
+
+          timerTextEl.textContent = 'صالح لمدة ' + arabicNums(minutes) + ':' + arabicNums(seconds < 10 ? '0' + seconds : seconds);
+        }
+
+        function startPolling() {
+          if (pollTimer) clearInterval(pollTimer);
+          pollTimer = setInterval(pollStatus, POLL_INTERVAL);
+        }
+
+        function stopPolling() {
+          if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+          if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+        }
+
+        function handleExpired() {
+          stopPolling();
+          showSection(expiredEl);
+          container.dispatchEvent(new CustomEvent('verification-expired', { bubbles: true }));
+        }
+
+        function handleVerified(phone, token) {
+          stopPolling();
+          showSection(successEl);
+
+          if (window.posthog) {
+            window.posthog.capture('verify_v2_code_matched', { booking_type: getBookingType() });
+            window.posthog.capture('booking_verification_completed', { verification_method: 'v2', booking_type: getBookingType() });
+            window.posthog.identify(phone);
+          }
+
+          container.dispatchEvent(new CustomEvent('phone-verified', {
+            bubbles: true,
+            detail: { token: token, phone: phone }
+          }));
+        }
+
+        function getBookingType() {
+          var params = new URLSearchParams(window.location.search);
+          return params.get('type') === 'remote' ? 'remote' : 'clinic';
+        }
+
+        async function generateCode() {
+          showSection(loadingEl);
+          try {
+            var response = await fetch(generateEndpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: '{}'
+            });
+            var data = await response.json();
+
+            if (data.code && data.session_id) {
+              sessionId = data.session_id;
+              code = data.code;
+              expiresAt = Date.now() + CODE_LIFETIME;
+
+              // Display the code with spacing for readability
+              codeDisplayEl.textContent = code.split('').join(' ');
+
+              // Set WhatsApp link
+              whatsappLinkEl.href = 'https://wa.me/' + whatsappPhone + '?text=' + encodeURIComponent(code);
+
+              // Show phone number for two-device scenario
+              phoneDisplayEl.textContent = formatPhone(whatsappPhone);
+
+              showSection(codeSectionEl);
+              startPolling();
+              countdownTimer = setInterval(updateCountdown, 1000);
+              updateCountdown();
+
+              if (window.posthog) {
+                window.posthog.capture('verify_v2_code_generated', { booking_type: getBookingType() });
+                window.posthog.capture('booking_verification_started', { verification_method: 'v2', booking_type: getBookingType() });
+              }
+            } else {
+              handleExpired();
+            }
+          } catch (e) {
+            handleExpired();
+          }
+        }
+
+        async function pollStatus() {
+          if (!sessionId || !code) return;
+          try {
+            var response = await fetch(statusEndpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ session_id: sessionId, code: code })
+            });
+            var data = await response.json();
+
+            if (data.verified && data.token && data.phone) {
+              handleVerified(data.phone, data.token);
+            } else if (data.expired) {
+              handleExpired();
+            }
+            // else: not verified yet, keep polling
+          } catch (e) {
+            // Network error, keep polling
+          }
+        }
+
+        // Start the flow
+        generateCode();
+      });
+    }
+
+    // Initialize on page load and View Transitions
+    document.addEventListener('astro:page-load', initPhoneVerificationV2);
+    if (document.readyState !== 'loading') {
+      initPhoneVerificationV2();
+    } else {
+      document.addEventListener('DOMContentLoaded', initPhoneVerificationV2);
+    }
+  })();
+</script>
+
+<style is:global>
+  .phone-verification-v2 .v2-code-display {
+    font-family: 'New Rail Alphabet', monospace !important;
+  }
+</style>
