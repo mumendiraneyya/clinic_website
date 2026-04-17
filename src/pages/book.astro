@@ -1,6 +1,7 @@
 ---
 import Layout from '~/layouts/PageLayout.astro';
 import PhoneVerification from '~/components/booking/PhoneVerification.astro';
+import PhoneVerificationV2 from '~/components/booking/PhoneVerificationV2.astro';
 import PhoneSelector from '~/components/booking/PhoneSelector.astro';
 import { Icon } from 'astro-icon/components';
 
@@ -43,9 +44,19 @@ const CAL_NAMESPACE = 'booking';
         <PhoneSelector id="phone-selector" phone="" />
       </div>
 
-      <!-- Phone Verification (shown when no token or changing number) -->
+      <!-- Phone Verification V1 (shown when no token or changing number) -->
       <div id="verification-container" class="hidden">
         <PhoneVerification id="phone-verification" />
+        <div id="v2-toggle" class="text-center mt-4">
+          <button type="button" class="text-sm text-primary hover:underline cursor-pointer">
+            لا تعرف رقمك؟ طريقة أسهل عبر واتساب
+          </button>
+        </div>
+      </div>
+
+      <!-- Phone Verification V2 (user-initiated, shown when toggled) -->
+      <div id="verification-v2-container" class="hidden">
+        <PhoneVerificationV2 id="phone-verification-v2" />
       </div>
 
       <!-- Back to Home Link -->
@@ -264,6 +275,25 @@ const CAL_NAMESPACE = 'booking';
       // Change phone event (from PhoneSelector component)
       document.addEventListener('change-phone', function() {
         showVerification();
+      });
+
+      // V2 toggle: switch to WhatsApp-based verification
+      var v2Toggle = document.getElementById('v2-toggle');
+      if (v2Toggle) {
+        v2Toggle.addEventListener('click', function() {
+          var v1 = document.getElementById('verification-container');
+          var v2 = document.getElementById('verification-v2-container');
+          if (v1) v1.classList.add('hidden');
+          if (v2) v2.classList.remove('hidden');
+        });
+      }
+
+      // V2 expired: fall back to V1
+      document.addEventListener('verification-expired', function() {
+        var v1 = document.getElementById('verification-container');
+        var v2 = document.getElementById('verification-v2-container');
+        if (v2) v2.classList.add('hidden');
+        if (v1) v1.classList.remove('hidden');
       });
     }
 
