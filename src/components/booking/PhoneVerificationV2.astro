@@ -184,6 +184,7 @@ const WHATSAPP_PHONE = '962782760965';
 
           if (window.posthog) {
             window.posthog.capture('verify_v2_code_matched', { booking_type: getBookingType() });
+            window.posthog.capture('booking_verification_completed', { verification_method: 'v2', booking_type: getBookingType() });
             window.posthog.identify(phone);
           }
 
@@ -229,6 +230,7 @@ const WHATSAPP_PHONE = '962782760965';
 
               if (window.posthog) {
                 window.posthog.capture('verify_v2_code_generated', { booking_type: getBookingType() });
+                window.posthog.capture('booking_verification_started', { verification_method: 'v2', booking_type: getBookingType() });
               }
             } else {
               handleExpired();

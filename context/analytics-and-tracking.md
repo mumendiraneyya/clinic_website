@@ -88,7 +88,7 @@ Zero overhead for organic visitors.
 ## PostHog Insights
 
 ### Booking (tag: `booking`)
-1. [Booking Funnel (Full)](https://eu.posthog.com/project/116305/insights/LGUWwM9U) — Phone Submitted → Code Sent → Verified → Cal.com → Booking Completed
+1. [Booking Funnel (Unified V1+V2)](https://eu.posthog.com/project/116305/insights/68NeDfUQ) — Verification Started → Verification Completed → Cal.com → Booking Completed (broken down by `verification_method`: `v1` or `v2`)
 2. [Phone Rejection Patterns](https://eu.posthog.com/project/116305/insights/37DxZVg8) — client-side rejections by `phone_raw`
 3. [Backend Rejection Reasons](https://eu.posthog.com/project/116305/insights/AoncriXj) — backend failures by `failure_reason`
 4. [WhatsApp Fallback](https://eu.posthog.com/project/116305/insights/0elBhZDK) — users who tried booking then clicked WhatsApp
