@@ -2,6 +2,24 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Team & Collaboration Style
+
+This is a family project. Orwa (developer) builds and maintains the site for his father Dr. Mu'men Diraneyya. Brothers Mamoun and Sufian also contribute.
+
+- **Be terse.** No over-explanation. When told "commit and push", just do it.
+- **Visual work is iterative.** Don't implement full UI features in one shot — start with the simplest visible change, get feedback, iterate.
+- **Don't run builds** unless asked. The user has a dev server running with hot-reload.
+- **Don't start the dev server.** Ask the user if needed.
+- **Ask before making data promises.** Don't write policies or documentation claiming deletion processes exist unless you've verified the API supports it (learned from Cal.com data retention page).
+- **The مسيرتنا page** is a deeply personal biography written by the doctor himself. Handle edits with care.
+
+## Git & GitHub
+
+- **This repo is a fork** of `arthelokyo/astrowind`. The `gh` CLI resolves to the upstream by default.
+- **Always specify `--repo mumendiraneyya/clinic_website`** when using `gh pr create` or other `gh` commands.
+- **PR images:** Leave HTML comment markers (`<!-- 📸 -->`) and ask the user to drag-and-drop images in the GitHub UI.
+- **Submodule `n8n`:** Contains n8n workflow backups. Pull with `cd n8n && git pull` before committing if workflows changed.
+
 ## Knowledge Transfer Documents
 
 Human-readable educational materials explaining complex topics encountered in this project:
@@ -546,18 +564,11 @@ PostHog custom events instrument the booking funnel and detect ad fraud. See [co
 
 ### n8n Backend & Local Services
 
-The n8n server runs a standalone Node.js HTTP service (`service`) alongside n8n to handle operations that n8n can no longer do natively (after `executeCommand` and `localFileTrigger` were removed in n8n 2.15.1).
+See [context/n8n-backend.md](context/n8n-backend.md) for complete documentation of all n8n workflows, local services, SMS gateway, WhatsApp AI assistant, and V2 verification.
 
 **Quick reference:**
-- Service location: `/root/dads-clinic-backup/service/` on the n8n server
-- systemd unit: `clinic-service.service`, listens on `127.0.0.1:3847`
-- `POST /validate` — phone number validation via `google-libphonenumber`
-- `POST /send-sms` — async SMS sending via SSH to Termux phones (returns immediately, sends in background)
-- Setup: `bash setup.sh` in the service directory (idempotent)
-- SMS gateway phones: `doctor.termux`, `assistant.termux`, `doctor2.termux` (connected via reverse SSH tunnels through VPS)
-- Telegram subflow: `Dads Clinic-Send Telegram Messages` (workflow ID: `C2F9UQOSqoWTqCg8`)
-- User-initiated verification V2: workflow `Dads Clinic-Verify Phone Number 2` (`wpSDqlKO2iMoUZZ7`) — generates 6-char codes, user sends code via WhatsApp to verify phone number
-- WhatsApp AI Assistant: workflow `Dads Clinic-WhatsApp AI Assistant` (`XlYzvScd6xm3xlBI`) — Claude Haiku 4.5 powered, intercepts verification codes before AI
-- n8n MCP limitation: `update_workflow` replaces entire workflows — too risky for large ones (40+ nodes). For targeted changes, guide user through the n8n UI instead.
-- **n8n SDK tips:** Data table nodes must have `alwaysOutputData: true` or flows terminate silently when a delete/get returns no rows. Reference data tables via `mode: 'list'` (not `mode: 'id'`) for human-readable workflow editing.
-- See [context/analytics-and-tracking.md](context/analytics-and-tracking.md) for full architecture details
+- n8n instance: `https://n8n.orwa.tech` (self-hosted, v2.15.1)
+- Local services: `clinic-service.service` on `127.0.0.1:3847` — `/validate` (phone validation) and `/send-sms` (async SMS)
+- Key workflows: Verify Phone V1 (`dwv7rpf8uHxyum02`), V2 (`wpSDqlKO2iMoUZZ7`), WhatsApp AI (`XlYzvScd6xm3xlBI`), Telegram subflow (`C2F9UQOSqoWTqCg8`)
+- WhatsApp AI: Claude Haiku 4.5, intent classification, verification code interception
+- SMS gateway: Termux phones via reverse SSH tunnels through VPS
