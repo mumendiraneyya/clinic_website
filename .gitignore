@@ -29,3 +29,4 @@ pnpm-lock.yaml
 **/*.xcf
 **/*.svgz
 screenshot_fullheight_*.png
+.envrc
