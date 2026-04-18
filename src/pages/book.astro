@@ -47,11 +47,6 @@ const CAL_NAMESPACE = 'booking';
       <!-- Phone Verification V2: WhatsApp (default) -->
       <div id="verification-v2-container" class="hidden">
         <PhoneVerificationV2 id="phone-verification-v2" />
-        <div id="v1-toggle" class="text-center mt-4">
-          <button type="button" class="text-sm text-muted dark:text-slate-400 hover:text-primary hover:underline cursor-pointer">
-            ليس لديك واتساب؟
-          </button>
-        </div>
       </div>
 
       <!-- Phone Verification V1: SMS/WhatsApp code (fallback) -->
@@ -279,24 +274,21 @@ const CAL_NAMESPACE = 'booking';
         showVerification();
       });
 
-      // V1 toggle: switch from WhatsApp to SMS verification
-      var v1Toggle = document.getElementById('v1-toggle');
-      if (v1Toggle) {
-        v1Toggle.addEventListener('click', function() {
-          var v1 = document.getElementById('verification-container');
-          var v2 = document.getElementById('verification-v2-container');
-          if (v2) v2.classList.add('hidden');
-          if (v1) v1.classList.remove('hidden');
-        });
-      }
-
-      // V2 expired: fall back to V1
-      document.addEventListener('verification-expired', function() {
+      // V2 fallback to V1 (user clicked "سأدخل رقمي يدوياً" or "لا أستخدم واتساب", or code expired)
+      function switchToV1(e) {
         var v1 = document.getElementById('verification-container');
         var v2 = document.getElementById('verification-v2-container');
         if (v2) v2.classList.add('hidden');
         if (v1) v1.classList.remove('hidden');
-      });
+        // Pre-select delivery method based on which link was clicked
+        var prefer = e && e.detail && e.detail.preferMethod;
+        if (prefer && v1) {
+          var radio = v1.querySelector('input[type="radio"][value="' + prefer + '"]');
+          if (radio) radio.checked = true;
+        }
+      }
+      document.addEventListener('verification-use-v1', switchToV1);
+      document.addEventListener('verification-expired', switchToV1);
     }
 
     // Initialize on page load (with guard against double initialization)

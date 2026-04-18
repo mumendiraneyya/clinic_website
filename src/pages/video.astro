@@ -1,6 +1,7 @@
 ---
 import Layout from '~/layouts/PageLayout.astro';
 import PhoneVerification from '~/components/booking/PhoneVerification.astro';
+import PhoneVerificationV2 from '~/components/booking/PhoneVerificationV2.astro';
 import PhoneDisplayBar from '~/components/booking/PhoneDisplayBar.astro';
 import { Icon } from 'astro-icon/components';
 import { Image } from 'astro:assets';
@@ -55,7 +56,21 @@ const AUTO_REDIRECT_TIME = 1 * 60;    // Auto-redirect 1 minute before
         <p class="mt-4 text-muted dark:text-slate-400">جارٍ التحميل...</p>
       </div>
 
-      <!-- Phone Verification (shown when no token and no UID) -->
+      <!-- Phone Verification V2: WhatsApp (default) -->
+      <div id="verification-v2-container" class="hidden max-w-xl mx-auto">
+        <p id="verification-message-v2" class="text-center text-muted dark:text-slate-400 mb-6">
+          للانضمام إلى استشارتك، يرجى التحقق من رقم هاتفك أولاً
+        </p>
+        <PhoneVerificationV2 id="phone-verification-v2" />
+        <!-- Cancel button (only shown when changing phone) -->
+        <div id="cancel-change-container-v2" class="hidden mt-4 text-center">
+          <button id="cancel-change-btn-v2" type="button" class="text-sm text-muted dark:text-slate-400 hover:text-primary">
+            إلغاء والعودة
+          </button>
+        </div>
+      </div>
+
+      <!-- Phone Verification V1: SMS/WhatsApp code (fallback) -->
       <div id="verification-container" class="hidden max-w-xl mx-auto">
         <p id="verification-message" class="text-center text-muted dark:text-slate-400 mb-6">
           للانضمام إلى استشارتك، يرجى التحقق من رقم هاتفك أولاً
@@ -250,6 +265,7 @@ const AUTO_REDIRECT_TIME = 1 * 60;    // Auto-redirect 1 minute before
     // UI State management
     function showLoading() {
       document.getElementById('loading-state')?.classList.remove('hidden');
+      document.getElementById('verification-v2-container')?.classList.add('hidden');
       document.getElementById('verification-container')?.classList.add('hidden');
       document.getElementById('main-container')?.classList.add('hidden');
       document.getElementById('error-state')?.classList.add('hidden');
@@ -257,13 +273,15 @@ const AUTO_REDIRECT_TIME = 1 * 60;    // Auto-redirect 1 minute before
 
     function showVerification() {
       document.getElementById('loading-state')?.classList.add('hidden');
-      document.getElementById('verification-container')?.classList.remove('hidden');
+      document.getElementById('verification-v2-container')?.classList.remove('hidden');
+      document.getElementById('verification-container')?.classList.add('hidden');
       document.getElementById('main-container')?.classList.add('hidden');
       document.getElementById('error-state')?.classList.add('hidden');
     }
 
     function showMain() {
       document.getElementById('loading-state')?.classList.add('hidden');
+      document.getElementById('verification-v2-container')?.classList.add('hidden');
       document.getElementById('verification-container')?.classList.add('hidden');
       document.getElementById('main-container')?.classList.remove('hidden');
       document.getElementById('error-state')?.classList.add('hidden');
@@ -271,6 +289,7 @@ const AUTO_REDIRECT_TIME = 1 * 60;    // Auto-redirect 1 minute before
 
     function showError() {
       document.getElementById('loading-state')?.classList.add('hidden');
+      document.getElementById('verification-v2-container')?.classList.add('hidden');
       document.getElementById('verification-container')?.classList.add('hidden');
       document.getElementById('main-container')?.classList.add('hidden');
       document.getElementById('error-state')?.classList.remove('hidden');
@@ -420,14 +439,14 @@ const AUTO_REDIRECT_TIME = 1 * 60;    // Auto-redirect 1 minute before
     function showVerificationForChange() {
       isChangingPhone = true;
       var messageEl = document.getElementById('verification-message');
+      var messageElV2 = document.getElementById('verification-message-v2');
       var cancelContainer = document.getElementById('cancel-change-container');
+      var cancelContainerV2 = document.getElementById('cancel-change-container-v2');
 
-      if (messageEl) {
-        messageEl.textContent = 'أدخل رقم الهاتف الجديد للتحقق';
-      }
-      if (cancelContainer) {
-        cancelContainer.classList.remove('hidden');
-      }
+      if (messageEl) messageEl.textContent = 'أدخل رقم الهاتف الجديد للتحقق';
+      if (messageElV2) messageElV2.textContent = 'أدخل رقم الهاتف الجديد للتحقق';
+      if (cancelContainer) cancelContainer.classList.remove('hidden');
+      if (cancelContainerV2) cancelContainerV2.classList.remove('hidden');
       showVerification();
     }
 
@@ -435,9 +454,9 @@ const AUTO_REDIRECT_TIME = 1 * 60;    // Auto-redirect 1 minute before
     function returnToMain() {
       isChangingPhone = false;
       var cancelContainer = document.getElementById('cancel-change-container');
-      if (cancelContainer) {
-        cancelContainer.classList.add('hidden');
-      }
+      var cancelContainerV2 = document.getElementById('cancel-change-container-v2');
+      if (cancelContainer) cancelContainer.classList.add('hidden');
+      if (cancelContainerV2) cancelContainerV2.classList.add('hidden');
       showMain();
     }
 
@@ -560,25 +579,47 @@ const AUTO_REDIRECT_TIME = 1 * 60;    // Auto-redirect 1 minute before
         phoneDisplayBar.addEventListener('phone-display-delete', function() {
           localStorage.removeItem(STORAGE_KEY);
           cachedPhone = '';
+          var defaultMsg = 'للانضمام إلى استشارتك، يرجى التحقق من رقم هاتفك أولاً';
           var messageEl = document.getElementById('verification-message');
-          if (messageEl) {
-            messageEl.textContent = 'للانضمام إلى استشارتك، يرجى التحقق من رقم هاتفك أولاً';
-          }
+          var messageElV2 = document.getElementById('verification-message-v2');
+          if (messageEl) messageEl.textContent = defaultMsg;
+          if (messageElV2) messageElV2.textContent = defaultMsg;
           var cancelContainer = document.getElementById('cancel-change-container');
-          if (cancelContainer) {
-            cancelContainer.classList.add('hidden');
-          }
+          var cancelContainerV2 = document.getElementById('cancel-change-container-v2');
+          if (cancelContainer) cancelContainer.classList.add('hidden');
+          if (cancelContainerV2) cancelContainerV2.classList.add('hidden');
           showVerification();
         });
       }
 
-      // Cancel change button
+      // Cancel change buttons
       var cancelChangeBtn = document.getElementById('cancel-change-btn');
       if (cancelChangeBtn) {
         cancelChangeBtn.addEventListener('click', function() {
           returnToMain();
         });
       }
+      var cancelChangeBtnV2 = document.getElementById('cancel-change-btn-v2');
+      if (cancelChangeBtnV2) {
+        cancelChangeBtnV2.addEventListener('click', function() {
+          returnToMain();
+        });
+      }
+
+      // V2 fallback to V1 (user clicked "سأدخل رقمي يدوياً" or "لا أستخدم واتساب", or code expired)
+      function switchToV1(e) {
+        var v1 = document.getElementById('verification-container');
+        var v2 = document.getElementById('verification-v2-container');
+        if (v2) v2.classList.add('hidden');
+        if (v1) v1.classList.remove('hidden');
+        var prefer = e && e.detail && e.detail.preferMethod;
+        if (prefer && v1) {
+          var radio = v1.querySelector('input[type="radio"][value="' + prefer + '"]');
+          if (radio) radio.checked = true;
+        }
+      }
+      document.addEventListener('verification-use-v1', switchToV1);
+      document.addEventListener('verification-expired', switchToV1);
 
       // Join now button
       var joinNowBtn = document.getElementById('join-now-btn');

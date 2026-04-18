@@ -1,6 +1,7 @@
 ---
 import Layout from '~/layouts/PageLayout.astro';
 import PhoneVerification from '~/components/booking/PhoneVerification.astro';
+import PhoneVerificationV2 from '~/components/booking/PhoneVerificationV2.astro';
 import PhoneDisplayBar from '~/components/booking/PhoneDisplayBar.astro';
 import BookingCard from '~/components/booking/BookingCard.astro';
 import { Icon } from 'astro-icon/components';
@@ -29,7 +30,7 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
           استعرض مواعيدك القادمة
         </p>
         <p class="text-sm text-muted dark:text-slate-500 mt-4 max-w-md mx-auto">
-          حجوزاتك مرتبطة برقم هاتفك. للوصول إليها، يجب التحقق من ملكيتك للرقم عبر رسالة نصية قصيرة أو رسالة واتساب. هذا يضمن أن صاحب الرقم فقط هو من يستطيع الاطلاع على مواعيده وإعادة جدولتها وإلغاءها. في الوقت الراهن، لا نوفر طريقة لاستعراض المواعيد السابقة وهذه الصفحة هي لإدارة المواعيد المستقبلية فقط.
+          حجوزاتك مرتبطة برقم هاتفك. للوصول إليها، يجب التحقق من ملكيتك للرقم عبر واتساب. في الوقت الراهن، لا نوفر طريقة لاستعراض المواعيد السابقة وهذه الصفحة هي لإدارة المواعيد المستقبلية فقط.
         </p>
       </div>
 
@@ -39,7 +40,21 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
         <p class="mt-4 text-muted dark:text-slate-400">جارٍ التحميل...</p>
       </div>
 
-      <!-- Phone Verification (shown when no token or changing phone) -->
+      <!-- Phone Verification V2: WhatsApp (default) -->
+      <div id="verification-v2-container" class="hidden">
+        <p id="verification-message-v2" class="text-center text-muted dark:text-slate-400 mb-6">
+          للاطلاع على حجوزاتك، يرجى التحقق من رقم هاتفك أولاً
+        </p>
+        <PhoneVerificationV2 id="phone-verification-v2" />
+        <!-- Cancel button (only shown when changing phone, not for new users) -->
+        <div id="cancel-change-container-v2" class="hidden mt-4 text-center">
+          <button id="cancel-change-btn-v2" type="button" class="text-sm text-muted dark:text-slate-400 hover:text-primary">
+            إلغاء والعودة للحجوزات
+          </button>
+        </div>
+      </div>
+
+      <!-- Phone Verification V1: SMS/WhatsApp code (fallback) -->
       <div id="verification-container" class="hidden">
         <p id="verification-message" class="text-center text-muted dark:text-slate-400 mb-6">
           للاطلاع على حجوزاتك، يرجى التحقق من رقم هاتفك أولاً
@@ -217,6 +232,7 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
     // UI State management
     function showLoading() {
       document.getElementById('loading-state')?.classList.remove('hidden');
+      document.getElementById('verification-v2-container')?.classList.add('hidden');
       document.getElementById('verification-container')?.classList.add('hidden');
       document.getElementById('bookings-container')?.classList.add('hidden');
       document.getElementById('error-state')?.classList.add('hidden');
@@ -224,13 +240,15 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
 
     function showVerification() {
       document.getElementById('loading-state')?.classList.add('hidden');
-      document.getElementById('verification-container')?.classList.remove('hidden');
+      document.getElementById('verification-v2-container')?.classList.remove('hidden');
+      document.getElementById('verification-container')?.classList.add('hidden');
       document.getElementById('bookings-container')?.classList.add('hidden');
       document.getElementById('error-state')?.classList.add('hidden');
     }
 
     function showBookings() {
       document.getElementById('loading-state')?.classList.add('hidden');
+      document.getElementById('verification-v2-container')?.classList.add('hidden');
       document.getElementById('verification-container')?.classList.add('hidden');
       document.getElementById('bookings-container')?.classList.remove('hidden');
       document.getElementById('error-state')?.classList.add('hidden');
@@ -238,6 +256,7 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
 
     function showError() {
       document.getElementById('loading-state')?.classList.add('hidden');
+      document.getElementById('verification-v2-container')?.classList.add('hidden');
       document.getElementById('verification-container')?.classList.add('hidden');
       document.getElementById('bookings-container')?.classList.add('hidden');
       document.getElementById('error-state')?.classList.remove('hidden');
@@ -468,13 +487,21 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
     function showVerificationForChange() {
       isChangingPhone = true;
       var messageEl = document.getElementById('verification-message');
+      var messageElV2 = document.getElementById('verification-message-v2');
       var cancelContainer = document.getElementById('cancel-change-container');
+      var cancelContainerV2 = document.getElementById('cancel-change-container-v2');
 
       if (messageEl) {
         messageEl.textContent = 'أدخل رقم الهاتف الجديد للتحقق';
       }
+      if (messageElV2) {
+        messageElV2.textContent = 'أدخل رقم الهاتف الجديد للتحقق';
+      }
       if (cancelContainer) {
         cancelContainer.classList.remove('hidden');
+      }
+      if (cancelContainerV2) {
+        cancelContainerV2.classList.remove('hidden');
       }
       showVerification();
     }
@@ -483,9 +510,9 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
     function returnToBookings() {
       isChangingPhone = false;
       var cancelContainer = document.getElementById('cancel-change-container');
-      if (cancelContainer) {
-        cancelContainer.classList.add('hidden');
-      }
+      var cancelContainerV2 = document.getElementById('cancel-change-container-v2');
+      if (cancelContainer) cancelContainer.classList.add('hidden');
+      if (cancelContainerV2) cancelContainerV2.classList.add('hidden');
 
       // Re-render cached bookings if available
       if (cachedBookingsData) {
@@ -516,27 +543,49 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
           localStorage.removeItem(STORAGE_KEY);
           cachedBookingsData = null;
           cachedPhone = '';
-          // Reset verification message to default
+          // Reset verification messages to default
+          var defaultMsg = 'للاطلاع على حجوزاتك، يرجى التحقق من رقم هاتفك أولاً';
           var messageEl = document.getElementById('verification-message');
-          if (messageEl) {
-            messageEl.textContent = 'للاطلاع على حجوزاتك، يرجى التحقق من رقم هاتفك أولاً';
-          }
-          // Hide cancel button since there's nothing to return to
+          var messageElV2 = document.getElementById('verification-message-v2');
+          if (messageEl) messageEl.textContent = defaultMsg;
+          if (messageElV2) messageElV2.textContent = defaultMsg;
+          // Hide cancel buttons since there's nothing to return to
           var cancelContainer = document.getElementById('cancel-change-container');
-          if (cancelContainer) {
-            cancelContainer.classList.add('hidden');
-          }
+          var cancelContainerV2 = document.getElementById('cancel-change-container-v2');
+          if (cancelContainer) cancelContainer.classList.add('hidden');
+          if (cancelContainerV2) cancelContainerV2.classList.add('hidden');
           showVerification();
         });
       }
 
-      // Cancel change button - returns to bookings view
+      // Cancel change buttons - returns to bookings view
       var cancelChangeBtn = document.getElementById('cancel-change-btn');
       if (cancelChangeBtn) {
         cancelChangeBtn.addEventListener('click', function() {
           returnToBookings();
         });
       }
+      var cancelChangeBtnV2 = document.getElementById('cancel-change-btn-v2');
+      if (cancelChangeBtnV2) {
+        cancelChangeBtnV2.addEventListener('click', function() {
+          returnToBookings();
+        });
+      }
+
+      // V2 fallback to V1 (user clicked "سأدخل رقمي يدوياً" or "لا أستخدم واتساب", or code expired)
+      function switchToV1(e) {
+        var v1 = document.getElementById('verification-container');
+        var v2 = document.getElementById('verification-v2-container');
+        if (v2) v2.classList.add('hidden');
+        if (v1) v1.classList.remove('hidden');
+        var prefer = e && e.detail && e.detail.preferMethod;
+        if (prefer && v1) {
+          var radio = v1.querySelector('input[type="radio"][value="' + prefer + '"]');
+          if (radio) radio.checked = true;
+        }
+      }
+      document.addEventListener('verification-use-v1', switchToV1);
+      document.addEventListener('verification-expired', switchToV1);
 
       // Retry button
       var retryBtn = document.getElementById('retry-btn');
