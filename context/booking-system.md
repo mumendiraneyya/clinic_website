@@ -18,7 +18,9 @@ src/components/booking/
 └── BookingCard.astro          # Displays booking details with calendar actions
 ```
 
-**V2 Verification** (user-initiated): User sends a 6-char code to the clinic's WhatsApp. Zero cost, no phone input needed. Offered as "لا تعرف رقمك؟" link under V1 on `/book`. Falls back to V1 on expiry (5 min). See [context/n8n-backend.md](n8n-backend.md) for backend details.
+**V2 Verification** (user-initiated, **default**): User sends a 6-char code to the clinic's WhatsApp. Zero cost, no phone input needed. Shown first on `/book`. Falls back to V1 on expiry (5 min) or if user clicks "ليس لديك واتساب؟". See [context/n8n-backend.md](n8n-backend.md) for backend details.
+
+**V1 Verification** (SMS/WhatsApp OTP, **fallback**): User enters phone number, receives a 4-digit code via SMS or WhatsApp, enters code. Available when user doesn't have WhatsApp or when V2 expires.
 
 ### Pages
 

@@ -32,7 +32,7 @@ Frontend and backend events linked via phone number:
 | `booking_code_result` | After verify-code API response | `success`, `booking_type` |
 | `booking_verified` | Verification complete | `method`, `is_jordan`, `booking_type` |
 
-### PhoneVerificationV2.astro (V2)
+### PhoneVerificationV2.astro (V2 — default)
 
 | Event | When | Key Properties |
 |-------|------|----------------|

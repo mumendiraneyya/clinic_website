@@ -397,7 +397,7 @@ n8n workflow automation MCP (`mcp__n8n-mcp__*`) for inspecting and modifying bac
 The booking system requires phone verification before scheduling. See [context/booking-system.md](context/booking-system.md) for complete documentation.
 
 **Quick reference:**
-- Phone verification components: `src/components/booking/PhoneVerification.astro`, `PhoneSelector.astro`
+- Phone verification: `PhoneVerificationV2.astro` (default, WhatsApp code), `PhoneVerification.astro` (V1 fallback, SMS), `PhoneSelector.astro`
 - Booking pages: `/book` (full flow), `/popup/book` (iframe popup), `/landing/booking-complete` (confirmation)
 - Shared utilities: `public/scripts/phone-utils.js` (formatPhoneDisplay)
 - JWT token stored in localStorage (`phone_verification_token`)
