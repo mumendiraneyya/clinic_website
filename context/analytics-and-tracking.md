@@ -100,10 +100,17 @@ Zero overhead for organic visitors.
 
 ## Content Security Policy
 
-`public/_headers` defines CSP for Cloudflare Pages. Must whitelist:
-- `*.google-analytics.com` (regional endpoints)
-- `*.posthog.com`, `*.i.posthog.com`
-- `*.cal.com` (embed subdomains)
-- `n8n.orwa.tech`
+`public/_headers` defines CSP for Cloudflare Pages. **This is a frequent source of silent breakage** — external services add new subdomains, or the site frames itself, and the CSP blocks it without obvious errors (just a "This content is blocked" dialog from Cal.com or a blank iframe).
 
-If analytics or Cal.com break with "This content is blocked", check CSP first.
+**Current required allowlist:**
+- `script-src`: `*.cal.com` (embed loads scripts from subdomains beyond `app.cal.com`)
+- `connect-src`: `*.google-analytics.com` (regional endpoints like `region1.`), `*.cal.com`, `*.posthog.com`, `*.i.posthog.com`, `n8n.orwa.tech`
+- `frame-src`: **`'self'`** (the popup booking flow iframes `/popup/book`), `*.cal.com`, `*.google.com`, YouTube
+- `font-src`: `'self'`
+
+**Debugging CSP issues:**
+1. Open browser console on the production site
+2. Look for "violates the following Content Security Policy directive" errors
+3. The error message tells you exactly which directive and domain is blocked
+4. Add the domain to the correct directive in `public/_headers`
+5. Remember: `'self'` is needed in `frame-src` because the site iframes its own pages (popup booking flow)

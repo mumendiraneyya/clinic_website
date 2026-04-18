@@ -19,6 +19,8 @@ This is a family project. Orwa (developer) builds and maintains the site for his
 - **Always specify `--repo mumendiraneyya/clinic_website`** when using `gh pr create` or other `gh` commands.
 - **PR images:** Leave HTML comment markers (`<!-- 📸 -->`) and ask the user to drag-and-drop images in the GitHub UI.
 - **Submodule `n8n`:** Contains n8n workflow backups. Pull with `cd n8n && git pull` before committing if workflows changed.
+- **Never use `git stash`** around commits that modify files. Stash pop can silently revert committed changes (happened with `book.astro` V2 integration — the stash captured the pre-edit state and overwrote the committed version on pop). If you need to work around uncommitted changes for `gh` commands, commit them first or use `--allow-dirty`.
+- **After merging feature branches**, always verify that key files contain the expected changes. Don't trust the merge output alone.
 
 ## Knowledge Transfer Documents
 
