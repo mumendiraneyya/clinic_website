@@ -18,9 +18,12 @@ src/components/booking/
 └── BookingCard.astro          # Displays booking details with calendar actions
 ```
 
-**V2 Verification** (user-initiated, **default**): User sends a 6-char code to the clinic's WhatsApp. Zero cost, no phone input needed. Shown first on `/book`. Falls back to V1 on expiry (5 min) or if user clicks "ليس لديك واتساب؟". See [context/n8n-backend.md](n8n-backend.md) for backend details.
+**V2 Verification** (user-initiated, **default on `/book`, `/bookings`, `/video`**): User taps a WhatsApp button → WhatsApp opens with a pre-filled 6-char code → user hits send → returns to the site. The code is NOT displayed (earlier design showed it prominently which confused users into thinking they needed to copy something). On desktop (`md+`), a QR code is shown alongside the button for users with WhatsApp on a different device — scanning opens WhatsApp with the code pre-filled. QR hidden on mobile. Two fallback links inside the component:
+- "سأدخل رقمي يدوياً" → V1 with WhatsApp pre-selected (has WhatsApp on another device)
+- "لا أستخدم واتساب" → V1 with SMS pre-selected
+Also falls back to V1 on code expiry (5 min). See [context/n8n-backend.md](n8n-backend.md) for backend details.
 
-**V1 Verification** (SMS/WhatsApp OTP, **fallback**): User enters phone number, receives a 4-digit code via SMS or WhatsApp, enters code. Available when user doesn't have WhatsApp or when V2 expires.
+**V1 Verification** (SMS/WhatsApp OTP, **fallback**): User enters phone number, receives a 4-digit code via SMS or WhatsApp, enters code. Delivery method radio is pre-selected based on which V2 fallback link was clicked (`verification-use-v1` event with `detail.preferMethod`).
 
 ### Pages
 
@@ -290,9 +293,11 @@ Both PhoneVerification and PhoneSelector use:
 ## Event System
 
 Custom events (bubble up through DOM):
-- `phone-verified` - From PhoneVerification, detail: `{ token, phone }`
+- `phone-verified` - From PhoneVerification or PhoneVerificationV2, detail: `{ token, phone }`
 - `phone-selected` - From PhoneSelector, detail: `{ phone }`
 - `change-phone` - From PhoneSelector, no detail
+- `verification-use-v1` - From PhoneVerificationV2, detail: `{ preferMethod: 'whatsapp' | 'sms' }`. User clicked a fallback link; parent page switches to V1 and pre-selects the delivery method radio
+- `verification-expired` - From PhoneVerificationV2, no detail. Code expired; parent page switches to V1
 
 ## Initialization Patterns
 

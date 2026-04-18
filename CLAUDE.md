@@ -397,9 +397,9 @@ n8n workflow automation MCP (`mcp__n8n-mcp__*`) for inspecting and modifying bac
 The booking system requires phone verification before scheduling. See [context/booking-system.md](context/booking-system.md) for complete documentation.
 
 **Quick reference:**
-- Phone verification: `PhoneVerificationV2.astro` (default, WhatsApp code), `PhoneVerification.astro` (V1 fallback, SMS), `PhoneSelector.astro`
+- Phone verification: `PhoneVerificationV2.astro` (default on `/book`, `/bookings`, `/video` — WhatsApp button + QR code, no visible code), `PhoneVerification.astro` (V1 fallback, SMS/WhatsApp OTP), `PhoneSelector.astro`
 - Booking pages: `/book` (full flow), `/popup/book` (iframe popup), `/landing/booking-complete` (confirmation)
-- Shared utilities: `public/scripts/phone-utils.js` (formatPhoneDisplay)
+- Shared utilities: `public/scripts/phone-utils.js` (formatPhoneDisplay), `public/scripts/qrcode-generator.js` (QR code for V2 desktop)
 - JWT token stored in localStorage (`phone_verification_token`)
 - Phone normalization: strips `+`, `00`, replaces leading `0` with `962` (Jordan)
 
@@ -571,6 +571,8 @@ See [context/n8n-backend.md](context/n8n-backend.md) for complete documentation 
 **Quick reference:**
 - n8n instance: `https://n8n.orwa.tech` (self-hosted, v2.15.1)
 - Local services: `clinic-service.service` on `127.0.0.1:3847` — `/validate` (phone validation) and `/send-sms` (async SMS)
-- Key workflows: Verify Phone V1 (`dwv7rpf8uHxyum02`), V2 (`wpSDqlKO2iMoUZZ7`), WhatsApp AI (`XlYzvScd6xm3xlBI`), Telegram subflow (`C2F9UQOSqoWTqCg8`)
+- Key workflows: Verify Phone V1 (`dwv7rpf8uHxyum02`), V2 (`wpSDqlKO2iMoUZZ7`), WhatsApp AI (`XlYzvScd6xm3xlBI`), Telegram subflow (`C2F9UQOSqoWTqCg8`), Cal.com Notifications (`n1xrgJXoX6d74bjo`), Send Reminders (`WiqM8fag3FvWvW6t`)
+- Cal.com Notifications: central messaging hub for booking events → WhatsApp templates + SMS + Telegram
 - WhatsApp AI: Claude Haiku 4.5, intent classification, verification code interception
 - SMS gateway: Termux phones via reverse SSH tunnels through VPS
+- WhatsApp templates: `booking_clinic_completed` (location header), `booking_remote_completed`, `booking_cancelled_by_doctor`, `booking_cancelled_by_patient`, `booking_rescheduled_by_doctor`, `booking_rescheduled_by_patient`, `meeting_started_patient`, `booking_reminder` (pending), `verification_code`

@@ -15,7 +15,7 @@ The clinic's backend runs on a self-hosted n8n instance at `https://n8n.orwa.tec
 | WhatsApp AI Assistant | `XlYzvScd6xm3xlBI` | Claude Haiku 4.5 chatbot + verification code interception |
 | Send Telegram Messages | `C2F9UQOSqoWTqCg8` | Subflow: maps phone numbers to Telegram chat IDs, sends messages |
 | Send Reminders | `WiqM8fag3FvWvW6t` | Appointment reminders via WhatsApp/SMS |
-| Message Queuing | `n1xrgJXoX6d74bjo` | Message dispatch and queuing (deprecated) |
+| Send Notifications from Cal.com Events | `n1xrgJXoX6d74bjo` | Central messaging hub: receives Cal.com events, sends WhatsApp/SMS/Telegram notifications |
 
 ### Verify Phone Number V1 (`dwv7rpf8uHxyum02`)
 
@@ -66,6 +66,50 @@ AI-powered WhatsApp responder with verification code interception.
 **Credentials:** Anthropic API, WhatsApp Business (phone ID: `943723358817193`), Telegram (Dads Clinic Appointments Bot).
 
 **WhatsApp Trigger behavior:** The node auto-registers its production webhook URL with Meta when the workflow is activated. Never configure this manually in Meta's dashboard. To switch from test back to production mode, deactivate and reactivate the workflow.
+
+### Send Notifications from Cal.com Events (`n1xrgJXoX6d74bjo`)
+
+The central messaging hub. Receives Cal.com webhook events and dispatches notifications to patients (WhatsApp/SMS) and clinic staff (Telegram).
+
+**Webhook:** `POST /webhook/101fbb84-79de-4896-8edf-973b3d86ee10`
+
+**Flow:**
+1. Webhook receives Cal.com event → Fetches patient's messaging preference from `messaging_preferences` data table (WhatsApp vs SMS) → Merges with event data
+2. "أضف معلوماتٍ إضافية" (Set node) enriches with: recipient phone, Telegram recipients, attendees string, gender conjugation fixes, formatted date/time strings, timezone name, and `arabic_date_strings` (relative dates like "اليوم"/"يوم غد"/"يوم الأحد ٢٠ أبريل" for WhatsApp templates)
+3. Routes by `triggerEvent`: BOOKING_CREATED, BOOKING_CANCELLED, BOOKING_RESCHEDULED, MEETING_STARTED
+4. Each event type further routes by booking type (clinic/remote) and/or initiator (doctor/patient)
+5. Sends Telegram notification to clinic staff, then routes patient message by `method` (whatsapp → template, sms → local SMS service)
+
+**WhatsApp templates used (all Arabic, `ar`):**
+
+| Template | Event | Params |
+|----------|-------|--------|
+| `booking_clinic_completed` | New clinic booking | `{{1}}` date, `{{2}}` time. Location header with clinic coordinates. Sent via HTTP Request (native node lacks location header support) |
+| `booking_remote_completed` | New remote booking | `{{1}}` date, `{{2}}` time. Text header. Sent via native WhatsApp node |
+| `booking_cancelled_by_doctor` | Doctor cancels | `{{1}}` date, `{{2}}` time. Apologetic tone, link to rebook |
+| `booking_cancelled_by_patient` | Patient cancels | `{{1}}` date, `{{2}}` time. Confirmatory tone, link to rebook |
+| `booking_rescheduled_by_doctor` | Doctor reschedules | `{{1}}` old date, `{{2}}` old time, `{{3}}` new date, `{{4}}` new time |
+| `booking_rescheduled_by_patient` | Patient reschedules | `{{1}}` old date, `{{2}}` old time, `{{3}}` new date, `{{4}}` new time |
+| `meeting_started_patient` | Remote meeting starts | No params. Video link button |
+
+**Date/time formatting for templates:**
+- `arabic_date_strings[0]` = current/new date: "اليوم" (today), "يوم غد" (tomorrow), or "يوم [weekday] [day] [month]"
+- `arabic_date_strings[1]` = old date (reschedules only, empty string for non-reschedule events)
+- `time_strings[0]` + `timezone_string` = time like "١٠:٠٠ ص بتوقيت عمان"
+- `date_strings[0]` = raw locale date (used for SMS messages, NOT for templates)
+
+**Key design decisions:**
+- The clinic confirmation template requires a LOCATION header (map pin). The native n8n WhatsApp sendTemplate node doesn't support location headers — only text/currency/date_time/image. So it uses an HTTP Request node to call the WhatsApp Cloud API directly (`POST https://graph.facebook.com/v21.0/{phone_id}/messages`) with `httpBearerAuth` credential ("Clinic WhatsApp Access Token").
+- All other templates use the native WhatsApp sendTemplate node since they only need text headers and body parameters.
+- The `messaging_preferences` data table determines WhatsApp vs SMS routing. **V2 verification should write to this table** when a patient verifies (since they've proven they have WhatsApp), but this is not yet implemented — see "Known Gaps" below.
+
+**Known Gaps:**
+- V2 verification does not write to the `messaging_preferences` data table. Patients who verify via V2 (WhatsApp) may default to SMS for notifications because the preference lookup finds nothing. The fix: the WhatsApp AI Assistant workflow (or the V2 verification workflow) should upsert a `whatsapp` preference when verification succeeds.
+- MEETING_STARTED for remote bookings: the `meeting_started_patient` template is approved but not yet wired in the workflow.
+
+**Messaging preferences data table:** `messaging_preferences` (ID: `RIIlnxVKYHiGeNgz`)
+- Lookup key: `phone_number` (without leading `+`)
+- Determines routing: `method` field → `whatsapp` or `sms`
 
 ### Send Telegram Messages (`C2F9UQOSqoWTqCg8`)
 
@@ -156,6 +200,26 @@ These are hard-won lessons from building workflows via the MCP SDK:
 - **Reference data tables via `mode: 'list'`** (dropdown selection) not `mode: 'id'`. The list mode stores the human-readable table name alongside the ID, making workflows readable when editing in the n8n UI.
 - **WhatsApp Trigger** auto-registers its webhook URL with Meta on activation. Using the "test" URL in the editor overrides this. To return to production, deactivate and reactivate the workflow.
 - **`executeCommand` and `localFileTrigger`** were removed in n8n 2.15.1. No replacements exist — use HTTP Request nodes calling external services or Code nodes with `child_process`.
+
+## WhatsApp Template Management
+
+Templates can be created and retrieved via the WhatsApp Business Management API using the direnv-provided `WA_ACCESS_TOKEN` and `WA_ACCOUNT_ID`:
+
+```bash
+# List templates
+curl -s "https://graph.facebook.com/v21.0/$WA_ACCOUNT_ID/message_templates" \
+  -H "Authorization: Bearer $WA_ACCESS_TOKEN"
+
+# Create template
+curl -s -X POST "https://graph.facebook.com/v21.0/$WA_ACCOUNT_ID/message_templates" \
+  -H "Authorization: Bearer $WA_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "...", "language": "ar", "category": "UTILITY", "components": [...] }'
+```
+
+**Approval:** New templates get `PENDING` status and require Meta approval before they can be sent. Utility templates are typically approved within minutes to hours.
+
+**Location header limitation:** The n8n WhatsApp sendTemplate node's `headerParameters` only support types `text`, `currency`, `date_time`, and `image`. It does NOT support `location` type headers. For templates with LOCATION headers (like `booking_clinic_completed`), use an HTTP Request node to call the WhatsApp Cloud API directly.
 
 ## Planned Enhancements
 
