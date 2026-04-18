@@ -44,19 +44,19 @@ const CAL_NAMESPACE = 'booking';
         <PhoneSelector id="phone-selector" phone="" />
       </div>
 
-      <!-- Phone Verification V1 (shown when no token or changing number) -->
-      <div id="verification-container" class="hidden">
-        <PhoneVerification id="phone-verification" />
-        <div id="v2-toggle" class="text-center mt-4">
-          <button type="button" class="text-sm text-primary hover:underline cursor-pointer">
-            لا تعرف رقمك؟ طريقة أسهل عبر واتساب
+      <!-- Phone Verification V2: WhatsApp (default) -->
+      <div id="verification-v2-container" class="hidden">
+        <PhoneVerificationV2 id="phone-verification-v2" />
+        <div id="v1-toggle" class="text-center mt-4">
+          <button type="button" class="text-sm text-muted dark:text-slate-400 hover:text-primary hover:underline cursor-pointer">
+            ليس لديك واتساب؟
           </button>
         </div>
       </div>
 
-      <!-- Phone Verification V2 (user-initiated, shown when toggled) -->
-      <div id="verification-v2-container" class="hidden">
-        <PhoneVerificationV2 id="phone-verification-v2" />
+      <!-- Phone Verification V1: SMS/WhatsApp code (fallback) -->
+      <div id="verification-container" class="hidden">
+        <PhoneVerification id="phone-verification" />
       </div>
 
       <!-- Back to Home Link -->
@@ -188,6 +188,8 @@ const CAL_NAMESPACE = 'booking';
       el = document.getElementById('selector-container');
       if (el) el.classList.add('hidden');
       el = document.getElementById('verification-container');
+      if (el) el.classList.add('hidden');
+      el = document.getElementById('verification-v2-container');
       if (el) el.classList.remove('hidden');
     }
 
@@ -277,14 +279,14 @@ const CAL_NAMESPACE = 'booking';
         showVerification();
       });
 
-      // V2 toggle: switch to WhatsApp-based verification
-      var v2Toggle = document.getElementById('v2-toggle');
-      if (v2Toggle) {
-        v2Toggle.addEventListener('click', function() {
+      // V1 toggle: switch from WhatsApp to SMS verification
+      var v1Toggle = document.getElementById('v1-toggle');
+      if (v1Toggle) {
+        v1Toggle.addEventListener('click', function() {
           var v1 = document.getElementById('verification-container');
           var v2 = document.getElementById('verification-v2-container');
-          if (v1) v1.classList.add('hidden');
-          if (v2) v2.classList.remove('hidden');
+          if (v2) v2.classList.add('hidden');
+          if (v1) v1.classList.remove('hidden');
         });
       }
 
