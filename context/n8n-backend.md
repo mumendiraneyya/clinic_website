@@ -61,11 +61,20 @@ AI-powered WhatsApp responder with verification code interception.
 
 **System prompt** sourced from `https://abuobaydatajjarrah.com/llms-ar.txt`. AI responds in 2-3 sentences, never gives medical advice.
 
+**Media forwarding (images/documents):**
+The Message Type Router (Switch node) routes incoming WhatsApp messages by type: `text` → AI/verification flow, `image`/`document` → media forwarding flow. Media messages bypass AI entirely and are forwarded to the doctor's Telegram (`1491333235`) as documents with a caption showing patient name and phone. A separate text notification goes to Orwa's Telegram (`211021550`). The patient receives a thank you reply: "شكرًا لكم! ستتم مشاركة المرفقات الطبية التي بعثتموها مع الطبيب قبل موعدكم."
+
+Media download flow: Extract media ID from WhatsApp payload → GET media URL from Graph API (bearer auth) → Download binary from the URL (bearer auth, response format: file) → Send as Telegram document. Uses the "Clinic WhatsApp Access Token" (`httpBearerAuth`) credential for the Graph API calls.
+
 **Cost:** ~$0.001/message (Haiku 4.5). ~$3/month at 100 messages/day.
 
-**Credentials:** Anthropic API, WhatsApp Business (phone ID: `943723358817193`), Telegram (Dads Clinic Appointments Bot).
+**Credentials:** Anthropic API, WhatsApp Business (phone ID: `943723358817193`), Telegram (Dads Clinic Appointments Bot), HTTP Bearer Auth (Clinic WhatsApp Access Token — for Graph API media download).
 
-**WhatsApp Trigger behavior:** The node auto-registers its production webhook URL with Meta when the workflow is activated. Never configure this manually in Meta's dashboard. To switch from test back to production mode, deactivate and reactivate the workflow.
+**Telegram chat IDs:**
+- `1491333235` — Doctor (receives forwarded media documents)
+- `211021550` — Orwa (receives AI conversation logs + media forward notifications)
+
+**WhatsApp Trigger behavior:** The node auto-registers its production webhook URL with Meta when the workflow is activated. Never configure this manually in Meta's dashboard. To switch from test back to production mode, deactivate and reactivate the workflow. SDK `update_workflow` also triggers re-registration.
 
 ### Send Notifications from Cal.com Events (`n1xrgJXoX6d74bjo`)
 
@@ -200,6 +209,8 @@ These are hard-won lessons from building workflows via the MCP SDK:
 - **Reference data tables via `mode: 'list'`** (dropdown selection) not `mode: 'id'`. The list mode stores the human-readable table name alongside the ID, making workflows readable when editing in the n8n UI.
 - **WhatsApp Trigger** auto-registers its webhook URL with Meta on activation. Using the "test" URL in the editor overrides this. To return to production, deactivate and reactivate the workflow.
 - **`executeCommand` and `localFileTrigger`** were removed in n8n 2.15.1. No replacements exist — use HTTP Request nodes calling external services or Code nodes with `child_process`.
+- **Switch/If node condition `options`** must include `{ caseSensitive: true, leftValue: '', typeValidation: 'loose', version: 3 }` inside each rule's `conditions` block. Using `typeValidation: 'strict'` causes runtime errors (`Cannot read properties of undefined (reading 'caseSensitive')`). Also set `looseTypeValidation: true` at the top-level parameters. The SDK doesn't add these `options` by default — they must be included explicitly.
+- **SDK `update_workflow` re-registers WhatsApp Trigger webhooks** with Meta, generating a new webhook ID. This is expected behavior (same as deactivating/reactivating in the UI).
 
 ## WhatsApp Template Management
 
