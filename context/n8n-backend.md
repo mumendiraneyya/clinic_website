@@ -211,6 +211,10 @@ These are hard-won lessons from building workflows via the MCP SDK:
 - **`executeCommand` and `localFileTrigger`** were removed in n8n 2.15.1. No replacements exist — use HTTP Request nodes calling external services or Code nodes with `child_process`.
 - **Switch/If node condition `options`** must include `{ caseSensitive: true, leftValue: '', typeValidation: 'loose', version: 3 }` inside each rule's `conditions` block. Using `typeValidation: 'strict'` causes runtime errors (`Cannot read properties of undefined (reading 'caseSensitive')`). Also set `looseTypeValidation: true` at the top-level parameters. The SDK doesn't add these `options` by default — they must be included explicitly.
 - **SDK `update_workflow` re-registers WhatsApp Trigger webhooks** with Meta, generating a new webhook ID. This is expected behavior (same as deactivating/reactivating in the UI).
+- **Telegram `appendAttribution`** defaults to `true`, adding "This message was sent automatically with n8n" to every message. Always set `additionalFields: { appendAttribution: false }` on Telegram nodes.
+- **URL expressions:** Use `=https://graph.facebook.com/v21.0/{{ $json.media_id }}` (embedded expression in a URL string), NOT `expr('{{ "https://..." + $json.media_id }}')` (string concatenation inside expression). The first form is more readable and avoids editor warnings about invalid static URLs.
+- **DataTable nodes replace `$json`** with their own output (the affected row), discarding all upstream fields. Chain nodes sequentially (not parallel fan-out) when DataTable nodes are in the path, so downstream nodes can reference earlier nodes by name via `$("NodeName")` without their input being clobbered.
+- **Sequential vs parallel chaining:** Prefer sequential chaining (`A.to(B).to(C)`) over parallel fan-out (`A.to(B)` + `A.to(C)`) unless the branches are truly independent. Sequential ensures data flows predictably, especially when DataTable nodes may be inserted later.
 
 ## WhatsApp Template Management
 
