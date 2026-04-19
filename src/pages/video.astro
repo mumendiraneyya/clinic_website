@@ -608,6 +608,10 @@ const AUTO_REDIRECT_TIME = 1 * 60;    // Auto-redirect 1 minute before
 
       // V2 fallback to V1 (user clicked "سأدخل رقمي يدوياً" or "لا أستخدم واتساب", or code expired)
       function switchToV1(e) {
+        // Don't show verification if main content is already visible (stale timer from previous navigation)
+        var mainContainer = document.getElementById('main-container');
+        if (mainContainer && !mainContainer.classList.contains('hidden')) return;
+
         var v1 = document.getElementById('verification-container');
         var v2 = document.getElementById('verification-v2-container');
         if (v2) v2.classList.add('hidden');

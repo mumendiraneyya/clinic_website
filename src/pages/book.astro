@@ -276,6 +276,10 @@ const CAL_NAMESPACE = 'booking';
 
       // V2 fallback to V1 (user clicked "سأدخل رقمي يدوياً" or "لا أستخدم واتساب", or code expired)
       function switchToV1(e) {
+        // Don't show verification if selector is already visible (stale timer from previous navigation)
+        var selectorContainer = document.getElementById('selector-container');
+        if (selectorContainer && !selectorContainer.classList.contains('hidden')) return;
+
         var v1 = document.getElementById('verification-container');
         var v2 = document.getElementById('verification-v2-container');
         if (v2) v2.classList.add('hidden');

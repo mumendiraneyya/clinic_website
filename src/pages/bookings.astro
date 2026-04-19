@@ -574,6 +574,10 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
 
       // V2 fallback to V1 (user clicked "سأدخل رقمي يدوياً" or "لا أستخدم واتساب", or code expired)
       function switchToV1(e) {
+        // Don't show verification if bookings are already visible (stale timer from previous navigation)
+        var bookingsContainer = document.getElementById('bookings-container');
+        if (bookingsContainer && !bookingsContainer.classList.contains('hidden')) return;
+
         var v1 = document.getElementById('verification-container');
         var v2 = document.getElementById('verification-v2-container');
         if (v2) v2.classList.add('hidden');
