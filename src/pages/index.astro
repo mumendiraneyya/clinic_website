@@ -220,7 +220,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
       <!-- Mobile: Segmented booking pill -->
       <div class="flex md:hidden flex-row justify-center items-center gap-2 mb-4">
         {!bookingDisabled ? (
-          <div class="booking-pill-track booking-pill-track--mobile flex items-center rounded-full bg-white dark:bg-slate-800 border-[3px] border-gray-300 dark:border-gray-600 px-3 gap-1 text-sm leading-snug">
+          <div class="booking-pill-track booking-pill-track--mobile flex items-center rounded-full bg-white/40 dark:bg-white/10 backdrop-blur-[8px] border-[3px] border-white/50 dark:border-white/20 px-3 gap-1 text-sm leading-snug">
             <Icon name="tabler:building-hospital" class="booking-pill-outer-icon is-active w-5 h-5 shrink-0 relative z-10" data-for="clinic" />
             <div class="booking-pill relative flex rounded-full overflow-hidden text-sm">
               <div class="booking-pill-slider"></div>
@@ -243,7 +243,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
           href="https://wa.me/962782760965"
           target="_blank"
           rel="noopener noreferrer"
-          class="btn-secondary border-[3px] border-gray-300 dark:border-gray-600 dark:bg-slate-800"
+          class="btn-secondary border-[3px] border-white/50 dark:border-white/20 bg-white/40 dark:bg-white/10 backdrop-blur-[8px]"
           aria-label="تواصل معنا عبر واتساب"
           data-whatsapp-cta="mobile"
         >
@@ -256,7 +256,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
       <!-- Desktop: Segmented booking pill -->
       <div class="hidden md:flex flex-row justify-center items-center gap-4 mb-4">
         {!bookingDisabled ? (
-          <div class="booking-pill-track flex items-center rounded-full bg-white dark:bg-slate-800 border-[3px] border-gray-300 dark:border-gray-600 px-4 gap-1.5 text-base">
+          <div class="booking-pill-track flex items-center rounded-full bg-white/40 dark:bg-white/10 backdrop-blur-[8px] border-[3px] border-white/50 dark:border-white/20 px-4 gap-1.5 text-base">
             <Icon name="tabler:building-hospital" class="booking-pill-outer-icon is-active w-6 h-6 shrink-0 relative z-10" data-for="clinic" />
             <div class="booking-pill relative flex rounded-full overflow-hidden text-base">
               <div class="booking-pill-slider"></div>
@@ -1232,6 +1232,9 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
     /* Segmented pill for booking type */
     .booking-pill {
       background: transparent;
+    }
+    .booking-pill-track {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     }
     .booking-pill-slider {
       position: absolute;
