@@ -30,3 +30,6 @@ pnpm-lock.yaml
 **/*.svgz
 screenshot_fullheight_*.png
 .envrc
+
+/.claude/settings.local.json
+
