@@ -326,6 +326,19 @@ When creating anchor links that should scroll past the hero image to show conten
 - Hash anchors won't work well with the snap scrolling implementation
 - See `src/pages/index.astro` for example: "من نحن" link uses custom scroll handler
 
+**Booking type selector (segmented pill):**
+The hero action area contains a segmented pill control for choosing between clinic and remote booking, replacing the old toggle switch which was not discoverable enough (especially for older users).
+
+- **Design:** Frosted glass pill (`backdrop-blur-[8px]`, `bg-white/40`, `border-white/50`) with a sliding primary-colored highlight that animates between segments. Icons flank the pill externally with a pop animation on switch.
+- **Active segment:** Shows full label ("احجز موعدًا في العيادة" / "احجز استشارة عن بعد" on desktop; "احجز في العيادة" / "احجز عن بعد" on mobile) + icon in primary color
+- **Inactive segment:** Shows short label ("عن بعد" / "في العيادة") + icon in muted color
+- **Desktop:** Hover on inactive segment activates it (slider animates). Click on active segment opens booking flow
+- **Mobile:** Tap inactive to switch, tap active to book. Inactive icon hidden to save space
+- **Slider positioning:** Uses JS to measure active button's `offsetLeft`/`offsetWidth` and positions an absolutely-positioned div. Recalculates on `resize` event to handle window scaling
+- **Icon pop:** Clone-and-replace technique to guarantee CSS animation restart on every toggle (the `animationend` event removes the class so it's fresh for next time)
+- **CSS classes:** `.booking-pill-track`, `.booking-pill`, `.booking-pill-slider`, `.booking-pill-btn`, `.booking-pill-outer-icon`
+- **JS functions:** `activateBookingType(type)`, `positionSlider(pill, skipTransition)`, `handleBookingClick()`
+
 **Key CSS classes:**
 - `.is-fixed` - Applied to action containers when pinned to bottom
 - `.is-hidden` - Hides pinned buttons when user scrolls near the footer (reveals social links)
