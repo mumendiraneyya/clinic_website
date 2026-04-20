@@ -228,7 +228,7 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
                 <span class="booking-pill-full">احجز في العيادة</span><span class="booking-pill-short hidden">في العيادة</span>
               </button>
               <button type="button" data-booking-type="remote" class="booking-pill-btn relative z-10 px-3 py-3.5 font-medium whitespace-nowrap">
-                <span class="booking-pill-full hidden">استشارة عن بعد</span><span class="booking-pill-short">عن بعد</span>
+                <span class="booking-pill-full hidden">احجز عن بعد</span><span class="booking-pill-short">عن بعد</span>
               </button>
             </div>
             <Icon name="tabler:video" class="booking-pill-outer-icon w-5 h-5 shrink-0 relative z-10" data-for="remote" />
@@ -1150,6 +1150,13 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
         if (activeBtn) {
           icon.classList.toggle('is-active', icon.dataset.for === activeBtn.dataset.bookingType);
         }
+      });
+
+      // Reposition sliders on resize (window scaling changes button widths)
+      window.addEventListener('resize', function() {
+        document.querySelectorAll('.booking-pill').forEach(function(pill) {
+          positionSlider(pill, true);
+        });
       });
 
       document.querySelectorAll('.booking-pill').forEach(function(pill) {
