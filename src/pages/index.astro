@@ -217,40 +217,33 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
     fullHeight={true}
   >
     <Fragment slot="content">
-      <!-- Mobile: Same as desktop but with vertical toggle layout -->
+      <!-- Mobile: Segmented booking pill -->
       <div class="flex md:hidden flex-row justify-center items-center gap-2 mb-4">
-        <div class={`flex items-start gap-2 bg-white/50 dark:bg-white/20 backdrop-blur-sm rounded-2xl shadow-sm ${bookingDisabled ? 'p-1' : 'p-2'}`}>
-          {/* Toggle group - hidden when booking disabled */}
-          {!bookingDisabled && <label class="flex flex-col items-center gap-1 cursor-pointer text-xs">
-            <span id="booking-label-mobile" class="text-muted dark:text-slate-300 whitespace-nowrap">في العيادة</span>
-            <div class="relative">
-              <input
-                type="checkbox"
-                id="booking-in-clinic-mobile"
-                checked
-                class="sr-only peer"
-              />
-              <div class="w-11 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:bg-primary transition-colors"></div>
-              <div class="absolute top-0.5 start-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-full rtl:peer-checked:-translate-x-full transition-transform"></div>
+        {!bookingDisabled ? (
+          <div class="booking-pill-track booking-pill-track--mobile flex items-center rounded-full bg-white/40 dark:bg-white/10 backdrop-blur-[8px] border-[3px] border-white/50 dark:border-white/20 px-3 gap-1 text-sm leading-snug">
+            <Icon name="tabler:building-hospital" class="booking-pill-outer-icon is-active w-5 h-5 shrink-0 relative z-10" data-for="clinic" />
+            <div class="booking-pill relative flex rounded-full overflow-hidden text-sm">
+              <div class="booking-pill-slider"></div>
+              <button type="button" data-booking-type="clinic" class="booking-pill-btn is-active relative z-10 px-3 py-3.5 font-medium whitespace-nowrap">
+                <span class="booking-pill-full">احجز في العيادة</span><span class="booking-pill-short hidden">في العيادة</span>
+              </button>
+              <button type="button" data-booking-type="remote" class="booking-pill-btn relative z-10 px-3 py-3.5 font-medium whitespace-nowrap">
+                <span class="booking-pill-full hidden">احجز عن بعد</span><span class="booking-pill-short">عن بعد</span>
+              </button>
             </div>
-          </label>}
-          <a
-            href="#"
-            class={`btn-primary flex items-center gap-1 text-[0.9rem] min-[360px]:text-base ${bookingDisabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
-            data-booking-link={bookingDisabled ? undefined : "د.-مو-من-ديرانية-z6vyi6"}
-            data-booking-namespace={bookingDisabled ? undefined : "landing"}
-            data-booking-config={bookingDisabled ? undefined : JSON.stringify({ layout: 'month_view' })}
-            aria-disabled={bookingDisabled ? 'true' : undefined}
-          >
-            <span>{bookingDisabled ? bookingDisabledTitle : 'احجز موعدًا'}</span>
-            <Icon name={bookingDisabled ? 'tabler:calendar-off' : 'tabler:calendar-plus'} class="w-5 h-5" />
-          </a>
-        </div>
+            <Icon name="tabler:video" class="booking-pill-outer-icon w-5 h-5 shrink-0 relative z-10" data-for="remote" />
+          </div>
+        ) : (
+          <span class="btn-primary flex items-center gap-1 text-[0.9rem] min-[360px]:text-base opacity-50 cursor-not-allowed">
+            <span>{bookingDisabledTitle}</span>
+            <Icon name="tabler:calendar-off" class="w-5 h-5" />
+          </span>
+        )}
         <a
           href="https://wa.me/962782760965"
           target="_blank"
           rel="noopener noreferrer"
-          class="btn-secondary dark:bg-gray-900/50"
+          class="btn-secondary border-[3px] border-white/50 dark:border-white/20 bg-white/40 dark:bg-white/10 backdrop-blur-[8px]"
           aria-label="تواصل معنا عبر واتساب"
           data-whatsapp-cta="mobile"
         >
@@ -260,39 +253,33 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
         </a>
       </div>
 
-      <!-- Desktop: Horizontal toggle layout -->
+      <!-- Desktop: Segmented booking pill -->
       <div class="hidden md:flex flex-row justify-center items-center gap-4 mb-4">
-        <div class={`flex items-center gap-3 bg-white/50 dark:bg-white/20 backdrop-blur-sm pe-1 py-1 rounded-full shadow-sm ${bookingDisabled ? 'ps-1' : 'ps-4'}`}>
-          {!bookingDisabled && <label class="flex items-center gap-3 cursor-pointer text-sm whitespace-nowrap">
-            <span id="booking-label" class="text-muted font-bold dark:text-slate-300">موعد في العيادة</span>
-            <div class="relative">
-              <input
-                type="checkbox"
-                id="booking-in-clinic"
-                checked
-                class="sr-only peer"
-              />
-              <div class="w-11 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:bg-primary transition-colors"></div>
-              <div class="absolute top-0.5 start-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-full rtl:peer-checked:-translate-x-full transition-transform"></div>
+        {!bookingDisabled ? (
+          <div class="booking-pill-track flex items-center rounded-full bg-white/40 dark:bg-white/10 backdrop-blur-[8px] border-[3px] border-white/50 dark:border-white/20 px-4 gap-1.5 text-base">
+            <Icon name="tabler:building-hospital" class="booking-pill-outer-icon is-active w-6 h-6 shrink-0 relative z-10" data-for="clinic" />
+            <div class="booking-pill relative flex rounded-full overflow-hidden text-base">
+              <div class="booking-pill-slider"></div>
+              <button type="button" data-booking-type="clinic" class="booking-pill-btn is-active relative z-10 px-5 py-3.5 font-medium whitespace-nowrap">
+                <span class="booking-pill-full">احجز موعدًا في العيادة</span><span class="booking-pill-short hidden">في العيادة</span>
+              </button>
+              <button type="button" data-booking-type="remote" class="booking-pill-btn relative z-10 px-5 py-3.5 font-medium whitespace-nowrap">
+                <span class="booking-pill-full hidden">احجز استشارة عن بعد</span><span class="booking-pill-short">عن بعد</span>
+              </button>
             </div>
-          </label>}
-          <a
-            href="#"
-            class={`btn-primary flex items-center gap-1 ${bookingDisabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
-            data-booking-link={bookingDisabled ? undefined : "د.-مو-من-ديرانية-z6vyi6"}
-            data-booking-namespace={bookingDisabled ? undefined : "landing"}
-            data-booking-config={bookingDisabled ? undefined : JSON.stringify({ layout: 'month_view' })}
-            aria-disabled={bookingDisabled ? 'true' : undefined}
-          >
-            <span>{bookingDisabled ? bookingDisabledTitle : 'احجز موعدًا'}</span>
-            <Icon name={bookingDisabled ? 'tabler:calendar-off' : 'tabler:calendar-plus'} class="w-5 h-5" />
-          </a>
-        </div>
+            <Icon name="tabler:video" class="booking-pill-outer-icon w-6 h-6 shrink-0 relative z-10" data-for="remote" />
+          </div>
+        ) : (
+          <span class="btn-primary flex items-center gap-1 opacity-50 cursor-not-allowed">
+            <span>{bookingDisabledTitle}</span>
+            <Icon name="tabler:calendar-off" class="w-5 h-5" />
+          </span>
+        )}
         <a
           href="https://wa.me/962782760965"
           target="_blank"
           rel="noopener noreferrer"
-          class="btn-secondary whatsapp-btn dark:bg-gray-900/50"
+          class="btn-secondary whatsapp-btn border-[3px] border-gray-300 dark:border-gray-600 dark:bg-slate-800"
           data-whatsapp-cta="desktop"
         >
           <span>هل لديك تساؤل؟ تواصل معنا</span>
@@ -898,17 +885,14 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
       var isMobile = window.innerWidth < 768;
       var isClinic = true;
 
-      if (isMobile) {
-        var mobileContainer = document.getElementById('hero-mobile-actions');
-        var mobileCheckbox = mobileContainer ? mobileContainer.querySelector('#booking-in-clinic-mobile') : null;
-        isClinic = mobileCheckbox ? mobileCheckbox.checked : true;
-      } else {
-        var actionsContainer = document.getElementById('hero-actions-container');
-        var inClinicCheckbox = actionsContainer ? actionsContainer.querySelector('#booking-in-clinic') : null;
-        isClinic = inClinicCheckbox ? inClinicCheckbox.checked : true;
+      var container = isMobile
+        ? document.getElementById('hero-mobile-actions')
+        : document.getElementById('hero-actions-container');
+      if (container) {
+        var activeBtn = container.querySelector('.booking-pill-btn.is-active');
+        if (activeBtn) return activeBtn.dataset.bookingType || 'clinic';
       }
-
-      return isClinic ? 'clinic' : 'remote';
+      return 'clinic';
     }
 
     // Validate token with server
@@ -1059,31 +1043,34 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
     }
 
     // Setup booking button click handler
+    async function handleBookingClick() {
+      var bookingType = getBookingType();
+      var token = localStorage.getItem(STORAGE_KEY);
+
+      // No token - go directly to full booking page
+      if (!token) {
+        window.location.href = '/book?type=' + bookingType;
+        return;
+      }
+
+      // Validate token
+      var result = await validateToken(token);
+
+      if (result.success && result.payload) {
+        // Valid token - show popup for quick booking
+        showBookingPopup(bookingType);
+      } else {
+        // Invalid token - clear and go to booking page
+        localStorage.removeItem(STORAGE_KEY);
+        window.location.href = '/book?type=' + bookingType;
+      }
+    }
+
     function setupBookingButton() {
       document.querySelectorAll('[data-booking-link]').forEach(function(el) {
-        el.addEventListener('click', async function(e) {
+        el.addEventListener('click', function(e) {
           e.preventDefault();
-
-          var bookingType = getBookingType();
-          var token = localStorage.getItem(STORAGE_KEY);
-
-          // No token - go directly to full booking page
-          if (!token) {
-            window.location.href = '/book?type=' + bookingType;
-            return;
-          }
-
-          // Validate token
-          var result = await validateToken(token);
-
-          if (result.success && result.payload) {
-            // Valid token - show popup for quick booking
-            showBookingPopup(bookingType);
-          } else {
-            // Invalid token - clear and go to booking page
-            localStorage.removeItem(STORAGE_KEY);
-            window.location.href = '/book?type=' + bookingType;
-          }
+          handleBookingClick();
         });
       });
     }
@@ -1094,32 +1081,111 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
     // Use astro:page-load which fires on initial load and after View Transitions
     document.addEventListener('astro:page-load', setupBookingButton);
 
-    // Desktop: Checkbox label update (scoped to hero-actions-container to avoid duplicate ID issues)
-    document.addEventListener('astro:page-load', function() {
-      var actionsContainer = document.getElementById('hero-actions-container');
-      if (actionsContainer) {
-        var checkbox = actionsContainer.querySelector('#booking-in-clinic');
-        var label = actionsContainer.querySelector('#booking-label');
-        if (checkbox && label) {
-          checkbox.addEventListener('change', function() {
-            label.textContent = this.checked ? 'موعد في العيادة' : 'استشارة عن بعد';
-          });
-        }
-      }
-    });
+    // Segmented pill: position the slider over the active button
+    function positionSlider(pill, skipTransition) {
+      var slider = pill.querySelector('.booking-pill-slider');
+      var activeBtn = pill.querySelector('.booking-pill-btn.is-active');
+      if (!slider || !activeBtn) return;
 
-    // Mobile: Checkbox label update (scoped to hero-mobile-actions to avoid duplicate ID issues)
-    document.addEventListener('astro:page-load', function() {
-      var mobileContainer = document.getElementById('hero-mobile-actions');
-      if (mobileContainer) {
-        var checkbox = mobileContainer.querySelector('#booking-in-clinic-mobile');
-        var label = mobileContainer.querySelector('#booking-label-mobile');
-        if (checkbox && label) {
-          checkbox.addEventListener('change', function() {
-            label.textContent = this.checked ? 'في العيادة' : 'عن بعد';
-          });
-        }
+      if (skipTransition) {
+        slider.style.transition = 'none';
       }
+      slider.style.left = activeBtn.offsetLeft + 'px';
+      slider.style.width = activeBtn.offsetWidth + 'px';
+      if (skipTransition) {
+        // Force reflow then restore transition
+        slider.offsetHeight;
+        slider.style.transition = '';
+      }
+    }
+
+    // Switch active type across all pills, with sliding + cross-fade animation
+    function activateBookingType(type) {
+      document.querySelectorAll('.booking-pill').forEach(function(pill) {
+        // Phase 1: fade out text
+        pill.classList.add('is-transitioning');
+
+        setTimeout(function() {
+          // Phase 2: swap labels while faded out
+          pill.querySelectorAll('.booking-pill-btn').forEach(function(b) {
+            var isMatch = b.dataset.bookingType === type;
+            b.classList.toggle('is-active', isMatch);
+            var full = b.querySelector('.booking-pill-full');
+            var short = b.querySelector('.booking-pill-short');
+            if (full) full.classList.toggle('hidden', !isMatch);
+            if (short) short.classList.toggle('hidden', isMatch);
+          });
+
+          // Slide to new position (text has changed, so widths are new)
+          positionSlider(pill);
+
+          // Phase 3: fade text back in
+          setTimeout(function() {
+            pill.classList.remove('is-transitioning');
+          }, 50);
+        }, 150);
+      });
+
+      // Update outer icons with pop effect
+      document.querySelectorAll('.booking-pill-outer-icon').forEach(function(icon) {
+        var isMatch = icon.dataset.for === type;
+        icon.classList.toggle('is-active', isMatch);
+        if (isMatch) {
+          // Clone and replace to guarantee animation restart
+          var clone = icon.cloneNode(true);
+          clone.classList.add('is-popping');
+          clone.addEventListener('animationend', function() {
+            clone.classList.remove('is-popping');
+          });
+          icon.parentNode.replaceChild(clone, icon);
+        }
+      });
+    }
+
+    // Segmented pill: click + hover behavior + initial slider position
+    document.addEventListener('astro:page-load', function() {
+      // Set initial outer icon state
+      document.querySelectorAll('.booking-pill-outer-icon').forEach(function(icon) {
+        var activeBtn = document.querySelector('.booking-pill-btn.is-active');
+        if (activeBtn) {
+          icon.classList.toggle('is-active', icon.dataset.for === activeBtn.dataset.bookingType);
+        }
+      });
+
+      // Reposition sliders on resize (window scaling changes button widths)
+      window.addEventListener('resize', function() {
+        document.querySelectorAll('.booking-pill').forEach(function(pill) {
+          positionSlider(pill, true);
+        });
+      });
+
+      document.querySelectorAll('.booking-pill').forEach(function(pill) {
+        // Set initial slider position without animation
+        positionSlider(pill, true);
+
+        var buttons = pill.querySelectorAll('.booking-pill-btn');
+        var isDesktop = window.matchMedia('(pointer: fine)').matches;
+
+        buttons.forEach(function(btn) {
+          // Desktop: hover on inactive → activate it
+          if (isDesktop) {
+            btn.addEventListener('mouseenter', function() {
+              if (!btn.classList.contains('is-active')) {
+                activateBookingType(btn.dataset.bookingType);
+              }
+            });
+          }
+
+          // Click: if active → book; if inactive (mobile) → activate
+          btn.addEventListener('click', function() {
+            if (btn.classList.contains('is-active')) {
+              handleBookingClick();
+            } else {
+              activateBookingType(btn.dataset.bookingType);
+            }
+          });
+        });
+      });
     });
 
     // Scroll past hero for "من نحن" link
@@ -1168,6 +1234,75 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
       .whatsapp-btn {
         background-color: white;
       }
+    }
+
+    /* Segmented pill for booking type */
+    .booking-pill {
+      background: transparent;
+    }
+    .booking-pill-track {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+    .booking-pill-slider {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: var(--aw-color-primary);
+      border-radius: 9999px;
+      transition: left 0.35s ease, width 0.35s ease;
+      z-index: 5;
+    }
+    .booking-pill-btn {
+      color: var(--aw-color-text-muted, #6b7280);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: color 0.2s ease;
+      line-height: 22px;
+    }
+    .booking-pill-btn.is-active {
+      color: white;
+    }
+    html.dark .booking-pill-btn {
+      color: #94a3b8;
+    }
+    html.dark .booking-pill-btn.is-active {
+      color: white;
+    }
+    /* Text cross-fade */
+    .booking-pill-btn .booking-pill-full,
+    .booking-pill-btn .booking-pill-short {
+      transition: opacity 0.15s ease;
+    }
+    .booking-pill.is-transitioning .booking-pill-btn .booking-pill-full,
+    .booking-pill.is-transitioning .booking-pill-btn .booking-pill-short {
+      opacity: 0;
+    }
+    /* Outer icons */
+    .booking-pill-outer-icon {
+      color: #9ca3af;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+    .booking-pill-outer-icon.is-active {
+      color: var(--aw-color-primary);
+    }
+    html.dark .booking-pill-outer-icon {
+      color: #4b5563;
+    }
+    html.dark .booking-pill-outer-icon.is-active {
+      color: var(--aw-color-primary);
+    }
+    /* Mobile: hide inactive icon to save space */
+    .booking-pill-track--mobile .booking-pill-outer-icon:not(.is-active) {
+      display: none;
+    }
+    @keyframes icon-pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+    .booking-pill-outer-icon.is-popping {
+      animation: icon-pop 0.35s ease;
     }
   </style>
 </Layout>

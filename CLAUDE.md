@@ -18,7 +18,10 @@ This is a family project. Orwa (developer) builds and maintains the site for his
 - **This repo is a fork** of `arthelokyo/astrowind`. The `gh` CLI resolves to the upstream by default.
 - **Always specify `--repo mumendiraneyya/clinic_website`** when using `gh pr create` or other `gh` commands.
 - **PR images:** Leave HTML comment markers (`<!-- 📸 -->`) and ask the user to drag-and-drop images in the GitHub UI.
-- **Submodule `n8n`:** Contains n8n workflow backups. Pull with `cd n8n && git pull` before committing if workflows changed.
+- **PR/comment attribution:** Use `🤖 برمجته [سوسن](https://claude.com/claude-code)` (سوسن is Claude's Arabic name). Do NOT use English "Generated with Claude Code".
+- **Collaborator GitHub handles:** @mamouneyya (Mamoun), @SufianDira (Sufian), @mumendiraneyya (Dr. Mu'men)
+- **n8n workflow sync:** Run `ssh root@n8n ./backup.sh 'commit message'` to backup workflows from the remote server, then `cd n8n && git pull` locally. Do not just `git pull` the submodule — workflows must be backed up from the server first.
+- **Submodule `n8n`:** Contains n8n workflow backups.
 - **Never use `git stash`** around commits that modify files. Stash pop can silently revert committed changes (happened with `book.astro` V2 integration — the stash captured the pre-edit state and overwrote the committed version on pop). If you need to work around uncommitted changes for `gh` commands, commit them first or use `--allow-dirty`.
 - **After merging feature branches**, always verify that key files contain the expected changes. Don't trust the merge output alone.
 
