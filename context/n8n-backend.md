@@ -217,11 +217,11 @@ The n8n MCP (`mcp__n8n-mcp__*`) provides tools for inspecting and modifying work
 
 These cause **runtime errors** if not followed:
 
-1. **Switch/If condition `options` block is REQUIRED.** Every `conditions` object must include:
+1. **Switch AND If node condition `options` block is REQUIRED.** Every `conditions` object inside Switch rules AND If node parameters must include:
    ```javascript
    options: { caseSensitive: true, leftValue: '', typeValidation: 'loose', version: 3 }
    ```
-   Also set `looseTypeValidation: true` at the top-level parameters. Using `typeValidation: 'strict'` causes `Cannot read properties of undefined (reading 'caseSensitive')`.
+   Also set `looseTypeValidation: true` at the top-level node parameters. The SDK does NOT add these to ANY condition-based node — neither Switch nor If. Without them, n8n throws `Cannot read properties of undefined (reading 'caseSensitive')` at runtime. This has bitten us multiple times.
 
 2. **DataTable nodes need `alwaysOutputData: true`.** Without it, flows terminate silently when a delete/get returns no rows.
 
