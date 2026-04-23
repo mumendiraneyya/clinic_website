@@ -10,12 +10,13 @@ The clinic's backend runs on a self-hosted n8n instance at `https://n8n.orwa.tec
 
 | Workflow | ID | Purpose |
 |----------|------|---------|
-| Verify Phone Number (V1) | `dwv7rpf8uHxyum02` | Original phone verification: send code via SMS/WhatsApp, verify code, issue JWT |
+| Verify Phone Number (V1) | `dwv7rpf8uHxyum02` | Phone verification: send code via SMS/WhatsApp, verify code, issue JWT, fetch bookings |
 | Verify Phone Number (V2) | `wpSDqlKO2iMoUZZ7` | User-initiated verification: generate code for user to send via WhatsApp |
-| WhatsApp AI Assistant | `XlYzvScd6xm3xlBI` | Claude Haiku 4.5 chatbot + verification code interception |
-| Send Telegram Messages | `C2F9UQOSqoWTqCg8` | Subflow: maps phone numbers to Telegram chat IDs, sends messages |
-| Send Reminders | `WiqM8fag3FvWvW6t` | Appointment reminders via WhatsApp/SMS |
+| Autoconfirm Appointments | `r09D20b6MASeLOeX` | Auto-confirm Cal.com bookings after JWT phone verification |
+| WhatsApp AI Assistant | `XlYzvScd6xm3xlBI` | Claude Haiku 4.5 chatbot + verification code interception + media forwarding |
 | Send Notifications from Cal.com Events | `n1xrgJXoX6d74bjo` | Central messaging hub: receives Cal.com events, sends WhatsApp/SMS/Telegram notifications |
+| Send Reminders | `WiqM8fag3FvWvW6t` | Appointment reminders via WhatsApp/SMS |
+| Send Telegram Messages | `C2F9UQOSqoWTqCg8` | Subflow: maps phone numbers to Telegram chat IDs, sends messages |
 
 ### Verify Phone Number V1 (`dwv7rpf8uHxyum02`)
 
@@ -25,10 +26,9 @@ Key webhook endpoints:
 - `POST /webhook/c6c748c4-...` — Send verification code
 - `POST /webhook/9298e44c-...` — Verify code
 - `POST /webhook/b1ac96a5-...` — Validate existing JWT token
-- `POST /webhook/80a3c67b-...` — Auto-confirm Cal.com appointments
 - `POST /webhook/4900724b-...` — Get upcoming bookings from token
 
-After confirming a booking on Cal.com, fires `booking_completed` event to PostHog with the phone number as `distinct_id`.
+**Note:** The auto-confirm path was extracted to its own workflow — see "Autoconfirm Appointments" below.
 
 ### Verify Phone Number V2 (`wpSDqlKO2iMoUZZ7`)
 
@@ -43,14 +43,33 @@ User-initiated verification — the user sends a code TO the clinic via WhatsApp
 
 **Data table:** `user_initiated_verification_codes` (ID: `YF3BFLASWMIxuPgu`) — columns: `code`, `session_id`, `phone` (null until claimed). Uses built-in `createdAt` for expiry. Expired rows flushed inline on each generate call.
 
-### WhatsApp AI Assistant (`XlYzvScd6xm3xlBI`)
+### Autoconfirm Appointments (`r09D20b6MASeLOeX`)
 
-AI-powered WhatsApp responder with verification code interception.
+Extracted from V1 workflow. Receives Cal.com `BOOKING_REQUESTED` webhooks and auto-confirms after verifying the JWT phone matches.
+
+**Webhook:** `POST /webhook/80a3c67b-6446-4dd1-be22-20787eb290f5`
 
 **Flow:**
-1. WhatsApp Trigger → Filter text messages → Extract phone, text, sender name
+1. Verify `triggerEvent === "BOOKING_REQUESTED"` and `uid` is not empty
+2. Verify `attendeePhoneNumber` and `verificationToken` are present in booking responses
+3. Decode JWT from `payload.userFieldsResponses.verificationToken.value` (note: `userFieldsResponses`, not `responses`)
+4. Compare JWT phone (`+{payload.phone}`) against `attendeePhoneNumber` from booking
+5. **Match:** Confirm booking on Cal.com (`POST /v2/bookings/{uid}/confirm`) → Invoke notifications webhook → Signal `booking_completed` to PostHog
+6. **Mismatch/failure:** Send Telegram rejection notification → Decline booking on Cal.com
+
+### WhatsApp AI Assistant (`XlYzvScd6xm3xlBI`)
+
+AI-powered WhatsApp responder with verification code interception and media forwarding.
+
+**Message routing (Switch node):**
+- `text` → verification code check → AI assistant
+- `image`/`document` → media forwarding to doctor
+- Other types (audio, sticker, etc.) → dropped
+
+**Text message flow:**
+1. Extract phone, text, sender name
 2. Check if message matches 6-char verification code pattern (case-insensitive, spaces ignored)
-3. **If code:** Look up in V2 data table → set phone on match → reply confirmation or "unknown code"
+3. **If code:** Look up in V2 data table → set phone on match → reply confirmation or "unknown code" → upsert `messaging_preferences` table with `method: whatsapp`
 4. **If not code:** Claude Haiku 4.5 classifies intent and generates Arabic reply
 
 **Intent classification:**
@@ -59,12 +78,12 @@ AI-powered WhatsApp responder with verification code interception.
 - `administrative` — billing/insurance → directs to +962798872899
 - `booking` — appointment changes → directs to https://abuobaydatajjarrah.com/bookings/
 
-**System prompt** sourced from `https://abuobaydatajjarrah.com/llms-ar.txt`. AI responds in 2-3 sentences, never gives medical advice.
+**System prompt** is hardcoded in the agent node with clinic info (doctor, qualifications, specialties, fees, location, hours, phone numbers, booking link). AI responds in 2-3 sentences, never gives medical advice.
 
 **Media forwarding (images/documents):**
-The Message Type Router (Switch node) routes incoming WhatsApp messages by type: `text` → AI/verification flow, `image`/`document` → media forwarding flow. Media messages bypass AI entirely and are forwarded to the doctor's Telegram (`1491333235`) as documents with a caption showing patient name and phone. A separate text notification goes to Orwa's Telegram (`211021550`). The patient receives a thank you reply: "شكرًا لكم! ستتم مشاركة المرفقات الطبية التي بعثتموها مع الطبيب قبل موعدكم."
+Media messages bypass AI and are forwarded to the doctor's Telegram as documents with a caption showing patient name and phone. A separate text notification goes to Orwa's Telegram. The patient receives a thank you reply.
 
-Media download flow: Extract media ID from WhatsApp payload → GET media URL from Graph API (bearer auth) → Download binary from the URL (bearer auth, response format: file) → Send as Telegram document. Uses the "Clinic WhatsApp Access Token" (`httpBearerAuth`) credential for the Graph API calls.
+Media download flow: Extract media ID from WhatsApp payload → GET media URL from Graph API (bearer auth) → Download binary (bearer auth, response format: file) → Send as Telegram document. Uses the "Clinic WhatsApp Access Token" (`httpBearerAuth`) credential for the Graph API calls.
 
 **Cost:** ~$0.001/message (Haiku 4.5). ~$3/month at 100 messages/day.
 
@@ -110,19 +129,15 @@ The central messaging hub. Receives Cal.com webhook events and dispatches notifi
 **Key design decisions:**
 - The clinic confirmation template requires a LOCATION header (map pin). The native n8n WhatsApp sendTemplate node doesn't support location headers — only text/currency/date_time/image. So it uses an HTTP Request node to call the WhatsApp Cloud API directly (`POST https://graph.facebook.com/v21.0/{phone_id}/messages`) with `httpBearerAuth` credential ("Clinic WhatsApp Access Token").
 - All other templates use the native WhatsApp sendTemplate node since they only need text headers and body parameters.
-- The `messaging_preferences` data table determines WhatsApp vs SMS routing. **V2 verification should write to this table** when a patient verifies (since they've proven they have WhatsApp), but this is not yet implemented — see "Known Gaps" below.
-
-**Known Gaps:**
-- V2 verification does not write to the `messaging_preferences` data table. Patients who verify via V2 (WhatsApp) may default to SMS for notifications because the preference lookup finds nothing. The fix: the WhatsApp AI Assistant workflow (or the V2 verification workflow) should upsert a `whatsapp` preference when verification succeeds.
-- MEETING_STARTED for remote bookings: the `meeting_started_patient` template is approved but not yet wired in the workflow.
 
 **Messaging preferences data table:** `messaging_preferences` (ID: `RIIlnxVKYHiGeNgz`)
 - Lookup key: `phone_number` (without leading `+`)
 - Determines routing: `method` field → `whatsapp` or `sms`
+- Written to by the WhatsApp AI Assistant when V2 verification succeeds
 
 ### Send Telegram Messages (`C2F9UQOSqoWTqCg8`)
 
-Subflow called by V1 verification workflow for booking rejection and abuse alert notifications.
+Subflow called for booking rejection and abuse alert notifications.
 - Input: `telegram_recepients` (array of phone numbers), `notification_message` (string)
 - Maps phone numbers to Telegram chat IDs via a hardcoded lookup table in a Code node
 - Created via n8n MCP SDK (small enough to safely replace via SDK)
@@ -135,30 +150,6 @@ A standalone Node.js HTTP service runs alongside n8n to handle operations remove
 **Remote Location:** `/root/dads-clinic-backup/service/` on the n8n server
 **systemd unit:** `clinic-service.service`
 **Listens on:** `127.0.0.1:3847` (localhost only)
-
-### n8n workflow backup system (prior to MCP)
-
-The n8n submodule repository inside of the website repository contains a backup script that used
-to be used to backup n8n workflows tagged with the `dads-clinic` and `production` labels.
-
-The remote machine also has `/opt/n8n.env` which contains the environmnt for the n8n systemd service
-(e.g. this is the place where one might need to add `NODE_FUNCTION_ALLOW_BUILTIN=crypto`, for example,
-to enable the builtin function `crypto`). Sometimes this environment will need to be changed. It is
-not currently admitted to version control.
-
-As a good practice, the user has to run `ssh root@n8n ./backup.sh 'commit message'` periodically 
-(while connected to VPN) to backup the workflows and commit them to version control under the n8n 
-submodule repo. This has to be followed by pulling from the n8n folder locally to pull the changes
-pushed from the remote.
-
-The `backup.sh` home-directory script referenced from the SSH command above contains the following:
-
-```
-cd dads-clinic-backup && ./backup.sh && git add . && git commit -m "${*:-Synced workflows}" && git push
-```
-
-The backup.sh file referenced above can hence be found at `./n8n/backup.sh` in this repository, which
-is different from the home-directory `backup.sh` script.
 
 ### Endpoints
 
@@ -195,26 +186,62 @@ Android phones running Termux act as SMS gateways via reverse SSH tunnels throug
 Setup: `sms-gateway/setup.sh` in the parent `dads-clinic` repo.
 Per-phone script: `~/send_sms.sh` (handles Arabic segmentation, SIM selection, multi-part messages).
 
-## n8n MCP Usage
+## n8n Workflow Backup
 
-- **`mcp__n8n-mcp__*`** tools for inspecting and modifying workflows
-- `update_workflow` replaces the **entire** workflow via SDK code — too risky for large workflows (40+ nodes). For targeted changes, guide the user through the n8n UI
-- For small workflows (< 15 nodes), SDK replacement via MCP works well (proven with Telegram subflow and WhatsApp AI assistant)
+The n8n submodule repository contains workflow backups. To sync:
 
-## n8n SDK Learnings
+```bash
+# From the remote server (requires VPN):
+ssh root@n8n ./backup.sh 'Describe what changed'
 
-These are hard-won lessons from building workflows via the MCP SDK:
+# Then locally:
+cd n8n && git pull
+```
 
-- **`alwaysOutputData: true`** is required on all Data Table nodes. Without it, flows terminate silently when a delete/get returns no rows — the node produces zero items and downstream nodes never execute.
-- **Reference data tables via `mode: 'list'`** (dropdown selection) not `mode: 'id'`. The list mode stores the human-readable table name alongside the ID, making workflows readable when editing in the n8n UI.
-- **WhatsApp Trigger** auto-registers its webhook URL with Meta on activation. Using the "test" URL in the editor overrides this. To return to production, deactivate and reactivate the workflow.
-- **`executeCommand` and `localFileTrigger`** were removed in n8n 2.15.1. No replacements exist — use HTTP Request nodes calling external services or Code nodes with `child_process`.
-- **Switch/If node condition `options`** must include `{ caseSensitive: true, leftValue: '', typeValidation: 'loose', version: 3 }` inside each rule's `conditions` block. Using `typeValidation: 'strict'` causes runtime errors (`Cannot read properties of undefined (reading 'caseSensitive')`). Also set `looseTypeValidation: true` at the top-level parameters. The SDK doesn't add these `options` by default — they must be included explicitly.
-- **SDK `update_workflow` re-registers WhatsApp Trigger webhooks** with Meta, generating a new webhook ID. This is expected behavior (same as deactivating/reactivating in the UI).
-- **Telegram `appendAttribution`** defaults to `true`, adding "This message was sent automatically with n8n" to every message. Always set `additionalFields: { appendAttribution: false }` on Telegram nodes.
-- **URL expressions:** Use `=https://graph.facebook.com/v21.0/{{ $json.media_id }}` (embedded expression in a URL string), NOT `expr('{{ "https://..." + $json.media_id }}')` (string concatenation inside expression). The first form is more readable and avoids editor warnings about invalid static URLs.
-- **DataTable nodes replace `$json`** with their own output (the affected row), discarding all upstream fields. Chain nodes sequentially (not parallel fan-out) when DataTable nodes are in the path, so downstream nodes can reference earlier nodes by name via `$("NodeName")` without their input being clobbered.
-- **Sequential vs parallel chaining:** Prefer sequential chaining (`A.to(B).to(C)`) over parallel fan-out (`A.to(B)` + `A.to(C)`) unless the branches are truly independent. Sequential ensures data flows predictably, especially when DataTable nodes may be inserted later.
+The remote `~/backup.sh` script runs: `cd dads-clinic-backup && ./backup.sh && git add . && git commit -m "${*:-Synced workflows}" && git push`
+
+The n8n server environment is at `/opt/n8n.env` (e.g., for adding `NODE_FUNCTION_ALLOW_BUILTIN=crypto`). Not in version control.
+
+## n8n MCP Usage & SDK Rules
+
+The n8n MCP (`mcp__n8n-mcp__*`) provides tools for inspecting and modifying workflows via SDK code. **Read these rules carefully — they encode hard-won lessons from production failures.**
+
+### When to use SDK vs UI
+
+- **SDK is safe for:** Small workflows (< 15 nodes) that were originally created via SDK. Proven with: Telegram subflow, WhatsApp AI assistant.
+- **SDK is NOT safe for:** Large workflows (20+ nodes) with complex expressions, `__rl` references, or Arabic text. The SDK generates its own node structure which may differ subtly from the original.
+- **SDK CANNOT copy nodes** between workflows. `update_workflow` replaces the entire workflow — it doesn't do targeted edits. To copy nodes between workflows, use the n8n UI (select nodes → Cmd+C → switch workflow → Cmd+V).
+- **For targeted changes to large workflows:** Guide the user through the n8n UI instead.
+
+### SDK node configuration rules
+
+These cause **runtime errors** if not followed:
+
+1. **Switch/If condition `options` block is REQUIRED.** Every `conditions` object must include:
+   ```javascript
+   options: { caseSensitive: true, leftValue: '', typeValidation: 'loose', version: 3 }
+   ```
+   Also set `looseTypeValidation: true` at the top-level parameters. Using `typeValidation: 'strict'` causes `Cannot read properties of undefined (reading 'caseSensitive')`.
+
+2. **DataTable nodes need `alwaysOutputData: true`.** Without it, flows terminate silently when a delete/get returns no rows.
+
+3. **DataTable nodes replace `$json`** with their own output (the affected row), discarding all upstream fields. Chain sequentially so downstream nodes can reference earlier nodes by name via `$("NodeName")`.
+
+4. **Telegram `appendAttribution` defaults to `true`.** Always set `additionalFields: { appendAttribution: false }`.
+
+### SDK expression & URL rules
+
+5. **URL expressions:** Use `=https://example.com/{{ $json.id }}` (embedded expression), NOT `expr('{{ "https://example.com/" + $json.id }}')`. The first form is readable and avoids editor warnings about invalid URLs.
+
+6. **Sequential over parallel chaining.** Prefer `A.to(B).to(C)` over `A.to(B)` + `A.to(C)` unless branches are truly independent. Sequential ensures predictable data flow, especially when DataTable nodes may be in the path.
+
+7. **Reference data tables via `mode: 'list'`** (dropdown) not `mode: 'id'`. The list mode stores the human-readable table name, making workflows readable in the UI.
+
+### SDK side effects
+
+8. **`update_workflow` re-registers WhatsApp Trigger webhooks** with Meta, generating a new webhook ID. Expected behavior.
+
+9. **`executeCommand` and `localFileTrigger`** were removed in n8n 2.15.1. Use HTTP Request nodes calling local services or Code nodes with `child_process`.
 
 ## WhatsApp Template Management
 
@@ -240,5 +267,4 @@ curl -s -X POST "https://graph.facebook.com/v21.0/$WA_ACCOUNT_ID/message_templat
 
 - **Conversation history** for WhatsApp AI: `chat_history` data table, load/save per phone number, keep last 10-20 exchanges
 - **Booking via WhatsApp bot:** Cal.com API integration for checking slots and rescheduling in conversation
-- **Media messages:** Forward patient images to doctor's Telegram with context
 - **SMS-based V2 verification:** Same user-initiated code pattern but via SMS instead of WhatsApp

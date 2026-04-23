@@ -587,7 +587,7 @@ See [context/n8n-backend.md](context/n8n-backend.md) for complete documentation 
 **Quick reference:**
 - n8n instance: `https://n8n.orwa.tech` (self-hosted, v2.15.1)
 - Local services: `clinic-service.service` on `127.0.0.1:3847` — `/validate` (phone validation) and `/send-sms` (async SMS)
-- Key workflows: Verify Phone V1 (`dwv7rpf8uHxyum02`), V2 (`wpSDqlKO2iMoUZZ7`), WhatsApp AI (`XlYzvScd6xm3xlBI`), Telegram subflow (`C2F9UQOSqoWTqCg8`), Cal.com Notifications (`n1xrgJXoX6d74bjo`), Send Reminders (`WiqM8fag3FvWvW6t`)
+- Key workflows: Verify Phone V1 (`dwv7rpf8uHxyum02`), V2 (`wpSDqlKO2iMoUZZ7`), Autoconfirm Appointments (`r09D20b6MASeLOeX`), WhatsApp AI (`XlYzvScd6xm3xlBI`), Telegram subflow (`C2F9UQOSqoWTqCg8`), Cal.com Notifications (`n1xrgJXoX6d74bjo`), Send Reminders (`WiqM8fag3FvWvW6t`)
 - Cal.com Notifications: central messaging hub for booking events → WhatsApp templates + SMS + Telegram
 - WhatsApp AI: Claude Haiku 4.5, intent classification, verification code interception
 - SMS gateway: Termux phones via reverse SSH tunnels through VPS
