@@ -71,6 +71,8 @@ analytics:
       api_host: 'https://eu.i.posthog.com'
       defaults: '2025-11-30'
       person_profiles: 'always'
+    metaPixel:
+      id: "1689501578909850"
 
 ui:
   theme: 'system' # Values: "system" | "light" | "dark" | "light:only" | "dark:only"

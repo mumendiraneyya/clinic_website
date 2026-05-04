@@ -1,10 +1,12 @@
 ---
 import { GoogleAnalytics } from '@astrolib/analytics';
 import PosthogAnalytics from '~/components/common/PosthogAnalytics.astro'
+import MetaPixel from '~/components/common/MetaPixel.astro';
 import { ANALYTICS } from 'astrowind:config';
 
 const googleAnalytics = ANALYTICS?.vendors?.googleAnalytics;
 const posthog = ANALYTICS?.vendors?.posthog;
+const metaPixel = ANALYTICS?.vendors?.metaPixel;
 ---
 
 {
@@ -23,4 +25,9 @@ const posthog = ANALYTICS?.vendors?.posthog;
       defaults={posthog.defaults}
       profiles={posthog.profiles}
     />
+}
+
+{
+  !metaPixel ? null :
+    <MetaPixel id={metaPixel.id} />
 }

@@ -592,3 +592,31 @@ See [context/n8n-backend.md](context/n8n-backend.md) for complete documentation 
 - WhatsApp AI: Claude Haiku 4.5, intent classification, verification code interception
 - SMS gateway: Termux phones via reverse SSH tunnels through VPS
 - WhatsApp templates: `booking_clinic_completed` (location header), `booking_remote_completed`, `booking_cancelled_by_doctor`, `booking_cancelled_by_patient`, `booking_rescheduled_by_doctor`, `booking_rescheduled_by_patient`, `meeting_started_patient`, `booking_reminder` (pending), `verification_code`
+
+### Meta Ads Management
+
+See [context/meta-ads-management.md](context/meta-ads-management.md) for complete documentation of Meta App architecture, the two-app split, asset IDs, API gotchas, and the initial campaign plan.
+
+**Critical distinction — two separate Meta Apps exist:**
+- **App 1 — n8n WhatsApp AI** (ID `25172580512336633`, "عيادة د. مؤمن ديرانية"): controls the **automated WhatsApp number** the AI bot uses. Token: `WA_ACCESS_TOKEN`.
+- **App 2 — Ads Management** (ID `3937141059750735`, "تطبيق إعلانات"): controls Meta ad campaigns AND has access to the **doctor's personal verified WhatsApp Business number** `+962 7 9913 3299`. Token: `META_ACCESS_TOKEN`. The WhatsApp access here is unused today but enables future automations directly over the doctor's number without going through the AI bot.
+
+Pick the env var by purpose, never by guess: anything ad-related → `META_ACCESS_TOKEN`; anything WhatsApp AI bot related → `WA_ACCESS_TOKEN`.
+
+**Quick reference:**
+- Clinic Business: `831302042036615` — owns Page, ad account, WABA
+- Clinic Page: `103923884978487` (`Abuobaydatajjarrah`, ~3,389 followers)
+- Clinic Ad Account: `act_1260926961492067` — USD, since 2023, ADS_TRUST_TIER_1, ~$1,493 lifetime spend, VISA *3095
+- Doctor's WABA: `111908905338065` (phone ID `108275792371700`)
+- Meta Pixel: `1689501578909850` (created via API; first-party cookies + Automatic Advanced Matching enabled; owned by clinic business and ad account)
+- System user (App 2): `122099406543298653` — never-expires token, scopes include `ads_management`, `ads_read`, `business_management`, `pages_manage_ads`, `whatsapp_business_management`, `whatsapp_business_messaging`
+- Sandbox ad account: `act_975128028405970` (EUR, Amsterdam) — use for structural experiments before touching the live account
+- App 2 Marketing API tier is currently **Development Access** (0/500 calls toward Standard Access). Read-only audits and routine work both count toward this gate.
+
+**Initial campaign plan (likely to evolve):**
+1. Jordan / Click-to-WhatsApp — `OUTCOME_ENGAGEMENT`, routes to AI bot WABA
+2. Diaspora 35+ / Site Traffic → Remote Booking — `OUTCOME_TRAFFIC` initially, `OUTCOME_SALES` after Pixel + booking-event volume
+
+**Pre-launch tasks:** ~~audit existing ACTIVE campaigns in `act_1260926961492067` for silent spend~~ ✅ done 2026-05-04 (31 zombie boost-posts, all paused; baseline frozen in [context/meta-ads-baseline.md](context/meta-ads-baseline.md) — historical Messenger conversation cost $1.11 is the benchmark to beat); ~~install Meta Pixel on `Layout.astro`~~ ✅ done; link Instagram Business to the Page; enable two-step verification on the doctor's WhatsApp number.
+
+**API gotchas:** `is_adset_budget_sharing_enabled=false` is mandatory at campaign creation; `dsa_beneficiary` and `dsa_payor` required for any EU/UK targeting; never paste `META_ACCESS_TOKEN` into chat — it never expires and has full ad/business scope.

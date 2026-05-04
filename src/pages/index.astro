@@ -919,6 +919,12 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
           entry_point: 'homepage',
         });
       }
+      if (window.fbq) {
+        window.fbq('track', 'InitiateCheckout', {
+          content_name: bookingType,
+          entry_point: 'homepage',
+        });
+      }
 
       var config = {
         layout: 'month_view',
@@ -1219,10 +1225,12 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
     document.addEventListener('click', function(e) {
       var link = e.target.closest('[data-whatsapp-cta]');
       if (!link) return;
+      var layout = link.getAttribute('data-whatsapp-cta');
       if (window.posthog) {
-        window.posthog.capture('whatsapp_cta_clicked', {
-          layout: link.getAttribute('data-whatsapp-cta'),
-        });
+        window.posthog.capture('whatsapp_cta_clicked', { layout: layout });
+      }
+      if (window.fbq) {
+        window.fbq('track', 'Contact', { content_name: 'whatsapp_cta', layout: layout });
       }
     });
   </script>

@@ -136,6 +136,12 @@ const CAL_NAMESPACE = 'booking';
           entry_point: 'book_page',
         });
       }
+      if (window.fbq) {
+        window.fbq('track', 'InitiateCheckout', {
+          content_name: bookingType,
+          entry_point: 'book_page',
+        });
+      }
 
       var config = {
         layout: 'month_view',

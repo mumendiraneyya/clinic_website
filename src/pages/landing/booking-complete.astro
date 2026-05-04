@@ -161,6 +161,13 @@ const metadata = {
           if (status === 'accepted') {
             updateStatusUI('accepted');
             showBookingDetails(params, booking);
+            if (window.fbq && !window._fbq_schedule_fired) {
+              window._fbq_schedule_fired = true;
+              window.fbq('track', 'Schedule', {
+                content_name: params.type || 'unknown',
+                event_id: bookingUid,
+              });
+            }
           } else if (status === 'rejected') {
             updateStatusUI('rejected');
           } else if (status === 'cancelled') {

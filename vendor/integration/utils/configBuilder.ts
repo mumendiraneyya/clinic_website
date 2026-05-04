@@ -80,6 +80,9 @@ export interface AnalyticsConfig {
       api_host: string;
       defaults: string;
     };
+    metaPixel?: {
+      id: string;
+    };
   };
 }
 
