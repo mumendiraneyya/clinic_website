@@ -609,14 +609,17 @@ Pick the env var by purpose, never by guess: anything ad-related → `META_ACCES
 - Clinic Ad Account: `act_1260926961492067` — USD, since 2023, ADS_TRUST_TIER_1, ~$1,493 lifetime spend, VISA *3095
 - Doctor's WABA: `111908905338065` (phone ID `108275792371700`)
 - Meta Pixel: `1689501578909850` (created via API; first-party cookies + Automatic Advanced Matching enabled; owned by clinic business and ad account)
+- Instagram Business Account: `17841475544523609` (`@dr.mumen.diraneyya`) — linked to clinic Page 2026-05-05. **Use `instagram_user_id` (not deprecated `instagram_actor_id`) in ad creatives.** Token currently lacks `instagram_basic` scope but ads still work because referencing ≠ reading.
 - System user (App 2): `122099406543298653` — never-expires token, scopes include `ads_management`, `ads_read`, `business_management`, `pages_manage_ads`, `whatsapp_business_management`, `whatsapp_business_messaging`
 - Sandbox ad account: `act_975128028405970` (EUR, Amsterdam) — use for structural experiments before touching the live account
 - App 2 Marketing API tier is currently **Development Access** (0/500 calls toward Standard Access). Read-only audits and routine work both count toward this gate.
 
-**Initial campaign plan (likely to evolve):**
-1. Jordan / Click-to-WhatsApp — `OUTCOME_ENGAGEMENT`, routes to AI bot WABA
-2. Diaspora 35+ / Site Traffic → Remote Booking — `OUTCOME_TRAFFIC` initially, `OUTCOME_SALES` after Pixel + booking-event volume
+**Live campaigns:**
+- **Campaign 1** — Jordan Click-to-WhatsApp (live since 2026-05-05). Routes to **doctor's verified number** `+962 7 9913 3299` (decision changed from original AI-bot plan, so messages land in the same Inbox the doctor checks). Campaign `120245104755200304`, ad set `120245104757340304`, three ads (V1/V2/V3, ~30-45s videos in 1:1 + 9:16). $5/day, optimization=CONVERSATIONS, target Jordan/Arabic/25-65. North-star metric: cost-per-WhatsApp-conversation must beat historical $1.11 baseline.
+- **Campaign 2** — Diaspora 35+ → Remote Booking. Not yet built. `OUTCOME_TRAFFIC` initially, will switch to `OUTCOME_SALES` once Pixel + booking-event volume accumulate.
 
-**Pre-launch tasks:** ~~audit existing ACTIVE campaigns in `act_1260926961492067` for silent spend~~ ✅ done 2026-05-04 (31 zombie boost-posts, all paused; baseline frozen in [context/meta-ads-baseline.md](context/meta-ads-baseline.md) — historical Messenger conversation cost $1.11 is the benchmark to beat); ~~install Meta Pixel on `Layout.astro`~~ ✅ done; link Instagram Business to the Page; enable two-step verification on the doctor's WhatsApp number.
+**Pre-launch tasks:** ~~audit existing ACTIVE campaigns~~ ✅ done 2026-05-04 (31 zombie boost-posts paused; baseline in [context/meta-ads-baseline.md](context/meta-ads-baseline.md)); ~~install Meta Pixel~~ ✅ done; ~~link Instagram Business~~ ✅ done 2026-05-05 (full sequence in [context/meta-ads-management.md](context/meta-ads-management.md) "Instagram linkage" section); enable two-step verification on the doctor's WhatsApp number (low priority).
 
-**API gotchas:** `is_adset_budget_sharing_enabled=false` is mandatory at campaign creation; `dsa_beneficiary` and `dsa_payor` required for any EU/UK targeting; never paste `META_ACCESS_TOKEN` into chat — it never expires and has full ad/business scope.
+**Video creative production:** See [context/ad-video-production.md](context/ad-video-production.md) for the ffmpeg + auto-editor pipeline that turns a source interview into the 1:1 + 9:16 silence-trimmed videos uploaded to Meta. Upstream of the upload flow in `meta-ads-management.md`.
+
+**API gotchas (full list in [context/meta-ads-management.md](context/meta-ads-management.md#meta-app-approval-state-app-2)):** `is_adset_budget_sharing_enabled=false` mandatory at campaign creation; `dsa_beneficiary`+`dsa_payor` required for EU/UK targeting; `instagram_actor_id` is deprecated → use `instagram_user_id`; PBIA cannot be used as `instagram_user_id` (need a real linked IG); Business asset wrapper IDs ≠ underlying asset IDs (querying a wrapper without specifying fields reveals the underlying ID); token scopes lock at generation time (asset access ≠ token scope); `degrees_of_freedom_spec.standard_enhancements` deprecated; `video_feeds` Facebook position deprecated. Never paste `META_ACCESS_TOKEN` into chat — it never expires and has full ad/business scope.
