@@ -96,6 +96,7 @@ const physicianSchema = {
   }],
   alumniOf: { '@type': 'CollegeOrUniversity', name: 'Al-Balqa Applied University' },
   knowsLanguage: ['ar', 'en'],
+  worksFor: { '@id': `${SITE_URL}/#clinic` },
   sameAs: [
     'https://www.facebook.com/Abuobaydatajjarrah/',
     'https://www.instagram.com/dr.mumen.diraneyya/',
@@ -148,6 +149,7 @@ const medicalBusinessSchema = {
   ],
   hasMap: 'https://maps.app.goo.gl/RE3yv34U16Ssdezj7',
   founder: { '@id': `${SITE_URL}/#physician` },
+  employee: { '@id': `${SITE_URL}/#physician` },
   sameAs: [
     'https://www.facebook.com/Abuobaydatajjarrah/',
     'https://www.instagram.com/dr.mumen.diraneyya/',
