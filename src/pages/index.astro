@@ -199,7 +199,18 @@ const breadcrumbSchema = {
   ],
 };
 
-const schemas = [physicianSchema, medicalBusinessSchema, faqSchema, breadcrumbSchema];
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${SITE_URL}/#website`,
+  url: SITE_URL,
+  name: 'عيادة د. مؤمن ديرانية',
+  alternateName: ['عيادة أبو عبيدة الجرّاح', "Dr. Mu'men Diraneyya Clinic"],
+  inLanguage: 'ar',
+  publisher: { '@id': `${SITE_URL}/#clinic` },
+};
+
+const schemas = [websiteSchema, physicianSchema, medicalBusinessSchema, faqSchema, breadcrumbSchema];
 
 // Check if booking is disabled (via config or env variable)
 const bookingDisabled = UI.bookingDisabled || import.meta.env.PUBLIC_BOOKING_DISABLED === 'true';
