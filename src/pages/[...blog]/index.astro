@@ -54,6 +54,24 @@ function getYouTubeId(url: string): string | null {
 
 const videoId = post.videoUrl ? getYouTubeId(post.videoUrl) : null;
 
+// Reference homepage entities by @id so Google resolves all author/publisher
+// signals across the corpus to the canonical Physician + MedicalBusiness nodes.
+const physicianRef = {
+  '@type': 'Physician',
+  '@id': `${SITE_URL}/#physician`,
+  name: post.author || 'د. مؤمن ديرانية',
+  url: SITE_URL,
+};
+const clinicRef = {
+  '@type': 'MedicalBusiness',
+  '@id': `${SITE_URL}/#clinic`,
+  name: 'عيادة د. مؤمن ديرانية',
+  url: SITE_URL,
+};
+
+const publishedISO = post.publishDate ? new Date(post.publishDate).toISOString() : undefined;
+const modifiedISO = post.updateDate ? new Date(post.updateDate).toISOString() : publishedISO;
+
 const articleSchema = videoId
   ? {
       '@context': 'https://schema.org',
@@ -61,28 +79,23 @@ const articleSchema = videoId
       name: post.title,
       description: post.excerpt || post.title,
       thumbnailUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-      uploadDate: post.publishDate ? new Date(post.publishDate).toISOString() : undefined,
+      uploadDate: publishedISO,
       contentUrl: `https://www.youtube.com/watch?v=${videoId}`,
       embedUrl: `https://www.youtube.com/embed/${videoId}`,
       inLanguage: 'ar',
+      creator: physicianRef,
+      publisher: clinicRef,
     }
   : {
       '@context': 'https://schema.org',
-      '@type': 'MedicalWebPage',
+      '@type': 'BlogPosting',
       headline: post.title,
       description: post.excerpt || '',
       ...(image ? { image: typeof image === 'string' ? image : image.src } : {}),
-      datePublished: post.publishDate ? new Date(post.publishDate).toISOString() : undefined,
-      author: {
-        '@type': 'Physician',
-        name: post.author || 'د. مؤمن ديرانية',
-        url: SITE_URL,
-      },
-      publisher: {
-        '@type': 'MedicalBusiness',
-        name: 'عيادة د. مؤمن ديرانية',
-        url: SITE_URL,
-      },
+      datePublished: publishedISO,
+      dateModified: modifiedISO,
+      author: physicianRef,
+      publisher: clinicRef,
       mainEntityOfPage: { '@type': 'WebPage', '@id': String(url) },
       inLanguage: 'ar',
     };
