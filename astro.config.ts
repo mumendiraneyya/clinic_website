@@ -36,6 +36,10 @@ export default defineConfig({
         // Exclude English placeholder pages and private booking pages
         const excludedPaths = ['/landing/', '/popup/'];
         if (excludedPaths.some(p => path.startsWith(p))) return false;
+        // Paginated blog index pages (/blog/2, /blog/3, ...) are emitted as
+        // noindex,follow — including them in the sitemap sends a contradictory
+        // crawl+index signal. Keep /blog itself; drop the numbered pages.
+        if (/^\/blog\/\d+\/?$/.test(path)) return false;
         return (
           path === '/' ||
           path.startsWith('/blog') ||
