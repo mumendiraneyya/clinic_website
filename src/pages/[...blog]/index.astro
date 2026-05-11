@@ -111,7 +111,28 @@ const breadcrumbSchema = {
   ],
 };
 
-const schemas = [articleSchema, breadcrumbSchema];
+// Emit MedicalProcedure schema when this post's frontmatter declares one.
+// performer links by @id to the homepage Physician node so Google merges
+// "the surgeon who performs this procedure" with the FRCS-credentialed
+// entity defined on the homepage.
+const procedureSchema = post.procedure
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'MedicalProcedure',
+      '@id': `${String(url)}#procedure`,
+      name: post.procedure.name,
+      ...(post.procedure.alternateName ? { alternateName: post.procedure.alternateName } : {}),
+      ...(post.procedure.bodyLocation ? { bodyLocation: post.procedure.bodyLocation } : {}),
+      ...(post.procedure.procedureType
+        ? { procedureType: { '@type': 'MedicalProcedureType', name: post.procedure.procedureType } }
+        : {}),
+      performer: { '@id': `${SITE_URL}/#physician` },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': String(url) },
+      inLanguage: 'ar',
+    }
+  : null;
+
+const schemas = [articleSchema, breadcrumbSchema, ...(procedureSchema ? [procedureSchema] : [])];
 ---
 
 <Layout metadata={metadata} schemas={schemas}>

@@ -68,6 +68,20 @@ const postCollection = defineCollection({
     tags: z.array(z.string()).optional(),
     author: z.string().optional(),
 
+    /** Optional MedicalProcedure schema metadata. When present, the post
+     *  template emits a MedicalProcedure JSON-LD block linked to the
+     *  homepage Physician entity. Use the Arabic name (matches body copy)
+     *  and the bilingual alternateName from the homepage availableService
+     *  list to keep procedure naming consistent across the site. */
+    procedure: z
+      .object({
+        name: z.string(),
+        alternateName: z.string().optional(),
+        bodyLocation: z.string().optional(),
+        procedureType: z.string().optional(),
+      })
+      .optional(),
+
     metadata: metadataDefinition(),
   }),
 });

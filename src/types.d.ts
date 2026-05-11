@@ -28,6 +28,16 @@ export interface Post {
   /** YouTube video URL for video posts */
   videoUrl?: string;
 
+  /** Optional MedicalProcedure schema fields. Present on procedure pages
+   *  (e.g. hemorrhoid treatment, hernia repair); absent on general topic
+   *  or interview posts. */
+  procedure?: {
+    name: string;
+    alternateName?: string;
+    bodyLocation?: string;
+    procedureType?: string;
+  };
+
   /**  */
   category?: Taxonomy;
   /**  */
