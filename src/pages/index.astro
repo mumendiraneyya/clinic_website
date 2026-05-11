@@ -148,6 +148,16 @@ const medicalBusinessSchema = {
     { '@type': 'MedicalProcedure', name: 'جراحة الثدي', alternateName: 'Breast Surgery' },
   ],
   hasMap: 'https://maps.app.goo.gl/RE3yv34U16Ssdezj7',
+  amenityFeature: [
+    { '@type': 'LocationFeatureSpecification', name: 'Wheelchair Accessible Entrance', value: true },
+    { '@type': 'LocationFeatureSpecification', name: 'Wheelchair Accessible Elevator', value: true },
+    {
+      '@type': 'LocationFeatureSpecification',
+      name: 'Parking',
+      value:
+        'Free parking at Ibn Al-Haytham Hospital adjacent to the clinic complex; on-street parking when available; paid parking lots nearby (~2 JOD per hour). مصفات مجانية لمستشفى ابن الهيثم القريب، مصفات على الشارع عند توفرها، ومصفات مدفوعة قريبة بحوالي دينارين في الساعة.',
+    },
+  ],
   founder: { '@id': `${SITE_URL}/#physician` },
   employee: { '@id': `${SITE_URL}/#physician` },
   sameAs: [
