@@ -1,6 +1,15 @@
 # Dr. Mu'men Diraneyya Medical Clinic
 
-> General and Laparoscopic Surgery Clinic in Amman, Jordan
+> General and Laparoscopic Surgery Clinic in Amman, Jordan. Dr. Mu'men Diraneyya (Abu Obayda Al-Jarrah) is a Fellow of the Royal College of Surgeons of Edinburgh with 30 years of surgical experience and 5,000+ procedures performed. Consultations available in Arabic and English.
+
+**Updated:** 2026-05-10
+**Type:** Medical / Healthcare — Single-physician clinic
+**Specialty:** General Surgery, Laparoscopic Surgery, Colorectal Surgery
+**Language:** Arabic (primary), English (also spoken by the doctor)
+**Audience:** Primarily Arabic-speaking patients in Jordan and the region; English-speaking patients also welcome — the doctor consults in English
+**Location:** Amman, Jordan
+**Pricing:** Consultation 25 JOD
+**Canonical URL:** https://abuobaydatajjarrah.com
 
 ## About
 
@@ -31,6 +40,35 @@ The clinic specializes in:
 - Colon and rectal surgery
 - Diabetic foot surgery
 - Circumcision
+
+## Articles
+
+Each article below is available at both an HTML URL and a clean-markdown URL (the `.md` variant) for AI assistants and crawlers.
+
+### Anal canal (القناة الشرجية)
+- [البواسير الشرجية — Hemorrhoids](/البواسير-الشرجية.md): Hemorrhoids, causes, grading, and modern treatment options.
+- [الناسور الشرجي — Anal fistula](/الناسور-الشرجي.md): Anal fistula, causes, and surgical approaches.
+- [الشرخ الشرجي — Anal fissure](/الشرخ-الشرجي.md): Anal fissure, causes, conservative care, and surgery.
+- [الآفات الشرجية — Anal pathologies overview](/الآفات-الشرجية.md): Overview of anal lesions and how each is treated.
+- [استئصال البواسير بالدباسة الشرجية — Stapled hemorrhoidectomy (PPH)](/استئصال-البواسير-بالدباسة-الشرجية.md): Hemorrhoid removal using the surgical stapler.
+- [عملية ربط قناة الناسور الشرجي LIFT](/عملية-ربط-قناة-الناسور-الشرجي-LIFT.md): LIFT — ligation of the intersphincteric fistula tract.
+
+### Abdominal wall hernias (فتوق جدار البطن)
+- [فتق جدار البطن — Abdominal wall hernia](/فتق-جدار-البطن.md): What an abdominal wall hernia is and how it's treated.
+- [فتوق جدار البطن — Abdominal wall hernias (overview)](/فتوق-جدار-البطن.md): Hernia types, causes, and surgical treatment.
+- [فتوق جدار البطن وأسبابها وطرق علاجها](/فتوق-جدار-البطن-وأسبابها-وطرق-علاجها.md): Causes and surgical approaches for abdominal hernias.
+
+### General surgery (جراحة عامة)
+- [التشخيص والعلاج المبكران — Early diagnosis and treatment](/التشخيص-والعلاج-المبكران.md): Why early diagnosis matters in general surgery.
+- [المضادات الحيوية واستئصال الزائدة الدودية — Antibiotics and appendectomy](/المضادات-الحيوية-واستئصال-الزائدة-الدودية.md): When antibiotics suffice vs. when surgery is needed.
+- [الرضوح والأذيات — Trauma and injuries](/الرضوح-والأذيات.md): Trauma and injuries in general surgery.
+- [عدوى الأنسجة الرخوة — Soft tissue infections](/عدوى-الأنسجة-الرخوة.md): Soft tissue infections and surgical management.
+- [حديث في الجراحة وآفاق الجراحة العامة](/حديث-في-الجراحة-وآفاق-الجراحة-العامة.md): On general surgery as a specialty — scope, early diagnosis, surgical experience.
+
+### Introductions and interviews (مقاطع تعريفية ومقابلات عامة)
+- [تعريف بالطبيب — About the doctor](/تعريف-بالطبيب.md): Introductory video with Dr. Mu'men Diraneyya.
+- [لقاء على قناة آرام — Aram TV interview](/لقاء-على-قناة-آرام.md): Interview on Aram TV.
+- [لقاء على قناة الأردن الفضائية — Jordan TV interview](/لقاء-على-قناة-الأردن-الفضائية.md): Interview on Jordan TV.
 
 ## Location
 
