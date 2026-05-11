@@ -115,6 +115,28 @@ const medicalBusinessSchema = {
   description: 'عيادة متخصصة في الجراحة العامة والتنظيرية في عمّان، الأردن. جراحة الفتق، المرارة، البواسير، الناسور الشرجي، والجراحات العامة.',
   url: SITE_URL,
   telephone: '+962798872899',
+  contactPoint: [
+    {
+      '@type': 'ContactPoint',
+      telephone: '+962798872899',
+      contactType: 'reception',
+      availableLanguage: ['ar', 'en'],
+    },
+    {
+      '@type': 'ContactPoint',
+      telephone: '+962799133299',
+      contactType: 'physician',
+      availableLanguage: ['ar', 'en'],
+    },
+    {
+      '@type': 'ContactPoint',
+      telephone: '+962782760965',
+      contactType: 'WhatsApp inquiries (automated)',
+      description:
+        'Automated WhatsApp triage that answers common questions instantly and routes other inquiries to the doctor for clinical questions or to Iman (the clinic secretary) for administrative questions.',
+      availableLanguage: ['ar', 'en'],
+    },
+  ],
   image: `${SITE_URL}/default.png`,
   priceRange: '$$',
   currenciesAccepted: 'JOD',
