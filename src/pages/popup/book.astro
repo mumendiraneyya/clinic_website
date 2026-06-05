@@ -16,9 +16,15 @@
 
 import PopupLayout from '~/layouts/PopupLayout.astro';
 import PhoneSelector from '~/components/booking/PhoneSelector.astro';
+import BookingMaintenance from '~/components/booking/BookingMaintenance.astro';
+import { bookingDisabled } from '~/utils/booking-flags';
 ---
 
 <PopupLayout title="حجز">
+  {bookingDisabled ? (
+    <div class="p-6 pt-12 pb-4"><BookingMaintenance /></div>
+  ) : (
+    <Fragment>
   <div class="p-6 pt-12 pb-4">
     <div class="max-w-sm mx-auto">
       <!-- Header -->
@@ -184,4 +190,6 @@ import PhoneSelector from '~/components/booking/PhoneSelector.astro';
       setupEventHandlers();
     });
   </script>
+    </Fragment>
+  )}
 </PopupLayout>

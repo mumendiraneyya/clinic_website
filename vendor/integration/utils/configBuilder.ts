@@ -90,6 +90,7 @@ export interface UIConfig {
   theme: string;
   showFooterLinks: boolean;
   bookingDisabled: boolean;
+  automatedWhatsapp: boolean;
 }
 
 const DEFAULT_SITE_NAME = 'Website';
@@ -187,6 +188,7 @@ const getUI = (config: Config) => {
     theme: 'system',
     showFooterLinks: true,
     bookingDisabled: false,
+    automatedWhatsapp: true,
   };
 
   return merge({}, _default, config?.ui ?? {}) as UIConfig;

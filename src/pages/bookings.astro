@@ -4,7 +4,9 @@ import PhoneVerification from '~/components/booking/PhoneVerification.astro';
 import PhoneVerificationV2 from '~/components/booking/PhoneVerificationV2.astro';
 import PhoneDisplayBar from '~/components/booking/PhoneDisplayBar.astro';
 import BookingCard from '~/components/booking/BookingCard.astro';
+import BookingMaintenance from '~/components/booking/BookingMaintenance.astro';
 import { Icon } from 'astro-icon/components';
+import { bookingDisabled } from '~/utils/booking-flags';
 
 const metadata = {
   title: 'حجوزاتي',
@@ -19,6 +21,12 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
 ---
 
 <Layout metadata={metadata}>
+  {bookingDisabled ? (
+    <section class="py-8 md:py-12">
+      <div class="max-w-md mx-auto px-4 sm:px-6"><BookingMaintenance /></div>
+    </section>
+  ) : (
+    <Fragment>
   <section class="py-8 md:py-12">
     <div class="max-w-2xl mx-auto px-4 sm:px-6">
       <!-- Header -->
@@ -646,4 +654,6 @@ const BOOKINGS_ENDPOINT = 'https://n8n.orwa.tech/webhook/4900724b-a648-42f5-91da
     Cal("init", "bookings", { origin: "https://app.cal.com" });
     /* eslint-enable prefer-rest-params, no-var */
   </script>
+    </Fragment>
+  )}
 </Layout>

@@ -3,7 +3,9 @@ import Layout from '~/layouts/PageLayout.astro';
 import PhoneVerification from '~/components/booking/PhoneVerification.astro';
 import PhoneVerificationV2 from '~/components/booking/PhoneVerificationV2.astro';
 import PhoneSelector from '~/components/booking/PhoneSelector.astro';
+import BookingMaintenance from '~/components/booking/BookingMaintenance.astro';
 import { Icon } from 'astro-icon/components';
+import { bookingDisabled } from '~/utils/booking-flags';
 
 const metadata = {
   title: 'حجز موعد',
@@ -21,6 +23,12 @@ const CAL_NAMESPACE = 'booking';
 ---
 
 <Layout metadata={metadata}>
+  {bookingDisabled ? (
+    <section class="py-8 md:py-12">
+      <div class="max-w-md mx-auto px-4 sm:px-6"><BookingMaintenance /></div>
+    </section>
+  ) : (
+    <Fragment>
   <section class="py-8 md:py-12">
     <div class="max-w-md mx-auto px-4 sm:px-6">
       <!-- Header -->
@@ -330,4 +338,6 @@ const CAL_NAMESPACE = 'booking';
     // This handles both direct navigation and View Transitions
     queueMicrotask(init);
   </script>
+    </Fragment>
+  )}
 </Layout>

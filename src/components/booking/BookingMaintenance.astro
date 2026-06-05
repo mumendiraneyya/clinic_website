@@ -1,0 +1,21 @@
+---
+import { Icon } from 'astro-icon/components';
+import { contactWhatsappNumber } from '~/utils/booking-flags';
+---
+
+<div class="text-center py-12 px-6">
+  <Icon name="tabler:calendar-off" class="w-12 h-12 mx-auto text-muted dark:text-slate-500 mb-4" />
+  <h2 class="text-xl md:text-2xl font-bold mb-2 dark:text-gray-200">الحجز موقف مؤقتًا للصيانة</h2>
+  <p class="text-muted dark:text-slate-400 mb-6 max-w-sm mx-auto">
+    نعتذر عن هذا التوقف المؤقت. لحجز موعد أو لأي استفسار، يُرجى التواصل معنا مباشرةً عبر واتساب.
+  </p>
+  <a
+    href={`https://wa.me/${contactWhatsappNumber}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    class="btn-primary inline-flex items-center gap-2"
+  >
+    <Icon name="tabler:brand-whatsapp" class="w-5 h-5" />
+    <span>تواصل معنا عبر واتساب</span>
+  </a>
+</div>

@@ -3,8 +3,10 @@ import Layout from '~/layouts/PageLayout.astro';
 import PhoneVerification from '~/components/booking/PhoneVerification.astro';
 import PhoneVerificationV2 from '~/components/booking/PhoneVerificationV2.astro';
 import PhoneDisplayBar from '~/components/booking/PhoneDisplayBar.astro';
+import BookingMaintenance from '~/components/booking/BookingMaintenance.astro';
 import { Icon } from 'astro-icon/components';
 import { Image } from 'astro:assets';
+import { bookingDisabled } from '~/utils/booking-flags';
 import calVideoEntryImage from '~/assets/images/cal-video-entry.png';
 import calVideoJoinImage from '~/assets/images/cal-video-join.png';
 
@@ -38,6 +40,12 @@ const AUTO_REDIRECT_TIME = 1 * 60;    // Auto-redirect 1 minute before
 ---
 
 <Layout metadata={metadata}>
+  {bookingDisabled ? (
+    <section class="py-6 md:py-6">
+      <div class="max-w-md mx-auto px-4 sm:px-6"><BookingMaintenance /></div>
+    </section>
+  ) : (
+    <Fragment>
   <section class="py-6 md:py-6">
     <div class="max-w-5xl mx-auto px-4 sm:px-6">
       <!-- Header -->
@@ -664,4 +672,6 @@ const AUTO_REDIRECT_TIME = 1 * 60;    // Auto-redirect 1 minute before
       }
     });
   </script>
+    </Fragment>
+  )}
 </Layout>
