@@ -78,5 +78,5 @@ ui:
   theme: 'system' # Values: "system" | "light" | "dark" | "light:only" | "dark:only"
   showAnnouncement: false
   showFooterLinks: false # Hide the footer navigation columns (Product, Platform, etc.)
-  bookingDisabled: true # Set to true to disable the whole booking flow (hero pill + /book, /popup/book, /bookings, /video) during maintenance — e.g. n8n backend down (can also use PUBLIC_BOOKING_DISABLED=true env var)
-  automatedWhatsapp: false # Set to false when the automated WhatsApp bot (n8n) is offline — routes "contact us" inquiry CTAs to the doctor's human number instead of the bot (can also use PUBLIC_AUTOMATED_WHATSAPP=false env var)
+  bookingDisabled: false # Set to true to disable the whole booking flow (hero pill + /book, /popup/book, /bookings, /video) during maintenance — e.g. n8n backend down (can also use PUBLIC_BOOKING_DISABLED=true env var)
+  automatedWhatsapp: true # Set to false when the automated WhatsApp bot (n8n) is offline — routes "contact us" inquiry CTAs to the doctor's human number instead of the bot (can also use PUBLIC_AUTOMATED_WHATSAPP=false env var)
