@@ -1,48 +1,37 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
-import { readFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
+import { getCollection } from 'astro:content';
 import { fetchPosts } from '~/utils/blog';
 
-// Serves the raw markdown of each visible post at /<slug>.md — the AI/LLM-
-// friendly variant of /<slug>. Following the llmstxt.org convention: llms.txt
-// references each post via these .md URLs so assistants and crawlers can
-// retrieve clean source content (no JS, no boilerplate) per article.
-// Hidden posts (e.g. مسيرتنا) are excluded — same rule as the blog listing.
+// Serves a clean markdown variant of each visible post at /<slug>.md — the
+// AI/LLM-friendly twin of /<slug>. Following the llmstxt.org convention: llms.txt
+// references each post via these .md URLs so assistants and crawlers can retrieve
+// clean source content (no JS, no boilerplate) per article. Hidden posts (e.g.
+// مسيرتنا) are excluded — same rule as the blog listing (via fetchPosts).
 
 export const prerender = true;
 
-const POSTS_DIR = fileURLToPath(new URL('../data/post', import.meta.url));
-
-// Pass the post's original id (the on-disk filename, minus extension) through
-// as a prop. The slug is NOT a safe filename: cleanSlug() lowercases it, so the
-// LIFT post's slug is `…-lift` while the file is `…-LIFT.md`. Reading by slug
-// only works on case-insensitive filesystems (macOS); the Cloudflare Pages
-// build runs on Linux (case-sensitive) and would throw ENOENT → build fails.
+// Source the body from Astro's content collection rather than readFile(). The
+// content layer is bundled at build time, so there is no fragile filesystem path
+// (import.meta.url resolves into dist/ at build, where src/data/post doesn't
+// exist) and no case-sensitivity trap (the LIFT post's file is `…-LIFT.md` while
+// its slug is `…-lift`). Correlating by id sidesteps both. The body excludes the
+// YAML frontmatter, so we prepend the title as an H1 to keep the doc complete.
 export const getStaticPaths: GetStaticPaths = async () => {
-  const posts = await fetchPosts();
+  const posts = await fetchPosts(); // visible posts only, with canonical slug + title
+  const entries = await getCollection('post');
+  const bodyById = new Map(entries.map((entry) => [entry.id, entry.body ?? '']));
+
   return posts.map((post) => ({
     params: { slug: post.slug },
-    props: { id: post.id },
+    props: { title: post.title, body: bodyById.get(post.id) ?? '' },
   }));
 };
 
-export const GET: APIRoute = async ({ props }) => {
-  const id = props.id as string | undefined;
-  if (!id) {
-    return new Response('Not found', { status: 404 });
-  }
+export const GET: APIRoute = ({ props }) => {
+  const { title, body } = props as { title: string; body: string };
+  const markdown = `# ${title}\n\n${body.trim()}\n`;
 
-  // id has no extension; posts may be .md or .mdx (try .md first — all current
-  // posts are .md — and fall back to .mdx so future .mdx posts don't 404).
-  let raw: string;
-  try {
-    raw = await readFile(join(POSTS_DIR, `${id}.md`), 'utf8');
-  } catch {
-    raw = await readFile(join(POSTS_DIR, `${id}.mdx`), 'utf8');
-  }
-
-  return new Response(raw, {
+  return new Response(markdown, {
     headers: {
       'Content-Type': 'text/markdown; charset=utf-8',
       'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400',
