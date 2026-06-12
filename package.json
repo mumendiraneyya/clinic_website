@@ -23,7 +23,9 @@
     "icon": "node scripts/generate-favicons.mjs",
     "claude": "claude mcp add --transport stdio chrome-devtools -- npx -y chrome-devtools-mcp@latest 2>/dev/null; claude --continue",
     "deploy": "npm run build && wrangler pages deploy --branch --project-name abuobaydatajjarrah --commit-dirty=true ./dist",
-    "deploy:maintenance": "PUBLIC_BOOKING_DISABLED=true npm run deploy"
+    "postdeploy": "npm run indexnow",
+    "deploy:maintenance": "PUBLIC_BOOKING_DISABLED=true npm run deploy",
+    "indexnow": "node scripts/ping-indexnow.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.12",

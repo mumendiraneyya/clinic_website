@@ -81,7 +81,7 @@ const physicianSchema = {
   '@type': 'Physician',
   '@id': `${SITE_URL}/#physician`,
   name: 'د. مؤمن ديرانية',
-  alternateName: ["Dr. Mu'men Diraneyya", 'أبو عبيدة الجرّاح', 'Abu Obayda Al-Jarrah'],
+  alternateName: ["Dr. Mu'men Diraneyya", 'أبو عبيدة الجرّاح', 'Abu Obayda Al-Jarrah', 'د. مؤمن مأمون ديرانية', 'دكتور مؤمن ديرانية'],
   jobTitle: 'استشاري الجراحة العامة والتنظيرية',
   description: 'زميل الكلية الملكية للجراحين في إدنبرة، استشاري الجراحة العامة والتنظيرية بخبرة 30 عامًا',
   url: SITE_URL,
@@ -96,6 +96,7 @@ const physicianSchema = {
   }],
   alumniOf: { '@type': 'CollegeOrUniversity', name: 'Al-Balqa Applied University' },
   knowsLanguage: ['ar', 'en'],
+  worksFor: { '@id': `${SITE_URL}/#clinic` },
   sameAs: [
     'https://www.facebook.com/Abuobaydatajjarrah/',
     'https://www.instagram.com/dr.mumen.diraneyya/',
@@ -114,6 +115,28 @@ const medicalBusinessSchema = {
   description: 'عيادة متخصصة في الجراحة العامة والتنظيرية في عمّان، الأردن. جراحة الفتق، المرارة، البواسير، الناسور الشرجي، والجراحات العامة.',
   url: SITE_URL,
   telephone: '+962798872899',
+  contactPoint: [
+    {
+      '@type': 'ContactPoint',
+      telephone: '+962798872899',
+      contactType: 'reception',
+      availableLanguage: ['ar', 'en'],
+    },
+    {
+      '@type': 'ContactPoint',
+      telephone: '+962799133299',
+      contactType: 'physician',
+      availableLanguage: ['ar', 'en'],
+    },
+    {
+      '@type': 'ContactPoint',
+      telephone: '+962782760965',
+      contactType: 'WhatsApp inquiries (automated)',
+      description:
+        'Automated WhatsApp triage that answers common questions instantly and routes other inquiries to the doctor for clinical questions or to Iman (the clinic secretary) for administrative questions.',
+      availableLanguage: ['ar', 'en'],
+    },
+  ],
   image: `${SITE_URL}/default.png`,
   priceRange: '$$',
   currenciesAccepted: 'JOD',
@@ -147,7 +170,18 @@ const medicalBusinessSchema = {
     { '@type': 'MedicalProcedure', name: 'جراحة الثدي', alternateName: 'Breast Surgery' },
   ],
   hasMap: 'https://maps.app.goo.gl/RE3yv34U16Ssdezj7',
+  amenityFeature: [
+    { '@type': 'LocationFeatureSpecification', name: 'Wheelchair Accessible Entrance', value: true },
+    { '@type': 'LocationFeatureSpecification', name: 'Wheelchair Accessible Elevator', value: true },
+    {
+      '@type': 'LocationFeatureSpecification',
+      name: 'Parking',
+      value:
+        'Free parking at Ibn Al-Haytham Hospital adjacent to the clinic complex; on-street parking when available; paid parking lots nearby (~2 JOD per hour). مصفات مجانية لمستشفى ابن الهيثم القريب، مصفات على الشارع عند توفرها، ومصفات مدفوعة قريبة بحوالي دينارين في الساعة.',
+    },
+  ],
   founder: { '@id': `${SITE_URL}/#physician` },
+  employee: { '@id': `${SITE_URL}/#physician` },
   sameAs: [
     'https://www.facebook.com/Abuobaydatajjarrah/',
     'https://www.instagram.com/dr.mumen.diraneyya/',
@@ -197,7 +231,18 @@ const breadcrumbSchema = {
   ],
 };
 
-const schemas = [physicianSchema, medicalBusinessSchema, faqSchema, breadcrumbSchema];
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${SITE_URL}/#website`,
+  url: SITE_URL,
+  name: 'عيادة د. مؤمن ديرانية',
+  alternateName: ['عيادة أبو عبيدة الجرّاح', "Dr. Mu'men Diraneyya Clinic"],
+  inLanguage: 'ar',
+  publisher: { '@id': `${SITE_URL}/#clinic` },
+};
+
+const schemas = [websiteSchema, physicianSchema, medicalBusinessSchema, faqSchema, breadcrumbSchema];
 
 // Check if booking is disabled (via config or env variable)
 const bookingDisabledTitle = 'الحجز موقف للصيانة';

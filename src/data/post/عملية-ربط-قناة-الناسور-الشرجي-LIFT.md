@@ -7,6 +7,11 @@ videoUrl: https://youtu.be/_eU86Z2WWyQ
 category: القناة الشرجية
 tags:
   - فيديو
+procedure:
+  name: عملية ربط قناة الناسور الشرجي LIFT
+  alternateName: LIFT — Ligation of Intersphincteric Fistula Tract
+  bodyLocation: القناة الشرجية
+  procedureType: Surgical
 ---
 
 حديثي اليوم عن عملية متقدمة للنواسير الشرجية المعقدة تسمى عملية LIFT، في حديث سابق تحدثت عن الناسور الشرجي عموماً وعن عمليات الناسور الشرجي بإجمال.
