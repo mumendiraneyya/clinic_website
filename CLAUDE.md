@@ -25,6 +25,19 @@ This is a family project. Orwa (developer) builds and maintains the site for his
 - **Never use `git stash`** around commits that modify files. Stash pop can silently revert committed changes (happened with `book.astro` V2 integration — the stash captured the pre-edit state and overwrote the committed version on pop). If you need to work around uncommitted changes for `gh` commands, commit them first or use `--allow-dirty`.
 - **After merging feature branches**, always verify that key files contain the expected changes. Don't trust the merge output alone.
 
+### Posting Arabic on GitHub (RTL / bidi)
+
+GitHub renders issue/PR/comment markdown and stamps `dir="auto"` on **every** block element (`<p>`, `<h2>`, `<ul>`, …). Each block's text direction is therefore auto-detected from its **first strong character** and does **not** inherit from a parent — so wrapping Arabic in `<div dir="rtl">` is a **no-op** for prose direction (verified on PR #29: the `<div>` survives sanitization but every child carries its own `dir="auto"`). Don't rely on it.
+
+To make a block render correctly RTL (punctuation like `؟` / `.` on the left, mentions/code ordered right):
+- **Start every block — paragraph, heading, bullet, blockquote — with Arabic** (a strong-RTL character). This is the real lever.
+- The honorific **`الدكتور` before `@mumendiraneyya`** doubles as the bidi fix (Arabic-first) — always address Dr. Mu'men with it.
+- If a block *must* begin with an LTR token (a bare `@mention`, a `code span`, English, or digits), **prepend a RLM** (`U+200F`, right-to-left mark) — an invisible strong-RTL char that forces `dir="auto"` to pick RTL while the line still reads naturally.
+
+Style conventions for Arabic posts: prefix borrowed Latin tech terms with the article (`الـHTML`, `الـPR`, `الـfrontmatter`); prefer clickable markdown links over bare `code`-path references; keep a warm, collegial register (e.g. `و` over `مقابل`).
+
+`gh` gotcha: `gh pr view` / `gh pr edit` may fail with a GraphQL *projectCards* deprecation error. Work around it with REST via `gh api` (e.g. `jq -Rs '{body:.}' file | gh api --method PATCH repos/<owner>/<repo>/pulls/<n> --input -`), or pass explicit `--json <fields>` to `gh pr view`.
+
 ## Knowledge Transfer Documents
 
 Human-readable educational materials explaining complex topics encountered in this project:
