@@ -12,6 +12,7 @@ import { getStaticPathsBlogPost, blogPostRobots } from '~/utils/blog';
 import { findImage } from '~/utils/images';
 import type { MetaData } from '~/types';
 import RelatedPosts from '~/components/blog/RelatedPosts.astro';
+import { getCollection } from 'astro:content';
 
 export const prerender = true;
 
@@ -133,6 +134,12 @@ const procedureSchema = post.procedure
   : null;
 
 const schemas = [articleSchema, breadcrumbSchema, ...(procedureSchema ? [procedureSchema] : [])];
+
+// Procedures that point back to this article (reverse of relatedArticle) —
+// derived at build, so the link is declared once on the procedure side.
+const linkedProcedures = (await getCollection('procedure', ({ data }) => !data.draft))
+  .filter((proc) => proc.data.relatedArticle === post.id)
+  .sort((a, b) => a.data.order - b.data.order);
 ---
 
 <Layout metadata={metadata} schemas={schemas}>
@@ -140,5 +147,17 @@ const schemas = [articleSchema, breadcrumbSchema, ...(procedureSchema ? [procedu
     {post.Content ? <post.Content /> : <Fragment set:html={post.content || ''} />}
   </SinglePost>
   <ToBlogLink />
+  {linkedProcedures.length > 0 && (
+    <section class="mx-auto max-w-3xl px-4 sm:px-6 pb-6">
+      <h2 class="text-xl font-bold mb-3">عمليات ذات صلة</h2>
+      <ul class="space-y-1 text-sm">
+        {linkedProcedures.map((proc) => (
+          <li>
+            <a class="text-primary underline" href={`/${proc.id}`}>{proc.data.title}</a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
   <RelatedPosts post={post} />
 </Layout>

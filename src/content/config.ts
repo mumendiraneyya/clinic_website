@@ -115,7 +115,10 @@ const procedureCollection = defineCollection({
     cost: z.string().optional(),
 
     benefit: z.string().optional(),
-    alternatives: z.array(z.string()).optional(),
+    /** Alternative procedures for the same condition. `slug` (optional) links
+     *  to another procedure page; rendered as a link only when that procedure
+     *  exists, otherwise plain text — so it never produces a dead link. */
+    alternatives: z.array(z.object({ name: z.string(), slug: z.string().optional() })).optional(),
     candidate: z.string().optional(),
     contraindications: z.string().optional(),
     successRate: z.string().optional(),

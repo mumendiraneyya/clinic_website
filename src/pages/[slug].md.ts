@@ -1,7 +1,7 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection } from 'astro:content';
 import { fetchPosts } from '~/utils/blog';
-import { buildProcedureFaq, buildProcedureFacts } from '~/utils/procedure';
+import { buildProcedureFaq, buildProcedureFacts, resolveAlternatives } from '~/utils/procedure';
 
 // Serves a clean markdown variant of each visible post AND each procedure at
 // /<slug>.md — the AI/LLM-friendly twin of /<slug>. Following the llmstxt.org
@@ -22,9 +22,15 @@ export const getStaticPaths: GetStaticPaths = async () => {
   }));
 
   const procedures = await getCollection('procedure', ({ data }) => !data.draft);
+  const procSlugs = new Set(procedures.map((e) => e.id));
   const procPaths = procedures.map((entry) => ({
     params: { slug: entry.id },
-    props: { kind: 'procedure' as const, data: entry.data, body: entry.body ?? '' },
+    props: {
+      kind: 'procedure' as const,
+      data: entry.data,
+      body: entry.body ?? '',
+      alternatives: resolveAlternatives(entry.data, (s) => procSlugs.has(s)),
+    },
   }));
 
   return [...postPaths, ...procPaths];
@@ -33,7 +39,12 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export const GET: APIRoute = ({ props }) => {
   const p = props as
     | { kind: 'post'; title: string; body: string }
-    | { kind: 'procedure'; data: import('~/utils/procedure').ProcedureData; body: string };
+    | {
+        kind: 'procedure';
+        data: import('~/utils/procedure').ProcedureData;
+        body: string;
+        alternatives: { name: string; href?: string }[];
+      };
 
   let markdown: string;
 
@@ -42,6 +53,9 @@ export const GET: APIRoute = ({ props }) => {
     const facts = buildProcedureFacts(d)
       .map((f) => `- ${f.label}: ${f.value}`)
       .join('\n');
+    const alts = p.alternatives
+      .map((a) => (a.href ? `[${a.name}](${a.href})` : a.name))
+      .join('، ');
     const faq = buildProcedureFaq(d)
       .map((f) => `### ${f.q}\n\n${f.a}`)
       .join('\n\n');
@@ -52,6 +66,7 @@ export const GET: APIRoute = ({ props }) => {
       (d.condition ? `**الحالة المُعالَجة:** ${d.condition}\n\n` : '') +
       (facts ? `## حقائق سريعة\n\n${facts}\n\n` : '') +
       `${p.body.trim()}\n\n` +
+      (alts ? `**البدائل لنفس الحالة:** ${alts}\n\n` : '') +
       (faq ? `## أسئلة شائعة\n\n${faq}\n` : '');
   } else {
     markdown = `# ${p.title}\n\n${p.body.trim()}\n`;

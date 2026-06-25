@@ -3,7 +3,7 @@ import type { GetStaticPaths } from 'astro';
 import { getCollection, render } from 'astro:content';
 import Layout from '~/layouts/PageLayout.astro';
 import { getCanonical, getPermalink } from '~/utils/permalinks';
-import { buildProcedureFaq, buildProcedureFacts } from '~/utils/procedure';
+import { buildProcedureFaq, buildProcedureFacts, resolveAlternatives } from '~/utils/procedure';
 import type { MetaData } from '~/types';
 
 export const prerender = true;
@@ -31,6 +31,18 @@ const metadata: MetaData = {
 
 const faq = buildProcedureFaq(d);
 const facts = buildProcedureFacts(d);
+
+// Link alternatives to their procedure pages when those pages exist.
+const allProcedures = await getCollection('procedure', ({ data }) => !data.draft);
+const procedureSlugs = new Set(allProcedures.map((p) => p.id));
+const alternatives = resolveAlternatives(d, (s) => procedureSlugs.has(s));
+
+// Resolve the related blog post to its real title for the cross-link.
+let related: { href: string; title: string } | null = null;
+if (d.relatedArticle) {
+  const match = (await getCollection('post')).find((p) => p.id === d.relatedArticle);
+  if (match) related = { href: `/${match.id}`, title: match.data.title };
+}
 
 // Schema: MedicalProcedure + FAQPage, @id-linked to the homepage Physician/Clinic.
 const procedureSchema = {
@@ -98,11 +110,19 @@ const schemas = [procedureSchema, ...(faqSchema ? [faqSchema] : []), breadcrumbS
       <Content />
     </div>
 
-    {(d.alternatives?.length || d.candidate || d.contraindications) && (
+    {(alternatives.length || d.candidate || d.contraindications) && (
       <div class="mt-8 space-y-3 text-sm">
         {d.candidate && <p><strong>المريض المرشّح:</strong> {d.candidate}</p>}
-        {d.alternatives?.length && (
-          <p><strong>البدائل لنفس الحالة:</strong> {d.alternatives.join('، ')}</p>
+        {alternatives.length > 0 && (
+          <p>
+            <strong>البدائل لنفس الحالة:</strong>{' '}
+            {alternatives.map((a, i) => (
+              <Fragment>
+                {i > 0 ? '، ' : ''}
+                {a.href ? <a class="text-primary underline" href={a.href}>{a.name}</a> : <span>{a.name}</span>}
+              </Fragment>
+            ))}
+          </p>
         )}
         {d.contraindications && <p><strong>موانع الإجراء:</strong> {d.contraindications}</p>}
       </div>
@@ -122,9 +142,9 @@ const schemas = [procedureSchema, ...(faqSchema ? [faqSchema] : []), breadcrumbS
       </section>
     )}
 
-    {d.relatedArticle && (
+    {related && (
       <p class="mt-10 text-sm">
-        اقرأ أيضًا: <a class="text-primary underline" href={`/${d.relatedArticle}`}>مقالة ذات صلة</a>
+        اقرأ أيضًا: <a class="text-primary underline" href={related.href}>{related.title}</a>
       </p>
     )}
   </section>

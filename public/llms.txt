@@ -70,6 +70,14 @@ Each article below is available at both an HTML URL and a clean-markdown URL (th
 - [لقاء على قناة آرام — Aram TV interview](/لقاء-على-قناة-آرام.md): Interview on Aram TV.
 - [لقاء على قناة الأردن الفضائية — Jordan TV interview](/لقاء-على-قناة-الأردن-الفضائية.md): Interview on Jordan TV.
 
+## Procedures (ماذا نعالج)
+Per-procedure pages with patient-facing facts (cost, recovery, pain, alternatives) and an FAQ. Each is available at an HTML URL and a clean-markdown `.md` variant.
+
+### Hemorrhoids (البواسير)
+- [استئصال البواسير بالليزر — Laser Hemorrhoidoplasty (LHP)](/استئصال-البواسير-بالليزر.md): Laser treatment of hemorrhoids; low pain, fast recovery.
+- [استئصال البواسير بالدباسة الشرجية — Stapled Hemorrhoidectomy (PPH)](/استئصال-البواسير-بالدباسة-الشرجية.md): Stapled hemorrhoid surgery; fast recovery.
+- [ربط الشريان الباسوري — Hemorrhoidal Artery Ligation (HAL)](/ربط-الشريان-الباسوري.md): Ligation of the hemorrhoidal arteries.
+
 ## Location
 
 Al-Noor Specialist Clinics Complex, 2nd Floor

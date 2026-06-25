@@ -31,6 +31,20 @@ export function buildProcedureFaq(d: ProcedureData): { q: string; a: string }[] 
   return [...auto, ...(d.faq ?? [])];
 }
 
+/** Resolve alternatives to display name + href. A link is produced only when
+ *  the target procedure actually exists (via `exists`), so an alternative that
+ *  isn't a page yet (or is a non-surgical option) degrades to plain text — no
+ *  dead links. */
+export function resolveAlternatives(
+  d: ProcedureData,
+  exists: (slug: string) => boolean
+): { name: string; href?: string }[] {
+  return (d.alternatives ?? []).map((a) => ({
+    name: a.name,
+    href: a.slug && exists(a.slug) ? `/${a.slug}` : undefined,
+  }));
+}
+
 /** Scannable "حقائق سريعة" rows derived from the structured fields. */
 export function buildProcedureFacts(d: ProcedureData): { label: string; value: string }[] {
   return [
