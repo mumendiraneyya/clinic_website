@@ -21,6 +21,12 @@ export const headerData = {
         {
           text: 'ماذا نعالج',
           href: '/#features',
+          links: [
+            {
+              text: 'استئصال البواسير بالليزر',
+              href: '/استئصال-البواسير-بالليزر',
+            },
+          ],
         },
         {
           text: 'أسئلة شائعة',

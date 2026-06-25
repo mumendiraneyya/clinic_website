@@ -86,6 +86,55 @@ const postCollection = defineCollection({
   }),
 });
 
+const procedureCollection = defineCollection({
+  loader: glob({ pattern: ['*.md', '*.mdx'], base: 'src/data/procedure' }),
+  schema: z.object({
+    /** Page/heading title in Arabic (the canonical procedure name). */
+    title: z.string(),
+    /** English/Latin name — the cross-lingual anchor for AI + search. */
+    nameEn: z.string(),
+    /** Explicit ordering within the category (Dr. Mu'men reorders freely). */
+    order: z.number().default(0),
+    /** Category key — see procedureCategoryOrder in navigation.ts. */
+    category: z.string(),
+
+    excerpt: z.string().optional(),
+    image: z.string().optional(),
+    draft: z.boolean().optional(),
+
+    /** The condition this procedure treats. */
+    condition: z.string().optional(),
+    conditionEn: z.string().optional(),
+
+    /** Patient-facing facts (drive the FAQ + facts card + schema). */
+    painLevel: z.string().optional(),
+    hospitalStay: z.string().optional(),
+    returnToDesk: z.string().optional(),
+    returnToPhysical: z.string().optional(),
+    /** Free string so it can carry the cost breakdown / conditions. */
+    cost: z.string().optional(),
+
+    benefit: z.string().optional(),
+    alternatives: z.array(z.string()).optional(),
+    candidate: z.string().optional(),
+    contraindications: z.string().optional(),
+    successRate: z.string().optional(),
+    emergencySigns: z.array(z.string()).optional(),
+
+    bodyLocation: z.string().optional(),
+    procedureType: z.string().optional(),
+
+    /** Slug of a related blog post to cross-link (المنشورات ↔ ماذا نعالج). */
+    relatedArticle: z.string().optional(),
+
+    /** Optional hand-authored Q&A appended to the auto-generated FAQ. */
+    faq: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
+
+    metadata: metadataDefinition(),
+  }),
+});
+
 export const collections = {
   post: postCollection,
+  procedure: procedureCollection,
 };

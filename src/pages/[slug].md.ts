@@ -1,35 +1,61 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection } from 'astro:content';
 import { fetchPosts } from '~/utils/blog';
+import { buildProcedureFaq, buildProcedureFacts } from '~/utils/procedure';
 
-// Serves a clean markdown variant of each visible post at /<slug>.md — the
-// AI/LLM-friendly twin of /<slug>. Following the llmstxt.org convention: llms.txt
-// references each post via these .md URLs so assistants and crawlers can retrieve
-// clean source content (no JS, no boilerplate) per article. Hidden posts (e.g.
-// مسيرتنا) are excluded — same rule as the blog listing (via fetchPosts).
+// Serves a clean markdown variant of each visible post AND each procedure at
+// /<slug>.md — the AI/LLM-friendly twin of /<slug>. Following the llmstxt.org
+// convention so assistants/crawlers retrieve clean source content (no JS, no
+// boilerplate). Sourced from the content collections (bundled at build) — no
+// readFile path/casing traps. Hidden posts (e.g. مسيرتنا) are excluded.
 
 export const prerender = true;
 
-// Source the body from Astro's content collection rather than readFile(). The
-// content layer is bundled at build time, so there is no fragile filesystem path
-// (import.meta.url resolves into dist/ at build, where src/data/post doesn't
-// exist) and no case-sensitivity trap (the LIFT post's file is `…-LIFT.md` while
-// its slug is `…-lift`). Correlating by id sidesteps both. The body excludes the
-// YAML frontmatter, so we prepend the title as an H1 to keep the doc complete.
 export const getStaticPaths: GetStaticPaths = async () => {
   const posts = await fetchPosts(); // visible posts only, with canonical slug + title
-  const entries = await getCollection('post');
-  const bodyById = new Map(entries.map((entry) => [entry.id, entry.body ?? '']));
+  const postEntries = await getCollection('post');
+  const bodyById = new Map(postEntries.map((entry) => [entry.id, entry.body ?? '']));
 
-  return posts.map((post) => ({
+  const postPaths = posts.map((post) => ({
     params: { slug: post.slug },
-    props: { title: post.title, body: bodyById.get(post.id) ?? '' },
+    props: { kind: 'post' as const, title: post.title, body: bodyById.get(post.id) ?? '' },
   }));
+
+  const procedures = await getCollection('procedure', ({ data }) => !data.draft);
+  const procPaths = procedures.map((entry) => ({
+    params: { slug: entry.id },
+    props: { kind: 'procedure' as const, data: entry.data, body: entry.body ?? '' },
+  }));
+
+  return [...postPaths, ...procPaths];
 };
 
 export const GET: APIRoute = ({ props }) => {
-  const { title, body } = props as { title: string; body: string };
-  const markdown = `# ${title}\n\n${body.trim()}\n`;
+  const p = props as
+    | { kind: 'post'; title: string; body: string }
+    | { kind: 'procedure'; data: import('~/utils/procedure').ProcedureData; body: string };
+
+  let markdown: string;
+
+  if (p.kind === 'procedure') {
+    const d = p.data;
+    const facts = buildProcedureFacts(d)
+      .map((f) => `- ${f.label}: ${f.value}`)
+      .join('\n');
+    const faq = buildProcedureFaq(d)
+      .map((f) => `### ${f.q}\n\n${f.a}`)
+      .join('\n\n');
+
+    markdown =
+      `# ${d.title}\n\n` +
+      `${d.nameEn}\n\n` +
+      (d.condition ? `**الحالة المُعالَجة:** ${d.condition}\n\n` : '') +
+      (facts ? `## حقائق سريعة\n\n${facts}\n\n` : '') +
+      `${p.body.trim()}\n\n` +
+      (faq ? `## أسئلة شائعة\n\n${faq}\n` : '');
+  } else {
+    markdown = `# ${p.title}\n\n${p.body.trim()}\n`;
+  }
 
   return new Response(markdown, {
     headers: {
