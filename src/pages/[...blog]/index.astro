@@ -138,7 +138,7 @@ const schemas = [articleSchema, breadcrumbSchema, ...(procedureSchema ? [procedu
 // Procedures that point back to this article (reverse of relatedArticle) —
 // derived at build, so the link is declared once on the procedure side.
 const linkedProcedures = (await getCollection('procedure', ({ data }) => !data.draft))
-  .filter((proc) => proc.data.relatedArticle === post.id)
+  .filter((proc) => proc.data.relatedArticle === post.slug)
   .sort((a, b) => a.data.order - b.data.order);
 ---
 
@@ -153,7 +153,7 @@ const linkedProcedures = (await getCollection('procedure', ({ data }) => !data.d
       <ul class="space-y-1 text-sm">
         {linkedProcedures.map((proc) => (
           <li>
-            <a class="text-primary underline" href={`/${proc.id}`}>{proc.data.title}</a>
+            <a class="text-primary underline" href={`/عمليات/${proc.id}`}>{proc.data.title}</a>
           </li>
         ))}
       </ul>

@@ -4,9 +4,10 @@ import Header from '~/components/widgets/Header.astro';
 import Footer from '~/components/widgets/Footer.astro';
 import Announcement from '~/components/widgets/Announcement.astro';
 
-import { headerData, footerData, blogCategoryOrder } from '~/navigation';
+import { headerData, footerData, blogCategoryOrder, procedureCategoryOrder } from '~/navigation';
 import { fetchPosts } from '~/utils/blog';
 import { getPermalink } from '~/utils/permalinks';
+import { getCollection } from 'astro:content';
 import type { MetaData } from '~/types';
 
 export interface Props {
@@ -55,11 +56,30 @@ const blogLinks = [
     .filter((link): link is NonNullable<typeof link> => link !== null),
 ];
 
+// Build "ماذا نعالج" links: procedures grouped by category (frontmatter order
+// within each, navigation.ts order across groups), pointing at /عمليات/<slug>.
+const procedures = (await getCollection('procedure', ({ data }) => !data.draft)).sort(
+  (a, b) => (a.data.order ?? 0) - (b.data.order ?? 0)
+);
+const procedureLinks = procedureCategoryOrder
+  .map(({ key, title }) => {
+    const items = procedures.filter((p) => p.data.category === key);
+    if (!items.length) return null;
+    return {
+      text: title,
+      href: '/#features',
+      links: items.map((p) => ({ text: p.data.title, href: `/عمليات/${p.id}` })),
+    };
+  })
+  .filter((link): link is NonNullable<typeof link> => link !== null);
+
 const dynamicHeaderData = {
   ...headerData,
-  links: headerData.links.map((link) =>
-    link.text === 'المنشورات' ? { ...link, links: blogLinks } : link
-  ),
+  links: headerData.links.map((link) => {
+    if (link.text === 'المنشورات') return { ...link, links: blogLinks };
+    if (link.text === 'ماذا نعالج') return { ...link, links: procedureLinks };
+    return link;
+  }),
 };
 ---
 

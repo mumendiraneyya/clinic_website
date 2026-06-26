@@ -8,6 +8,15 @@ export const blogCategoryOrder = [
   'فتوق جدار البطن',
 ];
 
+/** Procedure category order + display titles — drives the "ماذا نعالج" menu and
+ *  grouping. `key` matches the `category` field in each procedure's frontmatter. */
+export const procedureCategoryOrder = [
+  { key: 'hemorrhoids', title: 'البواسير' },
+  { key: 'anal', title: 'القناة الشرجية' },
+  { key: 'hernias', title: 'الفتوق' },
+  { key: 'general', title: 'جراحات عامة' },
+];
+
 export const headerData = {
   links: [
     {
@@ -35,11 +44,6 @@ export const headerData = {
     {
       text: 'ماذا نعالج',
       href: '/#features',
-      links: [
-        { text: 'استئصال البواسير بالليزر', href: '/استئصال-البواسير-بالليزر' },
-        { text: 'استئصال البواسير بالدباسة الشرجية', href: '/استئصال-البواسير-بالدباسة-الشرجية' },
-        { text: 'ربط الشريان الباسوري', href: '/ربط-الشريان-الباسوري' },
-      ],
     },
     {
       text: 'المنشورات',

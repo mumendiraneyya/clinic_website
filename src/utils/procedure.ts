@@ -41,7 +41,7 @@ export function resolveAlternatives(
 ): { name: string; href?: string }[] {
   return (d.alternatives ?? []).map((a) => ({
     name: a.name,
-    href: a.slug && exists(a.slug) ? `/${a.slug}` : undefined,
+    href: a.slug && exists(a.slug) ? `/عمليات/${a.slug}` : undefined,
   }));
 }
 
