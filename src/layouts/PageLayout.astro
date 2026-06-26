@@ -61,6 +61,8 @@ const blogLinks = [
 const procedures = (await getCollection('procedure', ({ data }) => !data.draft)).sort(
   (a, b) => (a.data.order ?? 0) - (b.data.order ?? 0)
 );
+// Group procedures under category submenus (ماذا نعالج → category → procedure),
+// in navigation.ts category order, each ordered by frontmatter `order`.
 const procedureLinks = procedureCategoryOrder
   .map(({ key, title }) => {
     const items = procedures.filter((p) => p.data.category === key);
