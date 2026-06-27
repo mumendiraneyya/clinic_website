@@ -699,6 +699,66 @@ const bookingDisabledTitle = 'الحجز موقف للصيانة';
     </Fragment>
   </BlogPostsByCategory>
 
+  <!-- مسيرتنا Glimpse *************** -->
+
+  <section id="maseera" class="relative not-prose scroll-mt-16">
+    <div class="absolute inset-0 bg-tertiary/20 dark:bg-transparent"></div>
+    <div class="relative max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-16">
+      <div class="text-center mb-8 md:mb-10">
+        <p class="text-base text-secondary dark:text-blue-200 font-bold tracking-wide">مسيرة</p>
+        <h2 class="text-3xl md:text-4xl font-bold tracking-tight mb-3">حكاية المسيرة الطبية</h2>
+        <p class="mx-auto max-w-2xl text-lg text-muted leading-relaxed">
+          من بيتٍ صغير في جبل اللويبدة، إلى مشوارٍ طويل في الجراحة بين عمّان وجدّة، وخمسةٍ وثلاثين عامًا من
+          الغياب والعودة — حكايةٌ يرويها الدكتور بقلمه.
+        </p>
+      </div>
+
+      {/*
+        Photo-set experiment: swap the three <figure> blocks below for this
+        original variant to A/B which montage drives more clicks to /مسيرتنا.
+        Variant A (original): image2 (الطفولة في عمّان) · image7 (بداية المشوار) · image53 (اليوم.. مع طلبة الطب)
+        Variant B (current):  image12 (نَيْل الزمالة)   · image30 (العمل الإغاثي) · image53 (اليوم.. مع طلبة الطب)
+      */}
+
+      <div class="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 max-w-4xl mx-auto">
+        <figure class="m-0 flex flex-col">
+          <img
+            src="/images/maseera/image12.jpeg"
+            alt="نَيْل الزمالة"
+            loading="lazy"
+            class="w-full h-44 sm:h-60 md:h-72 object-cover rounded-xl shadow-md"
+          />
+          <figcaption class="mt-2 text-center text-xs sm:text-sm text-muted">نَيْل الزمالة</figcaption>
+        </figure>
+        <figure class="m-0 flex flex-col">
+          <img
+            src="/images/maseera/image33.jpeg"
+            alt="في العمل الطبي الإغاثي"
+            loading="lazy"
+            class="w-full h-44 sm:h-60 md:h-72 object-cover rounded-xl shadow-md"
+          />
+          <figcaption class="mt-2 text-center text-xs sm:text-sm text-muted">في العمل الطبي الإغاثي</figcaption>
+        </figure>
+        <figure class="m-0 flex flex-col">
+          <img
+            src="/images/maseera/image53.jpeg"
+            alt="اليوم مع طلبة الطب"
+            loading="lazy"
+            class="w-full h-44 sm:h-60 md:h-72 object-cover rounded-xl shadow-md"
+          />
+          <figcaption class="mt-2 text-center text-xs sm:text-sm text-muted">اليوم.. مع طلبة الطب</figcaption>
+        </figure>
+      </div>
+
+      <div class="text-center mt-8 md:mt-10">
+        <a href="/مسيرتنا" class="btn-primary">
+          اقرأ الحكاية كاملة
+          <Icon name="tabler:arrow-left" class="w-5 h-5 inline-block ms-1 -me-1" />
+        </a>
+      </div>
+    </div>
+  </section>
+
   <!-- FAQs Widget ******************* -->
 
   <FAQs
