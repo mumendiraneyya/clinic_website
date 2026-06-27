@@ -1,6 +1,12 @@
 # Bug: mobile hamburger menu can't scroll to its top items
 
-**Status:** open — documented for a dedicated session. A candidate one-line fix is below but is **not** applied.
+**Status:** ✅ **fixed.** In `src/components/widgets/Header.astro` the mobile `<nav class="nav-mobile …">`
+was changed `items-center` → `items-start` (plus `overscroll-contain` added). The top items
+(عن العيادة, من نحن, ماذا نعالج) are now reachable. Root-cause analysis below kept for reference.
+
+**Possible TODO (not applied):** add `pb-[env(safe-area-inset-bottom)]` to the nav's `<ul>` so the
+last item (اتصل بنا هاتفيًا) clears the iOS home indicator. Skipped for now since social links /
+theme toggle sit below the nav links — revisit if the last item is ever found clipped on iPhones.
 
 ## Symptom
 
