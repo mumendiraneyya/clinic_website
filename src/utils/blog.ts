@@ -191,9 +191,13 @@ export const findLatestPosts = async ({ count }: { count?: number }): Promise<Ar
 /** */
 export const getStaticPathsBlogList = async ({ paginate }: { paginate: PaginateFunction }) => {
   if (!isBlogEnabled || !isBlogListRouteEnabled) return [];
-  return paginate(await fetchPosts(), {
+  const posts = await fetchPosts();
+  // The blog list page (/blog/) renders posts grouped by category (like the homepage),
+  // so it shows everything on a single page — no pagination. Keep a single page to avoid
+  // generating /blog/2, /blog/3… that would duplicate the full category listing.
+  return paginate(posts, {
     params: { blog: BLOG_BASE || undefined },
-    pageSize: blogPostsPerPage,
+    pageSize: Math.max(posts.length, 1),
   });
 };
 

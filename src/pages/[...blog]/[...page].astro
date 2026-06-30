@@ -3,9 +3,8 @@ import type { InferGetStaticPropsType, GetStaticPaths } from 'astro';
 import { Icon } from 'astro-icon/components';
 
 import Layout from '~/layouts/PageLayout.astro';
-import BlogList from '~/components/blog/List.astro';
 import Headline from '~/components/blog/Headline.astro';
-import Pagination from '~/components/blog/Pagination.astro';
+import BlogPostsByCategory from '~/components/widgets/BlogPostsByCategory.astro';
 import Button from '~/components/ui/Button.astro';
 // import PostTags from "~/components/blog/Tags.astro";
 
@@ -39,22 +38,21 @@ const metadata = {
 ---
 
 <Layout metadata={metadata}>
-  <section class="px-6 sm:px-6 py-12 sm:py-16 lg:py-20 mx-auto max-w-4xl">
+  <section class="px-6 sm:px-6 pt-12 sm:pt-16 lg:pt-20 mx-auto max-w-4xl">
     <Headline
       subtitle="كتابات وأحاديث الطبيب استشاري الجراحة د. مؤمن ديرانية (أبو عبيدة الجراح)"
     >
       المنشورات
     </Headline>
-    <BlogList posts={page.data} />
-    <Pagination prevUrl={page.url.prev} nextUrl={page.url.next} />
-    <div class="pt-8 md:pt-4 flex flex-wrap gap-4">
+  </section>
+
+  <BlogPostsByCategory />
+
+  <section class="px-6 sm:px-6 pb-12 sm:pb-16 lg:pb-20 mx-auto max-w-4xl">
+    <div class="flex flex-wrap gap-4">
       <Button variant="tertiary" class="px-3 md:px-3" href={getHomePermalink()}>
         <Icon name="tabler:home" class="w-5 h-5 me-1" /> الصفحة الرئيسية
       </Button>
     </div>
-    <!--
-      <PostTags tags={allCategories} class="mb-2" title="Search by Categories:" isCategory />
-      <PostTags tags={allTags}  title="Search by Tags:" />
-    -->
   </section>
 </Layout>
