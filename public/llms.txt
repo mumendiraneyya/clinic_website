@@ -76,7 +76,7 @@ Per-procedure pages with patient-facing facts (cost, recovery, pain, alternative
 ### Hemorrhoids (البواسير)
 - [علاج البواسير في العيادة — In-clinic hemorrhoid treatment (band/IRC/sclerotherapy)](/عمليات/علاج-البواسير-في-العيادة.md): Non-surgical, in-clinic treatment for early hemorrhoids.
 - [استئصال البواسير الجراحي — Conventional Hemorrhoidectomy](/عمليات/استئصال-البواسير-الجراحي.md): Surgical removal for advanced hemorrhoids.
-- [استئصال البواسير بالليزر — Laser Hemorrhoidoplasty (LHP)](/عمليات/استئصال-البواسير-بالليزر.md): Laser treatment of hemorrhoids; low pain, fast recovery.
+- [رأب البواسير بالليزر — Laser Hemorrhoidoplasty (LHP)](/عمليات/استئصال-البواسير-بالليزر.md): Laser treatment of hemorrhoids; low pain, fast recovery.
 - [استئصال البواسير بالدباسة الشرجية — Stapled Hemorrhoidectomy (PPH)](/عمليات/استئصال-البواسير-بالدباسة-الشرجية.md): Stapled hemorrhoid surgery; fast recovery.
 - [ربط الشريان الباسوري — Hemorrhoidal Artery Ligation (HAL)](/عمليات/ربط-الشريان-الباسوري.md): Ligation of the hemorrhoidal arteries.
 
@@ -95,7 +95,7 @@ Per-procedure pages with patient-facing facts (cost, recovery, pain, alternative
 - [رتق الفتق الجراحي — Incisional Hernia Repair](/عمليات/رتق-الفتق-الجراحي.md): Repair of a hernia at a previous surgical scar.
 
 ### General surgery (جراحة عامة)
-- [استئصال المرارة بالمنظار — Laparoscopic Cholecystectomy](/عمليات/استئصال-المرارة-بالمنظار.md): Keyhole gallbladder removal.
+- [استئصال المرارة بالجراحة التنظيرية — Laparoscopic Cholecystectomy](/عمليات/استئصال-المرارة-بالمنظار.md): Keyhole gallbladder removal.
 - [استئصال الزائدة الدودية — Appendectomy](/عمليات/استئصال-الزائدة-الدودية.md): Appendix removal for appendicitis.
 - [استئصال الغدة الدرقية — Thyroidectomy](/عمليات/استئصال-الغدة-الدرقية.md): Thyroid surgery for enlargement/nodules.
 - [جراحة الثدي — Breast Surgery (Lumpectomy / Mastectomy)](/عمليات/جراحة-الثدي.md): Surgery for benign and malignant breast tumors.
