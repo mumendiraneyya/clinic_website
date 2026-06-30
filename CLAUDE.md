@@ -190,6 +190,8 @@ sitemap({
 
 ### Content Collections
 
+Two collections in `src/content/config.ts`: `post` (blog) and `procedure` (operation pages — see [Procedures](#procedures-ماذا-نعالج) below).
+
 Blog posts are defined in `src/content/config.ts` using Astro's content collections:
 - Posts located in `src/data/post/` (not `src/content/post/`)
 - Post images stored in `src/assets/images/posts/`
@@ -199,6 +201,15 @@ Blog posts are defined in `src/content/config.ts` using Astro's content collecti
 - **`hidden: true`** generates the page but excludes it from blog listings (used for standalone pages like `/مسيرتنا`). Use `fetchPosts()` for listings (excludes hidden), `fetchAllPosts()` for page generation (includes hidden).
 - Image paths use the `~` alias: `image: ~/assets/images/posts/filename.jpg`
 - **Blog categories**: Category order is defined in `blogCategoryOrder` array in `src/navigation.ts` - this is the single source of truth used by both the header menu dropdown and the `BlogPostsByCategory` widget on the homepage.
+
+### Procedures (ماذا نعالج)
+
+Per-operation pages at `/عمليات/<slug>`, driven by the `procedure` content collection (files in `src/data/procedure/`). Each page has a facts card + prose + auto-generated FAQ, emits `MedicalProcedure` + `FAQPage` schema, exposes an LLM `.md` twin, and is bidirectionally cross-linked with the blog (`relatedArticle`). The "ماذا نعالج" header menu and the landing-page `#features` inline links both point into these pages. Full documentation: **[context/procedures.md](context/procedures.md)**.
+
+- **Helpers:** `src/utils/procedure.ts` (`buildProcedureFaq`, `buildProcedureFacts`, `resolveAlternatives`) — single source shared by the page and the `.md` endpoint.
+- **Category order:** `procedureCategoryOrder` in `src/navigation.ts` (key → Arabic title); submenus injected by `PageLayout.astro` exactly like the blog menu.
+- **Namespaced under `/عمليات/`** to avoid colliding with root-level blog-post slugs.
+- **`#features` links:** only spans of Dr. Mu'men's curated prose that map unambiguously to a single procedure are linked; his wording is never edited.
 
 ### Component Structure
 

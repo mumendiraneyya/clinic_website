@@ -100,6 +100,8 @@ html.dark #header.expanded .nav-mobile {
 
 The "المنشورات" menu item dynamically generates dropdown sub-items from blog post categories, with nested submenus showing individual posts. This is implemented in `src/layouts/PageLayout.astro`.
 
+> **The "ماذا نعالج" menu uses the same mechanism.** `PageLayout.astro` also injects category → procedure submenus into "ماذا نعالج", grouped by `procedureCategoryOrder` (in `src/navigation.ts`) and linking to `/عمليات/<slug>`. The nested-dropdown rendering (chevrons, hover/click) described below is shared by both menus. See [procedures.md](procedures.md).
+
 ### How It Works
 
 1. Fetches all blog posts via `fetchPosts()`
