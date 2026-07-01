@@ -240,6 +240,7 @@ let history = [];
 try { history = JSON.parse(histRow.history || '[]'); } catch (e) { history = []; }
 if (!Array.isArray(history)) history = [];
 const isFirst = history.length === 0;
+const nowAmman = new Date().toLocaleString('ar-JO', { timeZone: 'Asia/Amman', dateStyle: 'full', timeStyle: 'short' });
 const getText = (m) => (m && m.text != null) ? m.text : ((m && m.content != null) ? m.content : '');
 let turns = [];
 for (const m of history) {
@@ -293,12 +294,13 @@ const instructions = [
   '- إذا ذكر المريض عملية أو منطقة بعينها (مثل الناسور أو المرارة أو البواسير) فاعتبرها موضوع الحديث وتابع عليها مباشرة، ولا تسأله "أي عملية؟".',
   '- نبرة هادئة ومهنية ومطمئنة تناسب المرضى كبار السن؛ قلّل من علامات التعجب.',
   '- استعن بمرجع العمليات عند الإجابة عن الأسعار أو الألم أو التعافي أو البدائل.',
+  '- عند سؤال المريض عن الوقت المتبقي لموعده، احسب الفرق بين موعده (المذكور في المحادثة) والوقت الحالي المذكور أعلاه، وأعطِ تقديرًا تقريبيًا (مثل "بعد حوالي نصف ساعة")؛ وللعدّ الدقيق أحِله إلى صفحة الحجوزات أو صفحة الفيديو للمواعيد عن بُعد.',
   '- لا تتظاهر بأنك طبيب ولا تقدّم تشخيصًا أو نصيحة طبية شخصية.',
   '',
   'أخرج الناتج بصيغة JSON فقط، بالشكل: {"intent":"info","reply":"نص الرد"} — دون أي نص أو شرح أو علامات كود قبل الكائن أو بعده. القيمة "intent" واحدة من: info أو medical أو administrative أو booking. والقيمة "reply" هي نص الرسالة المُرسَلة للمريض وفق قواعد الأسلوب أعلاه.',
 ].join('\\n');
 const firstNote = isFirst ? '\\n\\nملاحظة مهمة: هذه أول رسالة في هذه المحادثة، لذا ابدأ ردّك بجملة تعريف واحدة مختصرة «أنا المساعد الآلي لعيادة الدكتور مؤمن ديرانية» ثم تابع مباشرة بالإجابة دون عبارات زائدة.' : '';
-const systemMessage = [clinicInfo, '', '## مرجع العمليات (للاستعانة):', knowledge, '', '## المحادثة السابقة مع هذا المريض:', historyText, '', '## التعليمات:', instructions + firstNote].join('\\n');
+const systemMessage = [clinicInfo, '', 'الوقت الحالي: ' + nowAmman + ' بتوقيت الأردن (Asia/Amman).', '', '## مرجع العمليات (للاستعانة):', knowledge, '', '## المحادثة السابقة مع هذا المريض:', historyText, '', '## التعليمات:', instructions + firstNote].join('\\n');
 const userText = quotedNote + forwardedTag + ctx.assembledText;
 return [{ json: { phone: ctx.phone, name: ctx.name, text: userText, systemMessage } }];`,
     },
