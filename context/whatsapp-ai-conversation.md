@@ -258,14 +258,25 @@ record = all bot messages logged too (deferred wiring for other senders); loggin
 reusable subflow; **inbound logged always, outbound only after a successful send**; blob
 write-race **accepted for v1**; history trim **40 messages**; pricing **may be quoted**.
 
-## SDK note
+## SDK note & where each workflow's source of truth lives
 
-The whole sub-workflow was authored via the n8n MCP SDK (`create_workflow_from_code`
-/ `update_workflow`). Source of truth for the SDK code is
-`context/whatsapp-ai-conversation.sdk.js` if kept, otherwise regenerate from this
-doc. Two SDK gotchas hit during authoring: the validator forbids real-code
-`.join()` etc. in node config (put multiline `jsCode` in **backtick literals**,
-not `[...].join('\n')`), and `description` on create/update is capped at 255 chars.
+Two of the workflows were authored via the n8n MCP SDK and **have a checked-in SDK source**
+(the canonical, hand-editable source of truth — edit it, then `update_workflow` + `publish`):
+
+- `Dads Clinic-WhatsApp AI Conversation` → `context/whatsapp-ai-conversation.sdk.js`
+- `Dads Clinic-Log Messages to History` → `context/log-messages-to-history.sdk.js`
+
+The other workflows I wired into the logger — **`Send Reminders` and `Cal.com Notifications`**,
+and the **parent** (`WhatsApp AI Assistant`) — have **no SDK source in this repo**. They're
+credentialed, and `get_workflow_details` strips credentials, so they can't be safely
+reconstructed via the MCP SDK. Their **source of truth is the n8n submodule backup** (exported
+JSON under `n8n/workflows/`). To change them, use the CLI export→edit→import→restart path (see
+the "Editing the parent" box above); the Python edit scripts used this session were one-offs
+(not kept). MCP-authored workflows hot-reload on publish; CLI-edited ones need the restart.
+
+Two SDK gotchas hit during authoring: the validator forbids real-code `.join()` etc. in node
+config (put multiline `jsCode` in **backtick literals**, not `[...].join('\n')`), and
+`description` on create/update is capped at 255 chars.
 
 ---
 
