@@ -138,8 +138,20 @@ send response's `contacts[0].wa_id`.
   `Send Location Message` (logged as "أرسلنا لكم موقع العيادة على خرائط جوجل."), and
   `Send Conferencing Link` (logged as "أرسلنا لكم رابط الدخول إلى موعد الاستشارة عن بُعد.").
   The 0.5-min `Wait` before the location/link branch naturally serialises the two log writes.
-- ⏳ **Cal.com Notifications (`n1xrgJXoX6d74bjo`)** — booking confirmations / cancellations /
-  reschedules still to wire the same way.
+- ✅ **Cal.com Notifications (`n1xrgJXoX6d74bjo`)** — done. All 8 outbound messages logged via
+  `Build … Log`→`Log …` pairs: clinic confirmation (`booking_clinic_completed`, sent via an
+  **httpRequest** node for its location header), remote confirmation, cancellation by
+  doctor/patient, reschedule by doctor/patient (from→to, `dts[1]/tss[1]`→`dts[0]/tss[0]`),
+  meeting-started, and the standalone location pin (logged as a description). Date/time pulled
+  from the `أضف معلوماتٍ إضافية` set node (`arabic_date_strings`, `time_strings`,
+  `' timezone_string'` — **leading space** in that key).
+
+**Template bodies:** fetch the real Arabic bodies from the Meta Graph API rather than guessing —
+`GET /{WA_ACCOUNT_ID}/message_templates?fields=name,language,components` with a
+`Bearer $WA_ACCESS_TOKEN` (both in the repo's `.envrc`; never print the token). The rendered
+log text substitutes `{{1}}`/`{{2}}`/… and strips the `*bold*` markers. Only messages sent
+**after** this wiring are logged, so replying to a confirmation received earlier still won't
+resolve.
 
 **Blob concurrency** (multiple workflows appending to one phone's blob can race and lose a
 message) is **accepted for v1** given clinic volume.
