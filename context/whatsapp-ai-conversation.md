@@ -127,12 +127,22 @@ canonical record instead of rebuilding a client:
 - **Forwards** are self-contained (the body is inline in the webhook); `forwarded=true`
   just prepends a `(رسالة محوّلة)` tag so the model knows it isn't the patient's own words.
 
-**Canonical-record TODO (deferred, agreed):** booking confirmations / reminders /
-cancellations are sent by *other* workflows (Cal.com Notifications, Send Reminders) and are
-**not yet** logged into `chat_history`, so a patient replying to one of those won't resolve.
-Wire those senders to call `Log Messages to History` after each successful send to close the
-gap. **Blob concurrency** (multiple workflows appending to one phone's blob can race and lose
-a message) is **accepted for v1** given clinic volume.
+**Canonical-record wiring — other senders.** Each outbound WhatsApp message from any workflow
+should be logged so patients can reply to it. Pattern for a **template** sender: the body lives
+in Meta, so the calling workflow reconstructs a human-readable text (template body with its
+params substituted; non-text messages get a short Arabic description) and calls
+`Log Messages to History` after a successful send, guarded on a returned wamid, keyed on the
+send response's `contacts[0].wa_id`.
+- ✅ **Send Reminders (`WiqM8fag3FvWvW6t`)** — done. Three `Build … Log` + `Log …` node pairs
+  hang off `Send Notifications` (the `booking_reminder` template, real body rendered),
+  `Send Location Message` (logged as "أرسلنا لكم موقع العيادة على خرائط جوجل."), and
+  `Send Conferencing Link` (logged as "أرسلنا لكم رابط الدخول إلى موعد الاستشارة عن بُعد.").
+  The 0.5-min `Wait` before the location/link branch naturally serialises the two log writes.
+- ⏳ **Cal.com Notifications (`n1xrgJXoX6d74bjo`)** — booking confirmations / cancellations /
+  reschedules still to wire the same way.
+
+**Blob concurrency** (multiple workflows appending to one phone's blob can race and lose a
+message) is **accepted for v1** given clinic volume.
 
 ## Output parsing (no structured parser)
 

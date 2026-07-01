@@ -21,6 +21,8 @@ This is a family project. Orwa (developer) builds and maintains the site for his
 - **PR/comment attribution:** Use `🤖 برمجته [سوسن](https://claude.com/claude-code)` (سوسن is Claude's Arabic name). Do NOT use English "Generated with Claude Code".
 - **Collaborator GitHub handles:** @mamouneyya (Mamoun), @SufianDira (Sufian), @mumendiraneyya (Dr. Mu'men)
 - **n8n workflow sync:** Run `ssh root@n8n ./backup.sh 'commit message'` to backup workflows from the remote server, then `cd n8n && git pull` locally. Do not just `git pull` the submodule — workflows must be backed up from the server first.
+  - **When the Jordan VPN is down, `ssh root@n8n` times out** — jump via proxmox instead: the SSH alias **`n8n.proxmox`** (ProxyJumps through `proxmox`). So: `ssh n8n.proxmox './backup.sh "msg"'`.
+  - **`backup.sh` only exports workflows tagged BOTH `production` AND `dad-clinic`**, and it auto-commits + pushes the submodule repo. New workflows created via the MCP must carry both tags or they're silently skipped from the backup. After it pushes, `cd n8n && git pull` (it may already be in sync).
 - **Submodule `n8n`:** Contains n8n workflow backups.
 - **Never use `git stash`** around commits that modify files. Stash pop can silently revert committed changes (happened with `book.astro` V2 integration — the stash captured the pre-edit state and overwrote the committed version on pop). If you need to work around uncommitted changes for `gh` commands, commit them first or use `--allow-dirty`.
 - **After merging feature branches**, always verify that key files contain the expected changes. Don't trust the merge output alone.
@@ -429,6 +431,17 @@ PostHog analytics MCP (`mcp__posthog__*`) for querying data, creating insights, 
 ### n8n MCP
 
 n8n workflow automation MCP (`mcp__n8n-mcp__*`) for inspecting and modifying backend workflows. The phone verification workflow ID is `dwv7rpf8uHxyum02`. Use `search_workflows` to find workflows, `get_workflow_details` to inspect them.
+
+**Editing workflows — hard-won gotchas (encode these, they cost real time/outages):**
+
+- **Edits are two steps: `update_workflow` → `publish_workflow`.** `update_workflow` only saves a *draft* (`versionId` advances, `activeVersionId` doesn't) — the change is **not live** until you `publish_workflow`. Verify with `get_workflow_details`: it's live only when `activeVersionId === versionId`. `create_workflow_from_code` also needs a publish to activate.
+- **`update_workflow` `description` is capped at 255 chars** (English-count). Draft it short the first time — an over-long description rejects the call and forces re-sending the entire (often huge) SDK code.
+- **Params are camelCase:** `workflowId` (not `workflow_id`/`id`). `test_workflow` **requires `pinData`** (pin the trigger node's output, e.g. `{"When Executed by Parent":[{...}]}`).
+- **Prefer the MCP for edits — it hot-reloads** the running instance (webhook/subflow changes take effect immediately after publish).
+- **`get_workflow_details` STRIPS credential bindings.** So you can NOT faithfully reconstruct a credentialed workflow from its MCP JSON — an SDK rebuild would silently drop WhatsApp/Telegram/Anthropic/httpBearer creds and break it. For **surgical edits to credentialed workflows (esp. the parent WhatsApp workflow)** use the host n8n **CLI** instead (`export:workflow` → edit JSON → `import:workflow`), which preserves creds by id.
+- **The CLI does NOT hot-reload and `import:workflow` deactivates the workflow.** After a CLI edit you MUST: `n8n update:workflow --id=... --active=true` then `systemctl restart n8n` (healthy in ~6s, but **all webhooks are briefly down — confirm with the user first**, it's production). Use a **quoted** heredoc (`<<'PY'`) for any Python edit or bash will command-substitute the `$('Node')` strings inside n8n expressions and corrupt the file.
+- **Debug n8n bugs by reading the live data, not by theorizing.** The instance is SQLite at `/root/.n8n/database.sqlite`; DataTables are `data_table_user_<tableId>`, executions are the index-encoded `execution_data.data`. Reach it via `ssh n8n.proxmox` (see below). Reading actual rows/execution payloads resolved every n8n diagnosis this project faster than reasoning about the flow.
+- Full worked playbook (with the exact commands and the SQLite table map): [context/whatsapp-ai-conversation.md](context/whatsapp-ai-conversation.md).
 
 ## Integrations
 
