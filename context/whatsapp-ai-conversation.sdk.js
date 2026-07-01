@@ -281,6 +281,7 @@ const instructions = [
   '- "medical": سؤال طبي يحتاج رأي الطبيب — أخبره أن يتواصل مع الطبيب مباشرة على 0799133299.',
   '- "administrative": موضوع إداري (فواتير، تقارير، تأمين) — أخبره أن يتواصل مع موظفة الاستقبال على 0798872899.',
   '- "booking": يريد حجز أو تعديل أو إلغاء موعد — وجّهه إلى https://abuobaydatajjarrah.com/bookings/.',
+  '- "reset": يريد المريض إنهاء المحادثة أو مسحها أو البدء من جديد (مثل "إلى اللقاء"، "أريد بدء محادثة جديدة"، "امسح المحادثة"، "ابدأ من جديد"). في هذه الحالة سيُمسح سجل المحادثة تلقائيًا.',
   '',
   'أسلوب الرد (مهم جدًا — واتساب لا يعرض أي تنسيق نصّي):',
   '- التعريف بالهوية: في أول رسالة من المحادثة أو إذا خاطبك المريض بصفتك الطبيب (مثل "كيفك يا دكتور")، ابدأ ردّك بجملة تعريف واحدة مختصرة «أنا المساعد الآلي لعيادة الدكتور مؤمن ديرانية» ثم أجب عن استفساره. أما في بقية رسائل المحادثة فادخل مباشرةً في صلب الإجابة معتمِدًا على سياق ما سبق.',
@@ -297,7 +298,7 @@ const instructions = [
   '- عند سؤال المريض عن الوقت المتبقي لموعده، احسب الفرق بين موعده (المذكور في المحادثة) والوقت الحالي المذكور أعلاه، وأعطِ تقديرًا تقريبيًا (مثل "بعد حوالي نصف ساعة")؛ وللعدّ الدقيق أحِله إلى صفحة الحجوزات أو صفحة الفيديو للمواعيد عن بُعد.',
   '- لا تتظاهر بأنك طبيب ولا تقدّم تشخيصًا أو نصيحة طبية شخصية.',
   '',
-  'أخرج الناتج بصيغة JSON فقط، بالشكل: {"intent":"info","reply":"نص الرد"} — دون أي نص أو شرح أو علامات كود قبل الكائن أو بعده. القيمة "intent" واحدة من: info أو medical أو administrative أو booking. والقيمة "reply" هي نص الرسالة المُرسَلة للمريض وفق قواعد الأسلوب أعلاه.',
+  'أخرج الناتج بصيغة JSON فقط، بالشكل: {"intent":"info","reply":"نص الرد"} — دون أي نص أو شرح أو علامات كود قبل الكائن أو بعده. القيمة "intent" واحدة من: info أو medical أو administrative أو booking أو reset. والقيمة "reply" هي نص الرسالة المُرسَلة للمريض وفق قواعد الأسلوب أعلاه.',
 ].join('\\n');
 const firstNote = isFirst ? '\\n\\nملاحظة مهمة: هذه أول رسالة في هذه المحادثة، لذا ابدأ ردّك بجملة تعريف واحدة مختصرة «أنا المساعد الآلي لعيادة الدكتور مؤمن ديرانية» ثم تابع مباشرة بالإجابة دون عبارات زائدة.' : '';
 const systemMessage = [clinicInfo, '', 'الوقت الحالي: ' + nowAmman + ' بتوقيت الأردن (Asia/Amman).', '', '## مرجع العمليات (للاستعانة):', knowledge, '', '## المحادثة السابقة مع هذا المريض:', historyText, '', '## التعليمات:', instructions + firstNote].join('\\n');
@@ -376,8 +377,9 @@ function parseAi(r) {
   return { intent: 'info', reply: s.trim() };
 }
 const ai = parseAi(raw);
-const reply = cleanReply(ai.reply != null ? ai.reply : '');
+let reply = cleanReply(ai.reply != null ? ai.reply : '');
 const intent = ai.intent || 'info';
+if (intent === 'reset') { reply = 'تم مسح محادثتنا السابقة بنجاح. يسعدنا خدمتك في أي وقت — ابدأ متى شئت بمحادثة جديدة. دمت بخير!'; }
 return [{ json: { phone: ctx.phone, intent: intent, reply: reply } }];`,
     },
     position: [1600, 120],
@@ -463,6 +465,42 @@ const logTelegram = node({
     position: [2480, 120],
   },
   output: [{ ok: true }],
+});
+
+const isReset = node({
+  type: 'n8n-nodes-base.if',
+  version: 2.2,
+  config: {
+    name: 'Is Reset?',
+    parameters: {
+      conditions: {
+        options: { caseSensitive: true, leftValue: '', typeValidation: 'loose', version: 2 },
+        conditions: [{ id: 'r1', leftValue: expr("{{ $('Prepare Reply').first().json.intent }}"), rightValue: 'reset', operator: { type: 'string', operation: 'equals' } }],
+        combinator: 'and',
+      },
+      options: {},
+    },
+    position: [2700, 120],
+  },
+  output: [{ intent: 'reset' }],
+});
+
+const clearHistory = node({
+  type: 'n8n-nodes-base.dataTable',
+  version: 1.1,
+  config: {
+    name: 'Clear History',
+    parameters: {
+      operation: 'deleteRows',
+      dataTableId: HIST_TABLE,
+      matchType: 'allConditions',
+      filters: { conditions: [{ keyName: 'phone', condition: 'eq', keyValue: expr("{{ $('Prepare Reply').first().json.phone }}") }] },
+      options: {},
+    },
+    alwaysOutputData: true,
+    position: [2920, 120],
+  },
+  output: [{ id: 1 }],
 });
 
 const classify = switchCase({
@@ -586,6 +624,8 @@ export default workflow('whatsapp-ai-conversation', 'Dads Clinic-WhatsApp AI Con
   .to(buildOutboundLog)
   .to(logOutbound)
   .to(logTelegram)
+  .to(isReset)
+  .to(clearHistory)
   .add(prepareReply)
   .to(classify.onCase(0, sendToDoctor).onCase(1, sendToAssistant))
   .add(claimAssemble)

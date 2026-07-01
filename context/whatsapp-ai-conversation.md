@@ -109,6 +109,14 @@ truth that also powers reply-resolution (below).
 - `updatedAt` (system column) auto-bumps and drives the 90-day prune. Backward-compatible:
   old `{role,content}` entries without wamids still render (they just can't be reply-targets).
 
+**Patient-initiated reset.** A `reset` intent lets patients clear their own history: messages
+like `إلى اللقاء` / `أريد بدء محادثة جديدة` / `امسح المحادثة` classify as `reset`; `Prepare Reply`
+overrides the reply with a fixed confirmation, and a `Log to Telegram → Is Reset? → Clear History`
+tail deletes the whole `chat_history` row (placed after inbound+outbound logging so there's no
+race; it wipes the goodbye turn too). Next message starts fresh (re-intro). Disclosed on the
+privacy page as a data-control option. Also injected: current Amman time (`nowAmman`) into the
+system prompt for "بعد كم دقيقة" answers.
+
 ## Replies & forwards (WhatsApp quote handling)
 
 The WhatsApp webhook gives only `messages[0].context.id` (the **wamid** of the quoted
