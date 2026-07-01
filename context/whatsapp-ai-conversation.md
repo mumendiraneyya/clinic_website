@@ -114,8 +114,9 @@ like `إلى اللقاء` / `أريد بدء محادثة جديدة` / `امس
 overrides the reply with a fixed confirmation, and a `Log to Telegram → Is Reset? → Clear History`
 tail deletes the whole `chat_history` row (placed after inbound+outbound logging so there's no
 race; it wipes the goodbye turn too). Next message starts fresh (re-intro). Disclosed on the
-privacy page as a data-control option. Also injected: current Amman time (`nowAmman`) into the
-system prompt for "بعد كم دقيقة" answers.
+**`/data`** page (`src/pages/data.md`, "حفظ البيانات وحذفها") as a data-control option — that's
+the data-retention/deletion page, not the general `/privacy` policy. Also injected: current Amman
+time (`nowAmman`) into the system prompt for "بعد كم دقيقة" answers.
 
 ## Replies & forwards (WhatsApp quote handling)
 
@@ -306,11 +307,13 @@ Live as of the published version (`activeVersionId 1f424ea8-…`). What the fix 
   `0798872899`) so WhatsApp keeps them tap-to-call (Arabic-Indic digits don't linkify).
   The clinic/doctor numbers in the prompt were switched to that local Western form too.
 
-### 2. Privacy / retention page — ✅ DONE
-`src/pages/privacy.md` now has a "مساعد واتساب والاحتفاظ بالمحادثات" section
-disclosing that WhatsApp history is retained per phone number and auto-deleted after
-90 days of inactivity (matches `Dads Clinic-Prune Chat History`). Date bumped to
-تموز ٢٠٢٦. (Not yet deployed — ships on next site deploy.)
+### 2. Data-retention page — ✅ DONE
+`src/pages/data.md` ("حفظ البيانات وحذفها", route `/data`) has a "سجل محادثات واتساب"
+entry (section ٥) disclosing per-phone retention, the 90-day inactivity auto-delete
+(matches `Dads Clinic-Prune Chat History`), and the self-service reset. It's also listed
+in the "how to request deletion" section. This lives on **`/data`, not `/privacy`** — the
+general privacy policy was intentionally left untouched; retention/deletion specifics belong
+on the data page. Date bumped to تموز ٢٠٢٦. (Ships on next site deploy.)
 
 ### 3. Price-quoting policy — ✅ decided (OK to quote)
 Orwa signed off on the bot volunteering surgical price ranges over WhatsApp. Behaviour
