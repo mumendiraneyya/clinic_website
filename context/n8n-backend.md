@@ -61,6 +61,12 @@ Extracted from V1 workflow. Receives Cal.com `BOOKING_REQUESTED` webhooks and au
 
 AI-powered WhatsApp responder with verification code interception and media forwarding.
 
+> **Update:** the conversational AI (text path, non-verification-code) is now
+> extracted into a dedicated sub-workflow with per-number memory, procedure
+> knowledge, and message-fragment debouncing. This workflow just calls it via an
+> Execute Sub-workflow node (fire-and-forget). Full docs:
+> [whatsapp-ai-conversation.md](whatsapp-ai-conversation.md).
+
 **Message routing (Switch node):**
 - `text` → verification code check → AI assistant
 - `image`/`document` → media forwarding to doctor
@@ -265,6 +271,6 @@ curl -s -X POST "https://graph.facebook.com/v21.0/$WA_ACCOUNT_ID/message_templat
 
 ## Planned Enhancements
 
-- **Conversation history** for WhatsApp AI: `chat_history` data table, load/save per phone number, keep last 10-20 exchanges
+- ~~**Conversation history** for WhatsApp AI~~ ✅ **Done** — plus fragment debouncing and procedure knowledge, extracted into a sub-workflow. See [whatsapp-ai-conversation.md](whatsapp-ai-conversation.md) (which also carries the remaining TODO: style/tone polish, privacy-page update).
 - **Booking via WhatsApp bot:** Cal.com API integration for checking slots and rescheduling in conversation
 - **SMS-based V2 verification:** Same user-initiated code pattern but via SMS instead of WhatsApp

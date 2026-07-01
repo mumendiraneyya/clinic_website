@@ -606,7 +606,7 @@ PostHog custom events instrument the booking funnel and detect ad fraud. See [co
 
 ### n8n Backend & Local Services
 
-See [context/n8n-backend.md](context/n8n-backend.md) for complete documentation of all n8n workflows, local services, SMS gateway, WhatsApp AI assistant, and V2 verification.
+See [context/n8n-backend.md](context/n8n-backend.md) for complete documentation of all n8n workflows, local services, SMS gateway, WhatsApp AI assistant, and V2 verification. The WhatsApp AI now has per-number memory, procedure knowledge, and message-fragment debouncing in a dedicated sub-workflow — see [context/whatsapp-ai-conversation.md](context/whatsapp-ai-conversation.md) (includes the remaining TODO for the next session: style/tone polish + privacy-page update).
 
 **Quick reference:**
 - n8n instance: `https://n8n.orwa.tech` (self-hosted, v2.15.1)
