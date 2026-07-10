@@ -247,8 +247,14 @@ expression strings. `/tmp/parent.json` from the export doubles as your rollback.
 
 > **Note:** `chat_history` was originally `CMhFxcd6i059Xx8w`; it was deleted by
 > mistake and recreated as `gsAdL9PoCUSCk2aG`. The table IDs are **hardcoded** in
-> the sub-workflow's DataTable nodes — if a table is recreated, repoint the
-> `Load History` / `Save History` (and fragments / knowledge) nodes to the new ID.
+> every workflow's DataTable nodes — when a table is recreated, repoint **all** of
+> them: `Load History` / `Save History` in the conversation + logger subflows, **and
+> both** DataTable nodes (`Get All History` **and** `Delete Stale Row`) in
+> `Prune Chat History`. The Prune workflow was missed at first and its 4 AM job errored
+> for days ("Could not find the data table") — grep the n8n submodule (or live DB) for a
+> recreated id to catch every reference. (Fixed 2026-07: both Prune nodes repointed to
+> `gsAdL9PoCUSCk2aG`, and its `Delete Stale Row` filter — which had a `keyValue` with no
+> `keyName` — now deletes by `phone`.)
 
 **Decisions (locked with the user):** buffer store = n8n DataTable; debounce
 window = 15s; chat-history retention = 90 days inactivity; knowledge = static
